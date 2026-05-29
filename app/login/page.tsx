@@ -23,23 +23,23 @@ const PARTICLES = [
   { x: 58, y: 34, d: 3.4, delay: 2.8 }, { x: 71, y: 73, d: 4.0, delay: 0.7 },
 ]
 
-function FieldWrapper({ icon, label, children }: { icon: string; label: string; children: React.ReactNode }) {
+function FieldWrapper({ icon, label, isDark, children }: { icon: string; label: string; isDark: boolean; children: React.ReactNode }) {
   return (
     <div>
-      <label style={{ fontSize: 11, fontWeight: 700, color: '#4a6170', display: 'block', marginBottom: 7, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+      <label style={{ fontSize: 11, fontWeight: 700, color: isDark ? '#7ab5b0' : '#4a6170', display: 'block', marginBottom: 7, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
         {label}
       </label>
       <div style={{ position: 'relative' }}>
-        <i className={`fa-solid ${icon}`} style={{ position: 'absolute', left: 15, top: '50%', transform: 'translateY(-50%)', color: '#8ba0aa', fontSize: 13, zIndex: 1, pointerEvents: 'none' }} />
+        <i className={`fa-solid ${icon}`} style={{ position: 'absolute', left: 15, top: '50%', transform: 'translateY(-50%)', color: isDark ? '#58948f' : '#8ba0aa', fontSize: 13, zIndex: 1, pointerEvents: 'none' }} />
         {children}
       </div>
     </div>
   )
 }
 
-function TrustBadge({ icon, text }: { icon: string; text: string }) {
+function TrustBadge({ icon, text, isDark }: { icon: string; text: string; isDark: boolean }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#8ba0aa', fontSize: 11, fontWeight: 600 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: isDark ? '#7ab5b0' : '#8ba0aa', fontSize: 11, fontWeight: 600 }}>
       <i className={`fa-solid ${icon}`} style={{ color: '#58948f', fontSize: 11 }} />
       {text}
     </div>
@@ -93,15 +93,17 @@ export default function LoginPage() {
 
   const inputStyle = (field: string): React.CSSProperties => ({
     width: '100%',
-    border: `2px solid ${focused === field ? '#58948f' : '#e8eff0'}`,
+    border: `2px solid ${focused === field ? '#58948f' : isDark ? 'rgba(255,255,255,0.1)' : '#e8eff0'}`,
     borderRadius: 12,
     padding: '13px 16px 13px 44px',
     fontSize: 14,
     fontFamily: 'inherit',
     outline: 'none',
-    background: focused === field ? 'rgba(88,148,143,0.04)' : '#f9fafb',
+    background: focused === field
+      ? isDark ? 'rgba(88,148,143,0.12)' : 'rgba(88,148,143,0.04)'
+      : isDark ? 'rgba(255,255,255,0.05)' : '#f9fafb',
     transition: 'all 0.2s ease',
-    color: '#0d1f2d',
+    color: isDark ? '#e2f0ef' : '#0d1f2d',
   })
 
   const cardVariants = {
@@ -143,58 +145,46 @@ export default function LoginPage() {
       {/* Dot grid overlay */}
       <div style={{ position: 'absolute', inset: 0, backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(9,52,89,0.06)'} 1px, transparent 1px)`, backgroundSize: '36px 36px', pointerEvents: 'none' }} />
 
-      {/* Subtle vignette */}
+      {/* Vignette */}
       <div style={{ position: 'absolute', inset: 0, background: isDark ? 'radial-gradient(ellipse at center, transparent 40%, rgba(6,31,55,0.6) 100%)' : 'radial-gradient(ellipse at center, transparent 40%, rgba(180,215,210,0.5) 100%)', pointerEvents: 'none' }} />
 
-      {/* Theme toggle button */}
-      <motion.button
-        onClick={toggleDark}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        style={{
-          position: 'fixed', top: 20, right: 20, zIndex: 50,
-          width: 44, height: 44, borderRadius: '50%',
-          border: isDark ? '1.5px solid rgba(255,255,255,0.18)' : '1.5px solid rgba(9,52,89,0.18)',
-          background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(9,52,89,0.08)',
-          backdropFilter: 'blur(12px)',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: isDark ? '#CA8A04' : '#093459', fontSize: 16,
-        }}
-        title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      >
+      {/* Theme toggle */}
+      <motion.button onClick={toggleDark} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+        style={{ position: 'fixed', top: 20, right: 20, zIndex: 50, width: 44, height: 44, borderRadius: '50%', border: isDark ? '1.5px solid rgba(255,255,255,0.18)' : '1.5px solid rgba(9,52,89,0.18)', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(9,52,89,0.08)', backdropFilter: 'blur(12px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#CA8A04' : '#093459', fontSize: 16 }}
+        title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
         <i className={isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon'} />
       </motion.button>
 
       {/* Card */}
       <motion.div variants={cardVariants} initial="hidden" animate="visible"
-        style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(24px)', borderRadius: 28, padding: '48px 40px', width: '100%', maxWidth: 460, boxShadow: '0 32px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08)', position: 'relative', zIndex: 10 }}>
+        style={{ background: isDark ? 'rgba(9,28,50,0.88)' : 'rgba(255,255,255,0.97)', backdropFilter: 'blur(24px)', borderRadius: 28, padding: '48px 40px', width: '100%', maxWidth: 460, boxShadow: isDark ? '0 32px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06)' : '0 32px 80px rgba(0,0,0,0.12), 0 0 0 1px rgba(88,148,143,0.12)', position: 'relative', zIndex: 10 }}>
 
-        {/* Shimmer line at top of card */}
-        <motion.div
-          initial={{ scaleX: 0, opacity: 0 }}
-          animate={{ scaleX: 1, opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.7 }}
-          style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 2, background: 'linear-gradient(90deg, transparent, #CA8A04, #58948f, #CA8A04, transparent)', borderRadius: 2 }}
-        />
+        {/* Shimmer top edge */}
+        <motion.div initial={{ scaleX: 0, opacity: 0 }} animate={{ scaleX: 1, opacity: 1 }} transition={{ delay: 0.5, duration: 0.7 }}
+          style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 2, background: 'linear-gradient(90deg, transparent, #CA8A04, #58948f, #CA8A04, transparent)', borderRadius: 2 }} />
 
         {/* Logo */}
         <motion.div variants={stagger} initial="hidden" animate="visible" style={{ textAlign: 'center', marginBottom: 30 }}>
           <motion.a href="/" variants={fadeUp}
-            style={{ fontFamily: 'var(--font-playfair)', fontSize: 34, fontWeight: 900, color: '#093459', display: 'block', marginBottom: 6, letterSpacing: '-0.02em', textDecoration: 'none' }}>
+            style={{ fontFamily: 'var(--font-playfair)', fontSize: 34, fontWeight: 900, color: isDark ? '#e2f0ef' : '#093459', display: 'block', marginBottom: 6, letterSpacing: '-0.02em', textDecoration: 'none' }}>
             KR<span style={{ color: '#58948f', textShadow: '0 0 28px rgba(88,148,143,0.5)' }}>SELLIFY</span>
           </motion.a>
-          <motion.p variants={fadeUp} style={{ color: '#8ba0aa', fontSize: 14 }}>
+          <motion.p variants={fadeUp} style={{ color: isDark ? '#7ab5b0' : '#8ba0aa', fontSize: 14 }}>
             {mode === 'login' ? 'Welcome back, Patriot' : 'Join the movement today'}
           </motion.p>
         </motion.div>
 
         {/* Tab switcher */}
         <motion.div variants={fadeUp} initial="hidden" animate="visible" transition={{ delay: 0.35 }}
-          style={{ display: 'flex', background: '#f4f8f8', borderRadius: 50, padding: 4, marginBottom: 28, border: '1px solid #e8eff0' }}>
+          style={{ display: 'flex', background: isDark ? 'rgba(255,255,255,0.06)' : '#f4f8f8', borderRadius: 50, padding: 4, marginBottom: 28, border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e8eff0'}` }}>
           {(['login', 'signup'] as const).map(m => (
             <motion.button key={m}
               onClick={() => { setMode(m); setError(''); setSuccess('') }}
-              animate={{ background: mode === m ? '#093459' : 'transparent', color: mode === m ? 'white' : '#4a6170', boxShadow: mode === m ? '0 4px 14px rgba(9,52,89,0.28)' : 'none' }}
+              animate={{
+                background: mode === m ? (isDark ? 'rgba(88,148,143,0.25)' : '#093459') : 'transparent',
+                color: mode === m ? (isDark ? '#7ab5b0' : 'white') : (isDark ? '#7ab5b0' : '#4a6170'),
+                boxShadow: mode === m ? (isDark ? '0 4px 14px rgba(88,148,143,0.2)' : '0 4px 14px rgba(9,52,89,0.28)') : 'none',
+              }}
               transition={{ duration: 0.25 }}
               style={{ flex: 1, border: 'none', borderRadius: 50, padding: '11px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.04em' }}>
               {m === 'login' ? 'Sign In' : 'Sign Up'}
@@ -207,12 +197,11 @@ export default function LoginPage() {
           <AnimatePresence initial={false}>
             {mode === 'signup' && (
               <motion.div key="name-field"
-                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
+                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 style={{ overflow: 'hidden' }}>
-                <FieldWrapper icon="fa-user" label="Full Name">
+                <FieldWrapper icon="fa-user" label="Full Name" isDark={isDark}>
                   <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
                     placeholder="Your full name"
                     onFocus={() => setFocused('name')} onBlur={() => setFocused(null)}
@@ -222,14 +211,14 @@ export default function LoginPage() {
             )}
           </AnimatePresence>
 
-          <FieldWrapper icon="fa-envelope" label="Email">
+          <FieldWrapper icon="fa-envelope" label="Email" isDark={isDark}>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)}
               placeholder="you@example.com" required
               onFocus={() => setFocused('email')} onBlur={() => setFocused(null)}
               style={inputStyle('email')} />
           </FieldWrapper>
 
-          <FieldWrapper icon="fa-lock" label="Password">
+          <FieldWrapper icon="fa-lock" label="Password" isDark={isDark}>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)}
               placeholder="••••••••" required minLength={6}
               onFocus={() => setFocused('password')} onBlur={() => setFocused(null)}
@@ -239,24 +228,22 @@ export default function LoginPage() {
           <AnimatePresence>
             {error && (
               <motion.div key="err" initial={{ opacity: 0, y: -8, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                style={{ background: '#fff0f0', border: '1px solid #ffcccc', borderRadius: 12, padding: '11px 14px', fontSize: 13, color: '#e05454', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <i className="fa-solid fa-circle-exclamation" />
-                {error}
+                style={{ background: isDark ? 'rgba(224,84,84,0.12)' : '#fff0f0', border: `1px solid ${isDark ? 'rgba(224,84,84,0.3)' : '#ffcccc'}`, borderRadius: 12, padding: '11px 14px', fontSize: 13, color: '#e05454', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <i className="fa-solid fa-circle-exclamation" />{error}
               </motion.div>
             )}
             {success && (
               <motion.div key="ok" initial={{ opacity: 0, y: -8, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }}
-                style={{ background: '#f0fff8', border: '1px solid #9de', borderRadius: 12, padding: '11px 14px', fontSize: 13, color: '#3d6f6a', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <i className="fa-solid fa-circle-check" />
-                {success}
+                style={{ background: isDark ? 'rgba(88,148,143,0.15)' : '#f0fff8', border: `1px solid ${isDark ? 'rgba(88,148,143,0.3)' : '#9de'}`, borderRadius: 12, padding: '11px 14px', fontSize: 13, color: isDark ? '#7ab5b0' : '#3d6f6a', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <i className="fa-solid fa-circle-check" />{success}
               </motion.div>
             )}
           </AnimatePresence>
 
           <motion.button type="submit" disabled={loading}
-            whileHover={!loading ? { scale: 1.02, boxShadow: '0 10px 28px rgba(9,52,89,0.38)' } : {}}
+            whileHover={!loading ? { scale: 1.02, boxShadow: isDark ? '0 10px 28px rgba(88,148,143,0.3)' : '0 10px 28px rgba(9,52,89,0.38)' } : {}}
             whileTap={!loading ? { scale: 0.98 } : {}}
-            style={{ background: loading ? '#8ba0aa' : 'linear-gradient(135deg, #093459 0%, #0e4a80 100%)', color: 'white', border: 'none', padding: '15px', borderRadius: 50, fontSize: 14, fontWeight: 700, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', marginTop: 4, boxShadow: '0 4px 18px rgba(9,52,89,0.28)', transition: 'background 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            style={{ background: loading ? (isDark ? 'rgba(255,255,255,0.15)' : '#8ba0aa') : isDark ? 'linear-gradient(135deg, #0e4a80 0%, #58948f 100%)' : 'linear-gradient(135deg, #093459 0%, #0e4a80 100%)', color: 'white', border: 'none', padding: '15px', borderRadius: 50, fontSize: 14, fontWeight: 700, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', marginTop: 4, boxShadow: isDark ? '0 4px 18px rgba(88,148,143,0.2)' : '0 4px 18px rgba(9,52,89,0.28)', transition: 'background 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             {loading
               ? <><i className="fa-solid fa-spinner fa-spin" />Processing…</>
               : mode === 'login'
@@ -267,15 +254,15 @@ export default function LoginPage() {
         </form>
 
         {/* Trust badges */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 22, paddingTop: 18, borderTop: '1px solid #e8eff0' }}>
-          <TrustBadge icon="fa-shield-halved" text="Secure" />
-          <TrustBadge icon="fa-lock" text="Encrypted" />
-          <TrustBadge icon="fa-certificate" text="Verified" />
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 22, paddingTop: 18, borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e8eff0'}` }}>
+          <TrustBadge icon="fa-shield-halved" text="Secure" isDark={isDark} />
+          <TrustBadge icon="fa-lock" text="Encrypted" isDark={isDark} />
+          <TrustBadge icon="fa-certificate" text="Verified" isDark={isDark} />
         </div>
 
         {/* Agent link */}
         <div style={{ textAlign: 'center', marginTop: 18 }}>
-          <p style={{ fontSize: 13, color: '#8ba0aa', marginBottom: 6 }}>Are you an approved agent?</p>
+          <p style={{ fontSize: 13, color: isDark ? '#7ab5b0' : '#8ba0aa', marginBottom: 6 }}>Are you an approved agent?</p>
           <a href="/agent-login" style={{ color: '#58948f', fontWeight: 700, fontSize: 13, letterSpacing: '0.02em' }}>
             Agent Sign In <i className="fa-solid fa-arrow-right" />
           </a>
