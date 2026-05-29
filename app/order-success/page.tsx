@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
@@ -88,7 +88,7 @@ export default function OrderSuccessPage() {
       <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
 
       {/* logo */}
-      <Link href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 900, color: 'var(--navy)', textDecoration: 'none', marginBottom: 32 }}>
+      <Link href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 900, color: 'var(--heading)', textDecoration: 'none', marginBottom: 32 }}>
         KR<span style={{ color: 'var(--teal)' }}>SELLIFY</span>
       </Link>
 
@@ -116,7 +116,7 @@ export default function OrderSuccessPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 900, color: 'var(--navy)', marginBottom: 10 }}>
+          style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 900, color: 'var(--heading)', marginBottom: 10 }}>
           Order Placed!
         </motion.h1>
 
@@ -135,7 +135,7 @@ export default function OrderSuccessPage() {
             {order.items?.slice(0, 3).map((item, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 8, borderBottom: '1px solid var(--gray)' }}>
                 <span style={{ fontSize: 13, color: 'var(--text-dark)', fontWeight: 600 }}>{item.name} × {item.qty}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }}>${(item.price * item.qty).toFixed(2)}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--heading)' }}>${(item.price * item.qty).toFixed(2)}</span>
               </div>
             ))}
             {order.items?.length > 3 && (
@@ -150,8 +150,8 @@ export default function OrderSuccessPage() {
             )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, borderTop: '2px solid var(--gray)' }}>
-              <span style={{ fontWeight: 700, color: 'var(--text-mid)' }}>Total Paid</span>
-              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 900, color: 'var(--navy)' }}>${order.total.toFixed(2)}</span>
+              <span style={{ fontWeight: 700, color: 'var(--text-mid)' }}>Order Total</span>
+              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 900, color: 'var(--heading)' }}>${order.total.toFixed(2)}</span>
             </div>
 
             {order.id && (
@@ -170,7 +170,7 @@ export default function OrderSuccessPage() {
             <i className="fa-solid fa-box" /> Track My Order
           </Link>
           <Link href="/"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'var(--off-white)', color: 'var(--navy)', padding: '13px', borderRadius: 50, fontSize: 14, fontWeight: 700, textDecoration: 'none', border: '2px solid var(--gray)' }}>
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'var(--off-white)', color: 'var(--heading)', padding: '13px', borderRadius: 50, fontSize: 14, fontWeight: 700, textDecoration: 'none', border: '2px solid var(--gray)' }}>
             <i className="fa-solid fa-store" /> Continue Shopping
           </Link>
         </motion.div>

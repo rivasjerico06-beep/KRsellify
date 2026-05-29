@@ -1,10 +1,10 @@
-import InfoPageLayout from '@/components/InfoPageLayout'
+﻿import InfoPageLayout from '@/components/InfoPageLayout'
 
 export const metadata = { title: 'Privacy Policy — KRSELLIFY' }
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <section style={{ background: 'white', borderRadius: 16, padding: '28px 32px', boxShadow: '0 2px 10px rgba(9,52,89,0.06)' }}>
-    <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 19, fontWeight: 800, color: 'var(--navy)', marginBottom: 14 }}>{title}</h2>
+  <section style={{ background: 'var(--white)', borderRadius: 16, padding: '28px 32px', boxShadow: '0 2px 10px rgba(9,52,89,0.06)' }}>
+    <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 19, fontWeight: 800, color: 'var(--heading)', marginBottom: 14 }}>{title}</h2>
     <div style={{ fontSize: 14, lineHeight: 1.8, color: 'var(--text-mid)' }}>{children}</div>
   </section>
 )

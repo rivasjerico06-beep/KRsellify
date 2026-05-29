@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -65,7 +65,7 @@ export default function LoginPage() {
         style={{ background: 'var(--white)', borderRadius: 24, padding: '48px 40px', width: '100%', maxWidth: 440, boxShadow: '0 8px 48px rgba(9,52,89,0.12)' }}
       >
         {/* logo */}
-        <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--navy)', display: 'block', textAlign: 'center', marginBottom: 8 }}>
+        <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--heading)', display: 'block', textAlign: 'center', marginBottom: 8 }}>
           KR<span style={{ color: 'var(--teal)' }}>SELLIFY</span>
         </a>
         <p style={{ textAlign: 'center', color: 'var(--text-light)', fontSize: 14, marginBottom: 32 }}>

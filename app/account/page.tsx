@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -149,7 +149,7 @@ function AccountContent() {
                 {(profile?.full_name?.[0] ?? user?.email?.[0] ?? '?').toUpperCase()}
               </div>
               <div>
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: 'var(--navy)' }}>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: 'var(--heading)' }}>
                   {profile?.full_name || 'Your Account'}
                 </h2>
                 <span style={{ fontSize: 12, fontWeight: 700, background: profile?.role === 'admin' ? 'var(--navy)' : profile?.role === 'agent' ? 'var(--teal)' : 'var(--gray)', color: profile?.role === 'customer' ? 'var(--text-mid)' : 'white', padding: '2px 10px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -195,7 +195,7 @@ function AccountContent() {
                 <span style={{ fontSize: 14, fontWeight: 700, padding: '4px 14px', borderRadius: 20, background: currentTier.bg, color: currentTier.color }}>
                   {currentTier.label}
                 </span>
-                <span style={{ fontSize: 13, color: 'var(--text-mid)' }}>Total spent: <strong style={{ color: 'var(--navy)' }}>${totalSpent.toFixed(2)}</strong></span>
+                <span style={{ fontSize: 13, color: 'var(--text-mid)' }}>Total spent: <strong style={{ color: 'var(--heading)' }}>${totalSpent.toFixed(2)}</strong></span>
               </div>
               <div style={{ background: 'var(--gray)', borderRadius: 8, height: 10, overflow: 'hidden', marginBottom: 8 }}>
                 <motion.div initial={{ width: 0 }} animate={{ width: `${tierPct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -209,7 +209,7 @@ function AccountContent() {
                 <p style={{ fontSize: 12, color: currentTier.color, fontWeight: 700 }}>🏆 You&apos;ve reached the highest tier!</p>
               )}
               <div style={{ marginTop: 14, padding: '10px 14px', background: 'var(--off-white)', borderRadius: 12, fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6 }}>
-                <p style={{ fontWeight: 700, marginBottom: 4, color: 'var(--navy)' }}>Discount Tiers</p>
+                <p style={{ fontWeight: 700, marginBottom: 4, color: 'var(--heading)' }}>Discount Tiers</p>
                 <p>Silver ($500+) → 30% off coupon</p>
                 <p>Gold ($1,000+) → 50% off coupon</p>
                 <p>Platinum ($2,000+) → VIP status + 50% off coupon</p>
@@ -226,7 +226,7 @@ function AccountContent() {
                 {coupons.map(c => (
                   <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--gray)' }}>
                     <div>
-                      <p style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 14, color: 'var(--navy)' }}>{c.code}</p>
+                      <p style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 14, color: 'var(--heading)' }}>{c.code}</p>
                       <p style={{ fontSize: 12, color: 'var(--text-mid)' }}>{c.discount_pct}% off — {c.tier ?? 'loyalty'} reward</p>
                     </div>
                     <span style={{ background: '#d1fae5', color: '#065f46', fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20 }}>Active</span>
@@ -324,7 +324,7 @@ function AccountContent() {
                         <td style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-mid)', whiteSpace: 'nowrap' }}>{o.created_at ? new Date(o.created_at).toLocaleDateString() : '—'}</td>
                         <td style={{ padding: '12px 16px', fontSize: 13 }}>{Array.isArray(o.items) ? o.items.length : 0} item{Array.isArray(o.items) && o.items.length !== 1 ? 's' : ''}</td>
                         <td style={{ padding: '12px 16px', fontSize: 13, color: '#059669' }}>{o.discount_amount ? `-$${Number(o.discount_amount).toFixed(2)}` : '—'}</td>
-                        <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--navy)' }}>${Number(o.total).toFixed(2)}</td>
+                        <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--heading)' }}>${Number(o.total).toFixed(2)}</td>
                         <td style={{ padding: '12px 16px' }}>
                           <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: sc.bg, color: sc.text, textTransform: 'capitalize', whiteSpace: 'nowrap' }}>
                             {o.status ?? 'pending'}

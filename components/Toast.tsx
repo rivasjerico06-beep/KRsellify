@@ -35,8 +35,9 @@ export default function Toast() {
             gap: 8,
             pointerEvents: 'none',
           }}
-          dangerouslySetInnerHTML={{ __html: toast }}
-        />
+        >
+          {toast}
+        </motion.div>
       )}
     </AnimatePresence>
   )

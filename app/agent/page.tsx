@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -92,7 +92,7 @@ function AgentContent() {
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 28px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 28 }}>
           <div>
-            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 900, color: 'var(--navy)', marginBottom: 4 }}>Agent Dashboard</h1>
+            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 900, color: 'var(--heading)', marginBottom: 4 }}>Agent Dashboard</h1>
             <p style={{ color: 'var(--text-mid)' }}>Welcome back, {agentProfile?.display_name}</p>
           </div>
 
@@ -105,7 +105,7 @@ function AgentContent() {
                 Your Referral Code
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontFamily: 'monospace', fontSize: 22, fontWeight: 900, color: 'var(--navy)', letterSpacing: '0.1em' }}>
+                <span style={{ fontFamily: 'monospace', fontSize: 22, fontWeight: 900, color: 'var(--heading)', letterSpacing: '0.1em' }}>
                   {agentProfile.referral_code}
                 </span>
                 <button onClick={copyCode}
@@ -121,7 +121,7 @@ function AgentContent() {
         {/* stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 32 }}>
           {[
-            { label: 'Total Leads', value: stats.total, icon: 'fa-users', color: 'var(--navy)' },
+            { label: 'Total Leads', value: stats.total, icon: 'fa-users', color: 'var(--heading)' },
             { label: 'Ready to Call', value: stats.ready, icon: 'fa-phone', color: 'var(--teal)' },
             { label: 'Follow Ups', value: stats.followUp, icon: 'fa-clock', color: '#7c3aed' },
             { label: 'Converted', value: stats.converted, icon: 'fa-check-circle', color: '#059669' },
@@ -131,7 +131,7 @@ function AgentContent() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <p style={{ fontSize: 12, color: 'var(--text-light)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</p>
-                  <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 900, color: 'var(--navy)' }}>{s.value}</p>
+                  <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 900, color: 'var(--heading)' }}>{s.value}</p>
                 </div>
                 <i className={`fa-solid ${s.icon}`} style={{ fontSize: 20, color: s.color, opacity: 0.7 }} />
               </div>

@@ -1,4 +1,4 @@
-import InfoPageLayout from '@/components/InfoPageLayout'
+﻿import InfoPageLayout from '@/components/InfoPageLayout'
 import Link from 'next/link'
 
 export const metadata = { title: 'Returns & Exchanges — KRSELLIFY' }
@@ -7,8 +7,8 @@ export default function ReturnsPage() {
   return (
     <InfoPageLayout title="Returns & Exchanges" subtitle="30-day returns on eligible items. No hassle, no questions asked." breadcrumb="Returns">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        <section style={{ background: 'white', borderRadius: 16, padding: '28px 32px', boxShadow: '0 2px 10px rgba(9,52,89,0.06)' }}>
-          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 800, color: 'var(--navy)', marginBottom: 16 }}>Return Policy</h2>
+        <section style={{ background: 'var(--white)', borderRadius: 16, padding: '28px 32px', boxShadow: '0 2px 10px rgba(9,52,89,0.06)' }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 800, color: 'var(--heading)', marginBottom: 16 }}>Return Policy</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {[
               { label: 'Return window',  value: '30 days from date of delivery' },
@@ -18,15 +18,15 @@ export default function ReturnsPage() {
               { label: 'Return shipping', value: 'Customer covers return shipping cost; we cover exchanges' },
             ].map(r => (
               <div key={r.label} style={{ display: 'flex', gap: 16, paddingBottom: 14, borderBottom: '1px solid var(--gray)' }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)', minWidth: 160 }}>{r.label}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--heading)', minWidth: 160 }}>{r.label}</span>
                 <span style={{ fontSize: 13, color: 'var(--text-mid)' }}>{r.value}</span>
               </div>
             ))}
           </div>
         </section>
 
-        <section style={{ background: 'white', borderRadius: 16, padding: '28px 32px', boxShadow: '0 2px 10px rgba(9,52,89,0.06)' }}>
-          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 800, color: 'var(--navy)', marginBottom: 16 }}>How to Return</h2>
+        <section style={{ background: 'var(--white)', borderRadius: 16, padding: '28px 32px', boxShadow: '0 2px 10px rgba(9,52,89,0.06)' }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 800, color: 'var(--heading)', marginBottom: 16 }}>How to Return</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[
               { step: '1', title: 'Contact us',       body: 'Email support@krsellify.com with your order number and reason for return.' },
@@ -37,7 +37,7 @@ export default function ReturnsPage() {
               <div key={s.step} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                 <span style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--teal)', color: 'white', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{s.step}</span>
                 <div>
-                  <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--navy)', marginBottom: 3 }}>{s.title}</p>
+                  <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--heading)', marginBottom: 3 }}>{s.title}</p>
                   <p style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.6 }}>{s.body}</p>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
@@ -76,7 +76,7 @@ function WishlistCard({ item }: { item: CartItem }) {
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <div>
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: 'var(--navy)' }}>${item.price.toFixed(2)}</span>
+            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: 'var(--heading)' }}>${item.price.toFixed(2)}</span>
             {item.old_price && (
               <span style={{ fontSize: 12, color: 'var(--text-light)', textDecoration: 'line-through', marginLeft: 6 }}>${item.old_price.toFixed(2)}</span>
             )}
@@ -106,12 +106,12 @@ export default function WishlistPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
               <Link href="/" style={{ color: 'var(--teal)', fontSize: 13, fontWeight: 600 }}>Home</Link>
               <i className="fa-solid fa-chevron-right" style={{ fontSize: 9, color: 'var(--text-light)' }} />
-              <span style={{ fontSize: 13, color: 'var(--navy)', fontWeight: 700 }}>Wishlist</span>
+              <span style={{ fontSize: 13, color: 'var(--heading)', fontWeight: 700 }}>Wishlist</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
               <div>
                 <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.26em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 6 }}>Saved Items</p>
-                <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 900, color: 'var(--navy)' }}>
+                <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 900, color: 'var(--heading)' }}>
                   My Wishlist
                   {wishlist.length > 0 && (
                     <span style={{ marginLeft: 14, fontSize: 16, fontWeight: 700, background: 'var(--teal)', color: 'white', padding: '4px 12px', borderRadius: 50, verticalAlign: 'middle' }}>
@@ -143,7 +143,7 @@ export default function WishlistPage() {
                   style={{ fontSize: 72, color: 'var(--gray)', marginBottom: 24 }}>
                   <i className="fa-regular fa-heart" />
                 </motion.div>
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--navy)', marginBottom: 12 }}>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--heading)', marginBottom: 12 }}>
                   Your wishlist is empty
                 </h2>
                 <p style={{ fontSize: 16, color: 'var(--text-mid)', maxWidth: 380, margin: '0 auto 32px', lineHeight: 1.7 }}>

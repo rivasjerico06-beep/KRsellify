@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Image from 'next/image'
@@ -67,7 +67,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
         <i className="fa-solid fa-chevron-right" style={{ fontSize: 9, opacity: 0.5 }} />
         <Link href="/#products" style={{ color: 'var(--teal)', fontWeight: 600, textDecoration: 'none' }}>Shop</Link>
         <i className="fa-solid fa-chevron-right" style={{ fontSize: 9, opacity: 0.5 }} />
-        <span style={{ color: 'var(--navy)', fontWeight: 700 }}>{product.name}</span>
+        <span style={{ color: 'var(--heading)', fontWeight: 700 }}>{product.name}</span>
       </motion.nav>
 
       {/* Main grid */}
@@ -134,7 +134,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           </p>
 
           {/* Name */}
-          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, color: 'var(--navy)', lineHeight: 1.15, marginBottom: 16 }}>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, color: 'var(--heading)', lineHeight: 1.15, marginBottom: 16 }}>
             {product.name}
           </h1>
 
@@ -147,7 +147,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
 
           {/* Price */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 24, padding: '20px 24px', background: 'var(--white)', borderRadius: 16, boxShadow: '0 2px 12px rgba(9,52,89,0.07)' }}>
-            <span style={{ fontFamily: 'var(--font-cormorant)', fontSize: 46, fontWeight: 700, color: 'var(--navy)', lineHeight: 1 }}>
+            <span style={{ fontFamily: 'var(--font-cormorant)', fontSize: 46, fontWeight: 700, color: 'var(--heading)', lineHeight: 1 }}>
               ${product.price.toFixed(2)}
             </span>
             {product.old_price && (
@@ -194,10 +194,10 @@ export default function ProductDetailClient({ product, related }: { product: Pro
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Qty</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: 'var(--white)', borderRadius: 50, border: '1.5px solid var(--gray)', overflow: 'hidden', boxShadow: '0 1px 6px rgba(9,52,89,0.06)' }}>
               <motion.button whileTap={{ scale: 0.88 }} onClick={() => setQty(q => Math.max(1, q - 1))}
-                style={{ width: 40, height: 40, border: 'none', background: 'none', fontSize: 16, cursor: 'pointer', color: 'var(--navy)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>−</motion.button>
-              <span style={{ width: 32, textAlign: 'center', fontSize: 15, fontWeight: 700, color: 'var(--navy)' }}>{qty}</span>
+                style={{ width: 40, height: 40, border: 'none', background: 'none', fontSize: 16, cursor: 'pointer', color: 'var(--heading)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>−</motion.button>
+              <span style={{ width: 32, textAlign: 'center', fontSize: 15, fontWeight: 700, color: 'var(--heading)' }}>{qty}</span>
               <motion.button whileTap={{ scale: 0.88 }} onClick={() => setQty(q => q + 1)}
-                style={{ width: 40, height: 40, border: 'none', background: 'none', fontSize: 16, cursor: 'pointer', color: 'var(--navy)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>+</motion.button>
+                style={{ width: 40, height: 40, border: 'none', background: 'none', fontSize: 16, cursor: 'pointer', color: 'var(--heading)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>+</motion.button>
             </div>
           </div>
 
@@ -224,7 +224,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
               whileHover={{ borderColor: 'var(--gold)', color: 'var(--gold)', boxShadow: '0 4px 18px rgba(202,138,4,0.2)' }}
               whileTap={{ scale: 0.97 }}
               disabled={!product.in_stock}
-              style={{ flex: 1, minWidth: 160, background: 'transparent', color: 'var(--navy)', border: '2px solid var(--navy)', padding: '16px 24px', borderRadius: 50, fontSize: 14, fontWeight: 700, letterSpacing: '0.07em', cursor: product.in_stock ? 'pointer' : 'not-allowed', textTransform: 'uppercase', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: product.in_stock ? 1 : 0.5, transition: 'all 0.22s' }}>
+              style={{ flex: 1, minWidth: 160, background: 'transparent', color: 'var(--heading)', border: '2px solid var(--heading)', padding: '16px 24px', borderRadius: 50, fontSize: 14, fontWeight: 700, letterSpacing: '0.07em', cursor: product.in_stock ? 'pointer' : 'not-allowed', textTransform: 'uppercase', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: product.in_stock ? 1 : 0.5, transition: 'all 0.22s' }}>
               <i className="fa-solid fa-bolt" /> Buy Now
             </motion.button>
           </div>
@@ -238,7 +238,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
             ].map(t => (
               <div key={t.icon} style={{ textAlign: 'center', padding: '14px 8px', background: 'var(--white)', borderRadius: 14, boxShadow: '0 1px 8px rgba(9,52,89,0.06)' }}>
                 <i className={`fa-solid ${t.icon}`} style={{ color: 'var(--teal)', fontSize: 18, marginBottom: 6, display: 'block' }} />
-                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--navy)', marginBottom: 2 }}>{t.label}</p>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--heading)', marginBottom: 2 }}>{t.label}</p>
                 <p style={{ fontSize: 10, color: 'var(--text-light)' }}>{t.sub}</p>
               </div>
             ))}
@@ -256,7 +256,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 12 }}>
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.26em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 6 }}>More Like This</p>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 34px)', fontWeight: 900, color: 'var(--navy)' }}>Related Products</h2>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 34px)', fontWeight: 900, color: 'var(--heading)' }}>Related Products</h2>
             </div>
             <Link href="/#products" style={{ color: 'var(--teal)', fontWeight: 700, fontSize: 13, letterSpacing: '0.08em', borderBottom: '2px solid var(--teal)', paddingBottom: 2, textDecoration: 'none' }}>
               View All <i className="fa-solid fa-arrow-right" />

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
@@ -115,7 +115,7 @@ export default function LandingEditor({ initialConfig }: { initialConfig: SiteCo
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--navy)' }}>Landing Page Editor</h2>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--heading)' }}>Landing Page Editor</h2>
         <a href="/" target="_blank" rel="noopener noreferrer"
           style={{ color: 'var(--teal)', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
           <i className="fa-solid fa-arrow-up-right-from-square" /> Preview Site
@@ -142,7 +142,7 @@ export default function LandingEditor({ initialConfig }: { initialConfig: SiteCo
       {/* ── Announce Bar ──────────────────────────────── */}
       {section === 'announce' && (
         <div style={cardStyle}>
-          <p style={{ fontWeight: 700, color: 'var(--navy)', marginBottom: 16, fontSize: 15 }}>Announce Bar</p>
+          <p style={{ fontWeight: 700, color: 'var(--heading)', marginBottom: 16, fontSize: 15 }}>Announce Bar</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
             <div>
@@ -182,7 +182,7 @@ export default function LandingEditor({ initialConfig }: { initialConfig: SiteCo
           {config.hero_slides.map((slide, i) => (
             <div key={i} style={{ ...cardStyle, border: '1.5px solid var(--gray)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <p style={{ fontWeight: 700, color: 'var(--navy)', fontSize: 14 }}>Slide {i + 1}</p>
+                <p style={{ fontWeight: 700, color: 'var(--heading)', fontSize: 14 }}>Slide {i + 1}</p>
                 {config.hero_slides.length > 1 && (
                   <button onClick={() => removeSlide(i)}
                     style={{ background: '#fee2e2', border: 'none', color: '#991b1b', padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -230,7 +230,7 @@ export default function LandingEditor({ initialConfig }: { initialConfig: SiteCo
 
           <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 20 }}>
             <button onClick={addSlide}
-              style={{ background: 'var(--gray)', border: 'none', padding: '10px 20px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: 'pointer', color: 'var(--navy)', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7 }}>
+              style={{ background: 'var(--gray)', border: 'none', padding: '10px 20px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: 'pointer', color: 'var(--heading)', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7 }}>
               <i className="fa-solid fa-plus" /> Add Slide
             </button>
             <SaveBtn k="hero_slides" value={config.hero_slides} />
@@ -241,7 +241,7 @@ export default function LandingEditor({ initialConfig }: { initialConfig: SiteCo
       {/* ── Banner ────────────────────────────────────── */}
       {section === 'banner' && (
         <div style={cardStyle}>
-          <p style={{ fontWeight: 700, color: 'var(--navy)', marginBottom: 16, fontSize: 15 }}>About / Banner Section</p>
+          <p style={{ fontWeight: 700, color: 'var(--heading)', marginBottom: 16, fontSize: 15 }}>About / Banner Section</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
               <label style={labelStyle}>Section Title</label>
@@ -271,7 +271,7 @@ export default function LandingEditor({ initialConfig }: { initialConfig: SiteCo
       {/* ── Trust Bar ─────────────────────────────────── */}
       {section === 'trust' && (
         <div style={cardStyle}>
-          <p style={{ fontWeight: 700, color: 'var(--navy)', marginBottom: 16, fontSize: 15 }}>Trust Bar (4 items below hero)</p>
+          <p style={{ fontWeight: 700, color: 'var(--heading)', marginBottom: 16, fontSize: 15 }}>Trust Bar (4 items below hero)</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 8 }}>
             {config.trust_bar.map((item, i) => (
               <div key={i} style={{ background: 'var(--off-white)', borderRadius: 10, padding: 14 }}>
@@ -301,7 +301,7 @@ export default function LandingEditor({ initialConfig }: { initialConfig: SiteCo
       {/* ── Newsletter ────────────────────────────────── */}
       {section === 'newsletter' && (
         <div style={cardStyle}>
-          <p style={{ fontWeight: 700, color: 'var(--navy)', marginBottom: 16, fontSize: 15 }}>Newsletter Section</p>
+          <p style={{ fontWeight: 700, color: 'var(--heading)', marginBottom: 16, fontSize: 15 }}>Newsletter Section</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
               <label style={labelStyle}>Heading</label>

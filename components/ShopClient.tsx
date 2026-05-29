@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -44,6 +44,7 @@ export default function ShopClient({ products, initialCat }: { products: Product
   const catCounts = Object.fromEntries(
     CATS.map(c => [c.value, c.value === 'all' ? products.length : products.filter(p => p.category === c.value).length])
   )
+  const catProducts = cat === 'all' ? products : products.filter(p => p.category === cat)
 
   return (
     <div style={{ maxWidth: 1340, margin: '0 auto', padding: '40px 28px 80px' }}>
@@ -52,19 +53,19 @@ export default function ShopClient({ products, initialCat }: { products: Product
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, fontSize: 13, color: 'var(--text-light)' }}>
           <Link href="/" style={{ color: 'var(--teal)', fontWeight: 600 }}>Home</Link>
           <i className="fa-solid fa-chevron-right" style={{ fontSize: 9 }} />
-          <span style={{ color: 'var(--navy)', fontWeight: 600 }}>Shop</span>
+          <span style={{ color: 'var(--heading)', fontWeight: 600 }}>Shop</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.26em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 6 }}>
               {cat === 'all' ? 'Full Collection' : CATS.find(c => c.value === cat)?.label}
             </p>
-            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,3.5vw,42px)', fontWeight: 900, color: 'var(--navy)' }}>
+            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,3.5vw,42px)', fontWeight: 900, color: 'var(--heading)' }}>
               {cat === 'all' ? 'All Products' : CATS.find(c => c.value === cat)?.label}
             </h1>
           </div>
           <p style={{ fontSize: 14, color: 'var(--text-light)' }}>
-            <strong style={{ color: 'var(--navy)' }}>{filtered.length}</strong> item{filtered.length !== 1 ? 's' : ''}
+            <strong style={{ color: 'var(--heading)' }}>{filtered.length}</strong> item{filtered.length !== 1 ? 's' : ''}
           </p>
         </div>
       </div>
@@ -135,9 +136,9 @@ export default function ShopClient({ products, initialCat }: { products: Product
               <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-mid)', marginBottom: 14 }}>Availability</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {[
-                  { label: 'On Sale',     count: products.filter(p => p.is_sale).length },
-                  { label: 'New Arrivals',count: products.filter(p => p.is_new).length },
-                  { label: 'In Stock',    count: products.filter(p => p.in_stock).length },
+                  { label: 'On Sale',     count: catProducts.filter(p => p.is_sale).length },
+                  { label: 'New Arrivals',count: catProducts.filter(p => p.is_new).length },
+                  { label: 'In Stock',    count: catProducts.filter(p => p.in_stock).length },
                 ].map(r => (
                   <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-mid)' }}>
                     <span>{r.label}</span>
@@ -158,7 +159,7 @@ export default function ShopClient({ products, initialCat }: { products: Product
                 <div style={{ fontSize: 56, color: 'var(--gray)', marginBottom: 16 }}>
                   <i className="fa-solid fa-box-open" />
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 800, color: 'var(--navy)', marginBottom: 8 }}>
+                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 800, color: 'var(--heading)', marginBottom: 8 }}>
                   No products found
                 </h3>
                 <p style={{ fontSize: 14, color: 'var(--text-light)', marginBottom: 20 }}>

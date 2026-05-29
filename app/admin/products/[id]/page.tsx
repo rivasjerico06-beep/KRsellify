@@ -67,7 +67,7 @@ function ProductPreview({ product }: { product: Partial<Product> }) {
         <p style={{ fontWeight: 700, fontSize: 13.5, color: 'var(--text-dark)', marginBottom: 10, lineHeight: 1.35, minHeight: 36 }}>{product.name || 'Product Name'}</p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: 'var(--navy)' }}>${Number(product.price || 0).toFixed(2)}</span>
+            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: 'var(--heading)' }}>${Number(product.price || 0).toFixed(2)}</span>
             {product.old_price && <span style={{ fontSize: 12, color: 'var(--text-light)', textDecoration: 'line-through', marginLeft: 6 }}>${Number(product.old_price).toFixed(2)}</span>}
           </div>
           <span style={{ background: 'var(--navy)', color: 'white', padding: '6px 14px', borderRadius: 50, fontSize: 11, fontWeight: 700 }}>Buy Now</span>
@@ -226,14 +226,14 @@ function ProductEditor({ id }: { id: string }) {
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 28px', display: 'grid', gridTemplateColumns: '1fr 300px', gap: 32, alignItems: 'start' }}>
         {/* form */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 30, fontWeight: 900, color: 'var(--navy)', marginBottom: 24 }}>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 30, fontWeight: 900, color: 'var(--heading)', marginBottom: 24 }}>
             {isNew ? 'Add New Product' : 'Edit Product'}
           </h1>
 
           <form onSubmit={save}>
             {/* Basic Info */}
             <div style={{ background: 'var(--white)', borderRadius: 16, padding: 28, boxShadow: '0 2px 12px rgba(9,52,89,0.06)', marginBottom: 20 }}>
-              <p style={{ fontWeight: 700, color: 'var(--navy)', marginBottom: 18, fontSize: 14 }}>Basic Info</p>
+              <p style={{ fontWeight: 700, color: 'var(--heading)', marginBottom: 18, fontSize: 14 }}>Basic Info</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
                   <label style={labelCls}>Product Name *</label>
@@ -265,7 +265,7 @@ function ProductEditor({ id }: { id: string }) {
 
             {/* Pricing */}
             <div style={{ background: 'var(--white)', borderRadius: 16, padding: 28, boxShadow: '0 2px 12px rgba(9,52,89,0.06)', marginBottom: 20 }}>
-              <p style={{ fontWeight: 700, color: 'var(--navy)', marginBottom: 18, fontSize: 14 }}>Pricing</p>
+              <p style={{ fontWeight: 700, color: 'var(--heading)', marginBottom: 18, fontSize: 14 }}>Pricing</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
                   <label style={labelCls}>Price ($) *</label>
@@ -280,7 +280,7 @@ function ProductEditor({ id }: { id: string }) {
 
             {/* Image */}
             <div style={{ background: 'var(--white)', borderRadius: 16, padding: 28, boxShadow: '0 2px 12px rgba(9,52,89,0.06)', marginBottom: 20 }}>
-              <p style={{ fontWeight: 700, color: 'var(--navy)', marginBottom: 18, fontSize: 14 }}>Product Image</p>
+              <p style={{ fontWeight: 700, color: 'var(--heading)', marginBottom: 18, fontSize: 14 }}>Product Image</p>
 
               {/* Upload zone */}
               <div
@@ -302,7 +302,7 @@ function ProductEditor({ id }: { id: string }) {
                 ) : (
                   <>
                     <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: 28, color: 'var(--teal)', marginBottom: 10, display: 'block' }} />
-                    <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy)', marginBottom: 4 }}>Click to upload image</p>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--heading)', marginBottom: 4 }}>Click to upload image</p>
                     <p style={{ fontSize: 12, color: 'var(--text-light)' }}>JPG, PNG, WebP — max 5MB</p>
                   </>
                 )}
@@ -330,7 +330,7 @@ function ProductEditor({ id }: { id: string }) {
 
             {/* Status & Flags */}
             <div style={{ background: 'var(--white)', borderRadius: 16, padding: 28, boxShadow: '0 2px 12px rgba(9,52,89,0.06)', marginBottom: 20 }}>
-              <p style={{ fontWeight: 700, color: 'var(--navy)', marginBottom: 18, fontSize: 14 }}>Status & Flags</p>
+              <p style={{ fontWeight: 700, color: 'var(--heading)', marginBottom: 18, fontSize: 14 }}>Status & Flags</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <Toggle checked={inStock} onChange={setInStock} label="In Stock" />
                 <Toggle checked={isSale} onChange={setIsSale} label="On Sale (shows red SALE badge)" />
@@ -340,7 +340,7 @@ function ProductEditor({ id }: { id: string }) {
 
             {/* Ratings */}
             <div style={{ background: 'var(--white)', borderRadius: 16, padding: 28, boxShadow: '0 2px 12px rgba(9,52,89,0.06)', marginBottom: 24 }}>
-              <p style={{ fontWeight: 700, color: 'var(--navy)', marginBottom: 18, fontSize: 14 }}>Ratings</p>
+              <p style={{ fontWeight: 700, color: 'var(--heading)', marginBottom: 18, fontSize: 14 }}>Ratings</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
                   <label style={labelCls}>Rating (1–5)</label>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
@@ -36,7 +36,7 @@ function StatCard({ label, value, icon, color, delay = 0 }: { label: string; val
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <p style={{ fontSize: 11, color: 'var(--text-light)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</p>
-          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--navy)', marginTop: 4 }}>{value}</p>
+          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--heading)', marginTop: 4 }}>{value}</p>
         </div>
         <i className={`fa-solid ${icon}`} style={{ fontSize: 22, color, opacity: 0.6 }} />
       </div>
@@ -266,7 +266,7 @@ function AdminContent() {
               {/* ── OVERVIEW ─────────────────────────────── */}
               {tab === 'overview' && (
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--navy)', marginBottom: 24 }}>Dashboard Overview</h2>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--heading)', marginBottom: 24 }}>Dashboard Overview</h2>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 16, marginBottom: 24 }}>
                     <StatCard label="Total Products"      value={products.length}                 icon="fa-box"          color="var(--navy)"    delay={0} />
                     <StatCard label="Total Orders"        value={orders.length}                   icon="fa-receipt"      color="var(--teal)"    delay={0.05} />
@@ -301,7 +301,7 @@ function AdminContent() {
               {tab === 'products' && (
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                    <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--navy)' }}>Products ({products.length})</h2>
+                    <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)' }}>Products ({products.length})</h2>
                     <a href="/admin/products/new" style={{ background: 'var(--teal)', color: 'white', padding: '10px 20px', borderRadius: 50, fontSize: 13, fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 7 }}>
                       <i className="fa-solid fa-plus" /> Add Product
                     </a>
@@ -338,7 +338,7 @@ function AdminContent() {
                             </td>
                             <td style={{ padding: '12px 16px' }}>
                               <div style={{ display: 'flex', gap: 8 }}>
-                                <a href={`/admin/products/${p.id}`} style={{ background: 'var(--gray)', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', color: 'var(--navy)', textDecoration: 'none' }}>Edit</a>
+                                <a href={`/admin/products/${p.id}`} style={{ background: 'var(--gray)', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', color: 'var(--heading)', textDecoration: 'none' }}>Edit</a>
                                 <button onClick={() => deleteProduct(p.id)} style={{ background: '#fee2e2', border: 'none', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', color: 'var(--sale-red)', fontFamily: 'inherit' }}>Delete</button>
                               </div>
                             </td>
@@ -353,7 +353,7 @@ function AdminContent() {
               {/* ── ORDERS ───────────────────────────────── */}
               {tab === 'orders' && (
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--navy)', marginBottom: 20 }}>Orders ({orders.length})</h2>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)', marginBottom: 20 }}>Orders ({orders.length})</h2>
                   <div style={{ background: 'var(--white)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(9,52,89,0.06)', overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
                       <thead>
@@ -400,7 +400,7 @@ function AdminContent() {
               {/* ── CUSTOMERS ────────────────────────────── */}
               {tab === 'customers' && (
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--navy)', marginBottom: 20 }}>Customers ({customers.length})</h2>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)', marginBottom: 20 }}>Customers ({customers.length})</h2>
                   <div style={{ background: 'var(--white)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
@@ -438,7 +438,7 @@ function AdminContent() {
               {/* ── AGENTS ───────────────────────────────── */}
               {tab === 'agents' && (
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--navy)', marginBottom: 20 }}>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)', marginBottom: 20 }}>
                     Agent Applications ({agents.length})
                     {pendingAgents > 0 && <span style={{ fontSize: 14, fontWeight: 600, background: '#fef3c7', color: '#92400e', padding: '4px 12px', borderRadius: 20, marginLeft: 12 }}>{pendingAgents} pending</span>}
                   </h2>
@@ -489,7 +489,7 @@ function AdminContent() {
               {/* ── SALES ────────────────────────────────── */}
               {tab === 'sales' && analytics && (
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--navy)', marginBottom: 24 }}>Sales Analytics</h2>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--heading)', marginBottom: 24 }}>Sales Analytics</h2>
 
                   {/* KPI row */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 16, marginBottom: 28 }}>
@@ -507,7 +507,7 @@ function AdminContent() {
 
                   {/* Top products */}
                   <div style={{ background: 'var(--white)', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)', marginBottom: 24 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)', marginBottom: 14 }}>Top Products by Revenue</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--heading)', marginBottom: 14 }}>Top Products by Revenue</p>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ background: 'var(--gray)' }}>
@@ -534,7 +534,7 @@ function AdminContent() {
                   <div style={{ background: 'var(--white)', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                       <i className="fa-solid fa-crown" style={{ color: '#b45309', fontSize: 16 }} />
-                      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }}>VIP Customers (Spent $2,000+)</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--heading)' }}>VIP Customers (Spent $2,000+)</p>
                     </div>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
@@ -565,7 +565,7 @@ function AdminContent() {
               {/* ── AGENT PERFORMANCE ────────────────────── */}
               {tab === 'agent-performance' && analytics && (
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--navy)', marginBottom: 24 }}>Agent Performance</h2>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--heading)', marginBottom: 24 }}>Agent Performance</h2>
 
                   {/* summary cards */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 16, marginBottom: 28 }}>
@@ -612,7 +612,7 @@ function AdminContent() {
 
                   {/* All customers tier breakdown */}
                   <div style={{ background: 'var(--white)', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)', marginTop: 24 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)', marginBottom: 14 }}>All Customers — Loyalty Tiers</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--heading)', marginBottom: 14 }}>All Customers — Loyalty Tiers</p>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ background: 'var(--gray)' }}>
@@ -657,7 +657,7 @@ function AdminContent() {
               {tab === 'leads' && (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-                    <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--navy)' }}>Lead Management</h2>
+                    <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--heading)' }}>Lead Management</h2>
                     <motion.button onClick={() => setShowNewLead(true)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                       style={{ background: 'var(--teal)', color: 'white', border: 'none', padding: '11px 22px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8 }}>
                       <i className="fa-solid fa-plus" /> New Lead

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -77,7 +77,7 @@ function SearchResults() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28, fontSize: 13, color: 'var(--text-light)' }}>
           <Link href="/" style={{ color: 'var(--teal)', fontWeight: 600 }}>Home</Link>
           <i className="fa-solid fa-chevron-right" style={{ fontSize: 9 }} />
-          <span style={{ color: 'var(--navy)', fontWeight: 700 }}>Search</span>
+          <span style={{ color: 'var(--heading)', fontWeight: 700 }}>Search</span>
         </div>
 
         {/* Search bar */}
@@ -130,15 +130,15 @@ function SearchResults() {
               <p style={{ fontSize: 15, color: 'var(--text-mid)' }}>
                 {loading ? 'Searching…' : (
                   <>
-                    <strong style={{ color: 'var(--navy)' }}>{sorted.length}</strong> result{sorted.length !== 1 ? 's' : ''} for{' '}
-                    <strong style={{ color: 'var(--navy)' }}>"{query}"</strong>
+                    <strong style={{ color: 'var(--heading)' }}>{sorted.length}</strong> result{sorted.length !== 1 ? 's' : ''} for{' '}
+                    <strong style={{ color: 'var(--heading)' }}>"{query}"</strong>
                     {category !== 'all' && <> in <strong style={{ color: 'var(--teal)' }}>{CATEGORIES.find(c => c.value === category)?.label}</strong></>}
                   </>
                 )}
               </p>
             ) : (
               <p style={{ fontSize: 15, color: 'var(--text-mid)' }}>
-                Showing <strong style={{ color: 'var(--navy)' }}>{sorted.length}</strong> products
+                Showing <strong style={{ color: 'var(--heading)' }}>{sorted.length}</strong> products
                 {category !== 'all' && <> in <strong style={{ color: 'var(--teal)' }}>{CATEGORIES.find(c => c.value === category)?.label}</strong></>}
               </p>
             )}
@@ -167,7 +167,7 @@ function SearchResults() {
               <div style={{ fontSize: 64, color: 'var(--gray)', marginBottom: 20 }}>
                 <i className="fa-solid fa-magnifying-glass" />
               </div>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--navy)', marginBottom: 10 }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)', marginBottom: 10 }}>
                 No results found
               </h2>
               <p style={{ fontSize: 15, color: 'var(--text-mid)', maxWidth: 360, margin: '0 auto 28px', lineHeight: 1.7 }}>

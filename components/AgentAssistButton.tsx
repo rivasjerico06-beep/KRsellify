@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -158,7 +158,7 @@ export default function AgentAssistButton() {
                         <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, var(--navy), #0e4a80)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <i className="fa-solid fa-headset" style={{ color: 'white', fontSize: 16 }} />
                         </div>
-                        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 900, color: 'var(--navy)', margin: 0 }}>
+                        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 900, color: 'var(--heading)', margin: 0 }}>
                           Talk to an Agent
                         </h2>
                       </div>
@@ -287,7 +287,7 @@ export default function AgentAssistButton() {
                     <i className="fa-solid fa-check" style={{ color: 'white', fontSize: 30 }} />
                   </motion.div>
 
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 900, color: 'var(--navy)', marginBottom: 10 }}>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 900, color: 'var(--heading)', marginBottom: 10 }}>
                     Request Received!
                   </h2>
                   <p style={{ fontSize: 15, color: 'var(--text-mid)', lineHeight: 1.7, marginBottom: 28, maxWidth: 340, margin: '0 auto 28px' }}>
@@ -297,7 +297,7 @@ export default function AgentAssistButton() {
                   <div style={{ background: 'var(--off-white)', borderRadius: 14, padding: '16px 20px', marginBottom: 28, textAlign: 'left' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                       <i className="fa-solid fa-headset" style={{ color: 'var(--teal)', fontSize: 13 }} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>What happens next</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--heading)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>What happens next</span>
                     </div>
                     {[
                       'Your request is in our queue',

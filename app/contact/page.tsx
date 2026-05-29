@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -50,32 +50,32 @@ export default function ContactPage() {
             { icon: 'fa-clock',     title: 'Response time', value: 'Within 24 hours' },
             { icon: 'fa-headset',   title: 'Agent support', value: 'Click "Need an Agent?" on any page' },
           ].map(c => (
-            <div key={c.icon} style={{ background: 'white', borderRadius: 14, padding: '20px 24px', boxShadow: '0 2px 10px rgba(9,52,89,0.06)', display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div key={c.icon} style={{ background: 'var(--white)', borderRadius: 14, padding: '20px 24px', boxShadow: '0 2px 10px rgba(9,52,89,0.06)', display: 'flex', alignItems: 'center', gap: 16 }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(88,148,143,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <i className={`fa-solid ${c.icon}`} style={{ color: 'var(--teal)', fontSize: 18 }} />
               </div>
               <div>
                 <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-light)', marginBottom: 3 }}>{c.title}</p>
-                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy)' }}>{c.value}</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--heading)' }}>{c.value}</p>
               </div>
             </div>
           ))}
         </div>
 
         {/* Form */}
-        <div style={{ background: 'white', borderRadius: 16, padding: '32px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
+        <div style={{ background: 'var(--white)', borderRadius: 16, padding: '32px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
           <AnimatePresence mode="wait">
             {sent ? (
               <motion.div key="sent" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ textAlign: 'center', padding: '32px 0' }}>
                 <div style={{ width: 60, height: 60, borderRadius: '50%', background: '#d1fae5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                   <i className="fa-solid fa-check" style={{ color: '#059669', fontSize: 24 }} />
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 900, color: 'var(--navy)', marginBottom: 8 }}>Message Sent!</h3>
+                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 900, color: 'var(--heading)', marginBottom: 8 }}>Message Sent!</h3>
                 <p style={{ fontSize: 14, color: 'var(--text-mid)' }}>We'll get back to you within 24 hours.</p>
               </motion.div>
             ) : (
               <motion.form key="form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 800, color: 'var(--navy)', marginBottom: 4 }}>Send a Message</h3>
+                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 800, color: 'var(--heading)', marginBottom: 4 }}>Send a Message</h3>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   <div>

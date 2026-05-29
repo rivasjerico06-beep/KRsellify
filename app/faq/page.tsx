@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -50,10 +50,10 @@ const FAQS = [
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false)
   return (
-    <div style={{ background: 'white', borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 8px rgba(9,52,89,0.06)' }}>
+    <div style={{ background: 'var(--white)', borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 8px rgba(9,52,89,0.06)' }}>
       <button onClick={() => setOpen(o => !o)}
         style={{ width: '100%', background: 'none', border: 'none', padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-        <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--navy)', lineHeight: 1.4 }}>{q}</span>
+        <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--heading)', lineHeight: 1.4 }}>{q}</span>
         <motion.i animate={{ rotate: open ? 45 : 0 }} transition={{ duration: 0.2 }}
           className="fa-solid fa-plus" style={{ color: 'var(--teal)', fontSize: 14, flexShrink: 0 }} />
       </button>

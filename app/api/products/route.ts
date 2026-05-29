@@ -15,6 +15,6 @@ export async function GET(request: Request) {
 
   const { data, error } = await query.order('created_at', { ascending: false }).limit(limit)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 })
   return NextResponse.json(data ?? [])
 }

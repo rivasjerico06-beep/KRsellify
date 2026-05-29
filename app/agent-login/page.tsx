@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -43,9 +43,9 @@ export default function AgentLoginPage() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        style={{ background: 'white', borderRadius: 24, padding: '48px 40px', width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
+        style={{ background: 'var(--white)', borderRadius: 24, padding: '48px 40px', width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
       >
-        <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--navy)', display: 'block', textAlign: 'center', marginBottom: 6 }}>
+        <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)', display: 'block', textAlign: 'center', marginBottom: 6 }}>
           KR<span style={{ color: 'var(--teal)' }}>SELLIFY</span>
         </a>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>

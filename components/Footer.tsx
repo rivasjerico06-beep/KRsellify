@@ -10,7 +10,6 @@ const SHOP = [
   { label: 'Crypto Items',    href: '/shop?cat=crypto' },
   { label: 'Apparel',         href: '/shop?cat=apparel' },
   { label: 'Accessories',     href: '/shop?cat=accessories' },
-  { label: 'Sale Items',      href: '/shop?cat=all' },
 ]
 const SUPPORT = [
   { label: 'Track Your Order',    href: '/account' },
@@ -25,10 +24,10 @@ const COMPANY = [
   { label: 'Terms of Service',href: '/terms' },
 ]
 const SOCIALS = [
-  { icon: 'fa-facebook-f', href: '#' },
-  { icon: 'fa-x-twitter',  href: '#' },
-  { icon: 'fa-instagram',  href: '#' },
-  { icon: 'fa-youtube',    href: '#' },
+  { icon: 'fa-facebook-f', href: 'https://facebook.com/krsellify' },
+  { icon: 'fa-x-twitter',  href: 'https://x.com/krsellify' },
+  { icon: 'fa-instagram',  href: 'https://instagram.com/krsellify' },
+  { icon: 'fa-youtube',    href: 'https://youtube.com/@krsellify' },
 ]
 
 export default function Footer() {

@@ -1,17 +1,18 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useMotionValue, useTransform } from 'framer-motion'
+import { Product } from '@/lib/types'
 
 const CATS = [
-  { icon: 'fa-medal',        name: 'Medallions',   count: 12, cat: 'medallions',  brand: false },
-  { icon: 'fa-gem',          name: 'Collectibles', count: 8,  cat: 'collectibles', brand: false },
-  { icon: 'fa-bitcoin',      name: 'Crypto',       count: 6,  cat: 'crypto',       brand: true  },
-  { icon: 'fa-shirt',        name: 'Apparel',      count: 15, cat: 'apparel',      brand: false },
-  { icon: 'fa-clock',        name: 'Accessories',  count: 10, cat: 'accessories',  brand: false },
-  { icon: 'fa-bag-shopping', name: 'All Items',    count: 51, cat: 'all',          brand: false },
+  { icon: 'fa-medal',        name: 'Medallions',   cat: 'medallions',  brand: false },
+  { icon: 'fa-gem',          name: 'Collectibles', cat: 'collectibles', brand: false },
+  { icon: 'fa-bitcoin',      name: 'Crypto',       cat: 'crypto',       brand: true  },
+  { icon: 'fa-shirt',        name: 'Apparel',      cat: 'apparel',      brand: false },
+  { icon: 'fa-clock',        name: 'Accessories',  cat: 'accessories',  brand: false },
+  { icon: 'fa-bag-shopping', name: 'All Items',    cat: 'all',          brand: false },
 ]
 
 const CAT_GRADIENTS: Record<string, string> = {
@@ -23,8 +24,6 @@ const CAT_GRADIENTS: Record<string, string> = {
   all:          'linear-gradient(135deg, #0a1e33, #093459)',
 }
 
-// filterCat is kept for on-page use; CategoryCard uses router to /shop
-
 const containerVariants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.07 } },
@@ -34,7 +33,7 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
 }
 
-type Cat = typeof CATS[number]
+type Cat = typeof CATS[number] & { count: number }
 
 function CategoryCard({ c }: { c: Cat }) {
   const router = useRouter()
@@ -79,14 +78,19 @@ function CategoryCard({ c }: { c: Cat }) {
           </div>
         </motion.div>
 
-        <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>{c.name}</div>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--heading)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>{c.name}</div>
         <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 600 }}>{c.count} items</div>
       </motion.div>
     </motion.div>
   )
 }
 
-export default function Categories() {
+export default function Categories({ products }: { products: Product[] }) {
+  const catsWithCounts: Cat[] = CATS.map(c => ({
+    ...c,
+    count: c.cat === 'all' ? products.length : products.filter(p => p.category === c.cat).length,
+  }))
+
   return (
     <div style={{ maxWidth: 1340, margin: '0 auto', padding: '68px 28px' }}>
       <motion.div
@@ -98,7 +102,7 @@ export default function Categories() {
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 8 }}>Browse by Type</p>
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 900, color: 'var(--navy)' }}>Shop by Category</h2>
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 900, color: 'var(--heading)' }}>Shop by Category</h2>
           </div>
           <a href="/shop" style={{ color: 'var(--teal)', fontWeight: 700, fontSize: 13, letterSpacing: '0.08em', borderBottom: '2px solid var(--teal)', paddingBottom: 2, textDecoration: 'none' }}>
             View All <i className="fa-solid fa-arrow-right" />
@@ -112,7 +116,7 @@ export default function Categories() {
         whileInView="visible"
         viewport={{ once: true }}
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>
-        {CATS.map(c => <CategoryCard key={c.cat} c={c} />)}
+        {catsWithCounts.map(c => <CategoryCard key={c.cat} c={c} />)}
       </motion.div>
     </div>
   )

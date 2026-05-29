@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef } from 'react'
 import Image from 'next/image'
@@ -9,8 +9,8 @@ import { Product } from '@/lib/types'
 import Stars from '@/components/Stars'
 
 export default function ProductCard({ product, index }: { product: Product; index: number }) {
-  const { addToCart, heartToggle, isInCart, showToast, setCartOpen } = useCart()
-  const inCart = isInCart(product.id)
+  const { cart, addToCart, heartToggle, showToast, setCartOpen } = useCart()
+  const inWishlist = cart.some(i => i.id === product.id && i.via === 'heart')
   const [imgLoaded, setImgLoaded] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -41,7 +41,7 @@ export default function ProductCard({ product, index }: { product: Product; inde
 
   function handleHeart() {
     heartToggle(product)
-    if (!inCart) { showToast(`Added to wishlist`); setCartOpen(true) }
+    if (!inWishlist) { showToast(`Added to wishlist`); setCartOpen(true) }
     else showToast('Removed from wishlist')
   }
 
@@ -115,11 +115,12 @@ export default function ProductCard({ product, index }: { product: Product; inde
 
             {/* Heart */}
             <motion.button onClick={e => { e.preventDefault(); handleHeart() }} whileTap={{ scale: 1.45 }}
-              animate={inCart
+              aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+              animate={inWishlist
                 ? { background: 'var(--sale-red)', color: 'white', boxShadow: '0 4px 14px rgba(224,84,84,0.5)' }
                 : { background: 'rgba(255,255,255,0.92)', color: 'var(--text-light)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
               style={{ position: 'absolute', top: 12, right: 12, border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
-              <i className={`fa-${inCart ? 'solid' : 'regular'} fa-heart`} />
+              <i className={`fa-${inWishlist ? 'solid' : 'regular'} fa-heart`} />
             </motion.button>
           </div>
         </Link>
@@ -139,7 +140,7 @@ export default function ProductCard({ product, index }: { product: Product; inde
         {/* Price + CTA row */}
         <div style={{ padding: '0 18px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <div>
-            <span style={{ fontFamily: 'var(--font-cormorant)', fontSize: 24, fontWeight: 700, color: 'var(--navy)' }}>
+            <span style={{ fontFamily: 'var(--font-cormorant)', fontSize: 24, fontWeight: 700, color: 'var(--heading)' }}>
               ${product.price.toFixed(2)}
             </span>
             {product.old_price && (

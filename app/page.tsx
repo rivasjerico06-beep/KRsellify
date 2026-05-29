@@ -25,7 +25,7 @@ export default async function Home() {
       <main>
         <Hero slides={config.hero_slides} />
         <TrustBar items={config.trust_bar} />
-        <section id="categories"><Categories /></section>
+        <section id="categories"><Categories products={products} /></section>
         <section id="products" style={{ background: 'var(--off-white)', padding: '20px 0 60px' }}>
           <ProductGrid initialProducts={products} />
         </section>

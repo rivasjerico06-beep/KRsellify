@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
@@ -50,7 +50,7 @@ function ReviewCard({ r }: { r: typeof REVIEWS[0] }) {
           <Image src={r.avatar} alt={r.name} fill style={{ objectFit: 'cover' }} />
         </div>
         <div>
-          <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--navy)' }}>{r.name}</p>
+          <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--heading)' }}>{r.name}</p>
           <p style={{ fontSize: 11, color: 'var(--teal)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
             <i className="fa-solid fa-circle-check" /> {r.role}
           </p>
@@ -75,14 +75,14 @@ export default function Testimonials() {
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 8 }}>Customer Love</p>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px,3.5vw,44px)', fontWeight: 900, color: 'var(--navy)' }}>
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px,3.5vw,44px)', fontWeight: 900, color: 'var(--heading)' }}>
               What Our Customers Say
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--white)', padding: '8px 16px', borderRadius: 50, boxShadow: '0 2px 10px rgba(9,52,89,0.07)', border: '1px solid var(--gray)' }}>
               <div style={{ display: 'flex', gap: 2 }}>
                 {[1,2,3,4,5].map(i => <i key={i} className="fa-solid fa-star" style={{ color: 'var(--gold)', fontSize: 10 }} />)}
               </div>
-              <strong style={{ fontSize: 13, color: 'var(--navy)' }}>4.9</strong>
+              <strong style={{ fontSize: 13, color: 'var(--heading)' }}>4.9</strong>
               <span style={{ fontSize: 12, color: 'var(--text-light)' }}>· 2,400+ reviews</span>
             </div>
           </div>

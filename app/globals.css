@@ -1,6 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
 
 :root {
+  /* Heading text — adapts in dark mode so navy-colored headings remain readable */
+  --heading:     #093459;
+
   /* Brand */
   --teal:        #58948f;
   --teal-light:  #7ab5b0;
@@ -38,11 +41,15 @@
   padding: 0;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  background: var(--off-white);
+  transition: background-color 0.3s;
+}
 
 body {
   font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
-  background: var(--off-white);
+  background: transparent;
   color: var(--text-dark);
   overflow-x: hidden;
 }
@@ -99,6 +106,101 @@ img { max-width: 100%; display: block; }
   to   { opacity: 1; transform: translateY(0); }
 }
 .fade-up { animation: fadeUp 0.6s var(--ease-out) both; }
+
+/* ── Dark mode ──────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --white:       #1a2e42;   /* card bg — clearly distinct from page bg */
+  --off-white:   #0b1622;   /* deep page bg */
+  --gray:        #273d52;   /* borders, inputs */
+  --text-dark:   #ecf5fc;   /* bright primary text */
+  --text-mid:    #94c0d8;   /* visible secondary text */
+  --text-light:  #5e8faa;   /* muted but legible */
+  --gold-pale:   #2a1f05;
+  --teal:        #6ab5b0;   /* brighter on dark backgrounds */
+  --teal-light:  #8dd0cb;
+  --heading:     #daeefa;   /* light blue-white for headings on dark cards */
+}
+[data-theme="dark"] body { color: var(--text-dark); }
+
+/* Smooth theme switch — active only during the 500ms toggle window */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color 0.45s ease,
+    color            0.45s ease,
+    border-color     0.45s ease,
+    box-shadow       0.45s ease,
+    fill             0.45s ease !important;
+}
+
+/* ── Ambient background blob animations ─────────────────────── */
+@keyframes blobDrift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(40px, -30px) scale(1.08); }
+  66%       { transform: translate(-20px, 20px) scale(0.94); }
+}
+@keyframes blobDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%       { transform: translate(-35px, 28px) scale(1.06); }
+  75%       { transform: translate(22px, -18px) scale(0.96); }
+}
+@keyframes blobDrift3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(28px, 38px) scale(1.1); }
+}
+
+.bg-blob-1, .bg-blob-2, .bg-blob-3 {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+}
+.bg-blob-1 {
+  width: min(700px, 65vw);
+  height: min(700px, 65vw);
+  top: -15%;
+  right: -10%;
+  background: radial-gradient(circle, rgba(88,148,143,0.07) 0%, transparent 70%);
+  filter: blur(70px);
+  animation: blobDrift1 22s ease-in-out infinite;
+}
+.bg-blob-2 {
+  width: min(600px, 60vw);
+  height: min(600px, 60vw);
+  bottom: -12%;
+  left: -8%;
+  background: radial-gradient(circle, rgba(202,138,4,0.06) 0%, transparent 70%);
+  filter: blur(80px);
+  animation: blobDrift2 28s ease-in-out infinite;
+}
+.bg-blob-3 {
+  width: min(500px, 50vw);
+  height: min(500px, 50vw);
+  top: 38%;
+  left: 38%;
+  background: radial-gradient(circle, rgba(9,52,89,0.05) 0%, transparent 70%);
+  filter: blur(90px);
+  animation: blobDrift3 35s ease-in-out infinite;
+}
+
+/* Dark mode: blobs more vivid and atmospheric */
+[data-theme="dark"] .bg-blob-1 {
+  background: radial-gradient(circle, rgba(106,181,176,0.16) 0%, transparent 70%);
+}
+[data-theme="dark"] .bg-blob-2 {
+  background: radial-gradient(circle, rgba(202,138,4,0.11) 0%, transparent 70%);
+}
+[data-theme="dark"] .bg-blob-3 {
+  background: radial-gradient(circle, rgba(20,50,90,0.28) 0%, transparent 70%);
+}
+
+/* Dark mode: stronger shadows so cards pop against deep bg */
+[data-theme="dark"] header {
+  box-shadow: 0 2px 24px rgba(0,0,0,0.45) !important;
+  border-bottom-color: var(--gray) !important;
+}
 
 /* ── Reduced motion ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

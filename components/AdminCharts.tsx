@@ -18,7 +18,7 @@ export default function AdminCharts({ section, data }: Props) {
   if (section === 'overview') {
     const last7 = data.dailyRevenue.slice(-7)
     return (
-      <div style={{ background: 'white', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
+      <div style={{ background: 'var(--white)', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
         <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Revenue — Last 7 Days</p>
         <ResponsiveContainer width="100%" height={120}>
           <LineChart data={last7} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
@@ -38,7 +38,7 @@ export default function AdminCharts({ section, data }: Props) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
 
         {/* Revenue trend — 30 days */}
-        <div style={{ gridColumn: '1 / -1', background: 'white', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
+        <div style={{ gridColumn: '1 / -1', background: 'var(--white)', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
           <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Revenue Trend — Last 30 Days</p>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={data.dailyRevenue} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
@@ -52,7 +52,7 @@ export default function AdminCharts({ section, data }: Props) {
         </div>
 
         {/* Category revenue */}
-        <div style={{ background: 'white', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
+        <div style={{ background: 'var(--white)', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
           <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Revenue by Category</p>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={data.categoryRevenue} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
@@ -68,7 +68,7 @@ export default function AdminCharts({ section, data }: Props) {
         </div>
 
         {/* Order status pie */}
-        <div style={{ background: 'white', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
+        <div style={{ background: 'var(--white)', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
           <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Orders by Status</p>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
@@ -88,7 +88,7 @@ export default function AdminCharts({ section, data }: Props) {
   // agents section
   if (section === 'agents') {
     return (
-      <div style={{ background: 'white', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
+      <div style={{ background: 'var(--white)', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
         <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Agent Revenue Comparison</p>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={data.agentStats} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>

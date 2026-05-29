@@ -73,8 +73,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const heartToggle = useCallback((product: Product) => {
     setCart(prev => {
-      const existing = prev.find(i => i.id === product.id)
-      if (existing) return prev.filter(i => i.id !== product.id)
+      const wishlistItem = prev.find(i => i.id === product.id && i.via === 'heart')
+      if (wishlistItem) return prev.filter(i => !(i.id === product.id && i.via === 'heart'))
       return [...prev, { ...product, qty: 1, via: 'heart' }]
     })
   }, [setCart])
