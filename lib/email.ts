@@ -1,7 +1,11 @@
 import { Resend } from 'resend'
 import { CartItem } from './types'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+let _resend: Resend | null = null
+function getResend() {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY)
+  return _resend
+}
 const FROM = process.env.EMAIL_FROM ?? 'KRSELLIFY <orders@krsellify.com>'
 
 export async function sendOrderConfirmation({
@@ -100,7 +104,7 @@ export async function sendOrderConfirmation({
 </body>
 </html>`
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to,
     replyTo: 'rivasjerico06@gmail.com',
@@ -109,7 +113,7 @@ export async function sendOrderConfirmation({
   })
 
   // Notify store owner of every new order
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: 'rivasjerico06@gmail.com',
     subject: `🛒 New Order — $${total.toFixed(2)} from ${name}`,
