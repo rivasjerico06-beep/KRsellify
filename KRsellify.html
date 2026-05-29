@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KRSELLIFY</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<style>
+  :root {
+    --teal: #58948f;
+    --teal-light: #7ab5b0;
+    --teal-dark: #3d6f6a;
+    --navy: #093459;
+    --navy-dark: #061f37;
+    --navy-light: #0e4a80;
+    --white: #ffffff;
+    --off-white: #f4f8f8;
+    --gray: #e8eff0;
+    --text-dark: #0d1f2d;
+    --text-mid: #4a6170;
+    --text-light: #8ba0aa;
+    --sale-red: #e05454;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--text-dark); overflow-x: hidden; }
+  .announce-bar { background: var(--navy); color: var(--white); text-align: center; font-size: 13px; font-weight: 600; padding: 9px 20px; letter-spacing: 0.04em; }
+  .announce-bar span { color: var(--teal-light); }
+  header { background: var(--white); border-bottom: 2px solid var(--gray); position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 20px rgba(9,52,89,0.08); }
+  .header-inner { max-width: 1340px; margin: 0 auto; padding: 0 28px; display: flex; align-items: center; gap: 24px; height: 72px; }
+  .logo { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 900; color: var(--navy); text-decoration: none; letter-spacing: -0.02em; flex-shrink: 0; }
+  .logo span { color: var(--teal); }
+  .search-bar { flex: 1; display: flex; max-width: 560px; border: 2px solid var(--gray); border-radius: 50px; overflow: hidden; transition: border-color 0.2s; }
+  .search-bar:focus-within { border-color: var(--teal); }
+  .search-bar select { border: none; outline: none; background: var(--gray); padding: 0 14px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text-mid); cursor: pointer; }
+  .search-bar input { border: none; outline: none; flex: 1; padding: 0 16px; font-size: 14px; font-family: 'DM Sans', sans-serif; background: var(--white); }
+  .search-btn { background: var(--teal); border: none; padding: 0 20px; cursor: pointer; color: white; font-size: 16px; transition: background 0.2s; }
+  .search-btn:hover { background: var(--teal-dark); }
+  .header-actions { display: flex; align-items: center; gap: 16px; margin-left: auto; flex-shrink: 0; }
+  .header-icon { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-mid); position: relative; padding: 6px; border-radius: 8px; transition: color 0.2s, background 0.2s; }
+  .header-icon:hover { color: var(--teal); background: var(--gray); }
+  .cart-badge { background: var(--teal); color: white; font-size: 10px; font-weight: 700; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; position: absolute; top: 0; right: 0; }
+  .cart-total { font-weight: 700; font-size: 14px; color: var(--navy); }
+  nav { background: var(--navy); }
+  .nav-inner { max-width: 1340px; margin: 0 auto; padding: 0 28px; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .nav-inner a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 13px 16px; white-space: nowrap; transition: color 0.2s, background 0.2s; border-bottom: 3px solid transparent; }
+  .nav-inner a:hover, .nav-inner a.active { color: var(--white); border-bottom-color: var(--teal); background: rgba(88,148,143,0.12); }
+  .hero { position: relative; height: 500px; overflow: hidden; background: var(--navy-dark); }
+  .hero-slides { display: flex; height: 100%; transition: transform 0.7s cubic-bezier(0.4,0,0.2,1); }
+  .hero-slide { min-width: 100%; height: 100%; position: relative; display: flex; align-items: center; }
+  .hero-slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.45; }
+  .hero-content { position: relative; z-index: 2; max-width: 1340px; margin: 0 auto; padding: 0 80px; width: 100%; }
+  .hero-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: var(--teal-light); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(38px, 5.5vw, 68px); font-weight: 900; color: var(--white); line-height: 1.08; max-width: 700px; margin-bottom: 20px; }
+  .hero-sub { font-size: 16px; color: rgba(255,255,255,0.7); max-width: 480px; margin-bottom: 36px; line-height: 1.6; }
+  .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn-primary { background: var(--teal); color: white; border: none; padding: 14px 36px; border-radius: 50px; font-size: 14px; font-weight: 700; letter-spacing: 0.06em; cursor: pointer; text-decoration: none; display: inline-block; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; box-shadow: 0 4px 20px rgba(88,148,143,0.45); }
+  .btn-primary:hover { background: var(--teal-dark); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(88,148,143,0.5); }
+  .btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.5); padding: 13px 32px; border-radius: 50px; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; transition: border-color 0.2s, background 0.2s; }
+  .btn-outline:hover { border-color: var(--teal-light); background: rgba(88,148,143,0.15); }
+  .hero-dots { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
+  .hero-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.35); border: none; cursor: pointer; transition: all 0.3s; padding: 0; }
+  .hero-dot.active { background: var(--teal-light); width: 28px; border-radius: 4px; }
+  .hero-arrows { position: absolute; top: 50%; transform: translateY(-50%); width: 100%; display: flex; justify-content: space-between; padding: 0 16px; z-index: 10; pointer-events: none; }
+  .hero-arrow { background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); color: white; width: 46px; height: 46px; border-radius: 50%; font-size: 18px; cursor: pointer; transition: background 0.2s; pointer-events: all; display: flex; align-items: center; justify-content: center; }
+  .hero-arrow:hover { background: var(--teal); }
+  .trust-bar { background: var(--white); border-bottom: 1px solid var(--gray); }
+  .trust-inner { max-width: 1340px; margin: 0 auto; padding: 20px 28px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .trust-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-right: 1px solid var(--gray); }
+  .trust-item:last-child { border-right: none; }
+  .trust-icon { font-size: 26px; color: var(--teal); width: 32px; text-align: center; }
+  .trust-text h4 { font-size: 13px; font-weight: 700; color: var(--navy); }
+  .trust-text p { font-size: 12px; color: var(--text-light); }
+  .section { max-width: 1340px; margin: 0 auto; padding: 60px 28px; }
+  .section-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 36px; gap: 20px; flex-wrap: wrap; }
+  .section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: var(--teal); margin-bottom: 8px; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: clamp(28px, 3.5vw, 42px); font-weight: 900; color: var(--navy); line-height: 1.1; }
+  .view-all { color: var(--teal); font-weight: 700; font-size: 13px; text-decoration: none; letter-spacing: 0.08em; border-bottom: 2px solid var(--teal); padding-bottom: 2px; transition: color 0.2s, border-color 0.2s; white-space: nowrap; }
+  .view-all:hover { color: var(--navy); border-color: var(--navy); }
+  .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 24px; }
+  .product-card { background: var(--white); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 16px rgba(9,52,89,0.06); transition: transform 0.25s, box-shadow 0.25s; cursor: pointer; position: relative; }
+  .product-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(9,52,89,0.14); }
+  .product-img-wrap { position: relative; height: 220px; overflow: hidden; background: var(--gray); }
+  .product-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+  .product-card:hover .product-img-wrap img { transform: scale(1.07); }
+  .sale-badge { position: absolute; top: 12px; left: 12px; background: var(--sale-red); color: white; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .new-badge { position: absolute; top: 12px; left: 12px; background: var(--navy); color: white; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  /* ── HEART BUTTON — core change ── */
+  .wishlist-btn {
+    position: absolute; top: 12px; right: 12px;
+    background: white; border: none;
+    width: 36px; height: 36px; border-radius: 50%;
+    font-size: 15px; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: transform 0.2s, color 0.2s, background 0.2s;
+    color: var(--text-light);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .wishlist-btn:hover { transform: scale(1.15); color: var(--sale-red); }
+  .wishlist-btn.in-cart {
+    background: var(--sale-red);
+    color: white;
+    box-shadow: 0 2px 12px rgba(224,84,84,0.45);
+  }
+  .wishlist-btn.in-cart:hover { background: #c43e3e; transform: scale(1.15); color: white; }
+
+  /* heart pop animation */
+  @keyframes heartPop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.55); }
+    70%  { transform: scale(0.9); }
+    100% { transform: scale(1); }
+  }
+  .wishlist-btn.pop { animation: heartPop 0.35s ease forwards; }
+
+  .product-body { padding: 18px; }
+  .product-cat { font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; }
+  .product-name { font-weight: 700; font-size: 15px; color: var(--text-dark); margin-bottom: 10px; line-height: 1.35; }
+  .product-stars { font-size: 13px; color: #f5a623; margin-bottom: 10px; letter-spacing: 1px; }
+  .product-stars span { color: var(--text-light); font-size: 12px; }
+  .product-price-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .price-current { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--navy); }
+  .price-old { font-size: 14px; color: var(--text-light); text-decoration: line-through; }
+  .buy-btn { background: var(--navy); color: white; border: none; padding: 8px 18px; border-radius: 50px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; cursor: pointer; transition: background 0.2s, transform 0.15s; text-transform: uppercase; white-space: nowrap; }
+  .buy-btn:hover { background: var(--teal); transform: scale(1.04); }
+  .banner-strip { background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 50%, var(--teal-dark) 100%); padding: 64px 28px; position: relative; overflow: hidden; }
+  .banner-inner { max-width: 1340px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; position: relative; }
+  .banner-text h2 { font-family: 'Playfair Display', serif; font-size: clamp(32px, 4vw, 52px); color: white; font-weight: 900; line-height: 1.1; margin-bottom: 16px; }
+  .banner-text p { color: rgba(255,255,255,0.7); font-size: 15px; line-height: 1.6; margin-bottom: 28px; }
+  .banner-stats { display: flex; gap: 32px; }
+  .banner-stat h3 { font-family: 'Playfair Display', serif; font-size: 36px; color: var(--teal-light); font-weight: 900; }
+  .banner-stat p { font-size: 12px; color: rgba(255,255,255,0.6); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+  .banner-img-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .banner-img-grid img { width: 100%; height: 140px; object-fit: cover; border-radius: 12px; opacity: 0.85; }
+  .banner-img-grid img:first-child { grid-column: span 2; height: 160px; }
+  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+  .cat-card { background: var(--white); border-radius: 16px; padding: 28px 16px; text-align: center; cursor: pointer; transition: all 0.25s; border: 2px solid transparent; box-shadow: 0 2px 12px rgba(9,52,89,0.05); text-decoration: none; display: block; }
+  .cat-card:hover { border-color: var(--teal); transform: translateY(-4px); box-shadow: 0 8px 28px rgba(88,148,143,0.2); }
+  .cat-icon { font-size: 32px; margin-bottom: 10px; color: var(--teal); }
+  .cat-name { font-size: 13px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.06em; }
+  .cat-count { font-size: 11px; color: var(--teal); font-weight: 600; margin-top: 3px; }
+  .testimonials-bg { background: var(--white); padding: 60px 0; }
+  .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+  .testi-card { background: var(--off-white); border-radius: 16px; padding: 28px; border-left: 4px solid var(--teal); position: relative; }
+  .testi-quote { font-size: 48px; line-height: 1; color: var(--teal); opacity: 0.3; font-family: Georgia, serif; position: absolute; top: 12px; right: 20px; }
+  .testi-text { font-size: 14px; line-height: 1.7; color: var(--text-mid); margin-bottom: 20px; }
+  .testi-author { display: flex; align-items: center; gap: 12px; }
+  .testi-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--teal); }
+  .testi-name { font-weight: 700; font-size: 14px; color: var(--navy); }
+  .testi-verified { font-size: 11px; color: var(--teal); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+  .newsletter { background: var(--teal); padding: 56px 28px; }
+  .newsletter-inner { max-width: 600px; margin: 0 auto; text-align: center; }
+  .newsletter h2 { font-family: 'Playfair Display', serif; font-size: 36px; color: white; font-weight: 900; margin-bottom: 10px; }
+  .newsletter p { color: rgba(255,255,255,0.85); font-size: 15px; margin-bottom: 28px; }
+  .newsletter-form { display: flex; gap: 0; border-radius: 50px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+  .newsletter-form input { flex: 1; border: none; padding: 15px 24px; font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; }
+  .newsletter-form button { background: var(--navy); color: white; border: none; padding: 15px 28px; font-weight: 700; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+  .newsletter-form button:hover { background: var(--navy-dark); }
+  footer { background: var(--navy-dark); color: rgba(255,255,255,0.75); padding: 64px 28px 0; }
+  .footer-inner { max-width: 1340px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; padding-bottom: 48px; }
+  .footer-brand .logo { color: white; font-size: 24px; display: block; margin-bottom: 16px; }
+  .footer-brand .logo span { color: var(--teal-light); }
+  .footer-brand p { font-size: 14px; line-height: 1.7; max-width: 280px; margin-bottom: 24px; }
+  .footer-social { display: flex; gap: 10px; }
+  .social-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); width: 38px; height: 38px; border-radius: 10px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s; text-decoration: none; }
+  .social-btn:hover { background: var(--teal); color: white; }
+  .footer-col h4 { font-size: 12px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: white; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .footer-col a { display: block; color: rgba(255,255,255,0.65); font-size: 14px; text-decoration: none; margin-bottom: 10px; transition: color 0.2s, padding-left 0.2s; }
+  .footer-col a:hover { color: var(--teal-light); padding-left: 6px; }
+  .footer-bottom { border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 0; max-width: 1340px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .footer-bottom p { font-size: 13px; display: flex; align-items: center; gap: 6px; }
+  .footer-payments { display: flex; gap: 8px; align-items: center; }
+  .pay-badge { background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 0.05em; }
+  .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+  .cart-overlay.open { opacity: 1; pointer-events: all; }
+  .cart-panel { position: fixed; top: 0; right: -420px; width: 420px; height: 100%; background: white; z-index: 2001; box-shadow: -4px 0 40px rgba(0,0,0,0.15); transition: right 0.35s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; }
+  .cart-panel.open { right: 0; }
+  .cart-header { display: flex; align-items: center; justify-content: space-between; padding: 24px; border-bottom: 1px solid var(--gray); background: var(--navy); color: white; }
+  .cart-header h3 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .cart-close { background: none; border: none; color: white; font-size: 18px; cursor: pointer; opacity: 0.7; }
+  .cart-close:hover { opacity: 1; }
+  .cart-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .cart-empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+  .cart-empty .empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.4; color: var(--teal); }
+  .cart-item { display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--gray); }
+  .cart-item img { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; }
+  .cart-item-info { flex: 1; }
+  .cart-item-name { font-weight: 700; font-size: 14px; color: var(--text-dark); margin-bottom: 4px; }
+  .cart-item-price { font-weight: 700; color: var(--teal); font-size: 15px; }
+
+  /* source badge in cart item */
+  .cart-item-source { font-size: 11px; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; }
+  .cart-item-source.from-heart { background: #ffe0e0; color: #c43e3e; }
+  .cart-item-source.from-btn { background: #e0eef8; color: var(--navy); }
+
+  .cart-item-qty { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .qty-btn { background: var(--gray); border: none; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+  .qty-btn:hover { background: var(--teal); color: white; }
+  .cart-item-remove { background: none; border: none; color: var(--text-light); cursor: pointer; font-size: 12px; align-self: flex-start; margin-top: 4px; transition: color 0.2s; display: flex; align-items: center; gap: 4px; }
+  .cart-item-remove:hover { color: var(--sale-red); }
+  .cart-footer { padding: 20px; border-top: 1px solid var(--gray); }
+  .cart-total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .cart-total-row .label { font-weight: 600; color: var(--text-mid); }
+  .cart-total-row .amount { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--navy); }
+  .checkout-btn { width: 100%; background: var(--navy); color: white; border: none; padding: 16px; border-radius: 50px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .checkout-btn:hover { background: var(--teal); }
+  #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--navy); color: white; padding: 14px 28px; border-radius: 50px; font-size: 14px; font-weight: 600; z-index: 9999; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s; opacity: 0; pointer-events: none; white-space: nowrap; box-shadow: 0 8px 32px rgba(0,0,0,0.2); border-left: 4px solid var(--teal); display: flex; align-items: center; gap: 8px; }
+  #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  @media (max-width: 900px) { .trust-inner { grid-template-columns: 1fr 1fr; } .trust-item:nth-child(2) { border-right: none; } .banner-inner { grid-template-columns: 1fr; } .banner-img-grid { display: none; } .footer-inner { grid-template-columns: 1fr 1fr; } .cart-panel { width: 100%; right: -100%; } }
+  @media (max-width: 600px) { .header-inner { gap: 12px; } .search-bar select { display: none; } .hero-content { padding: 0 32px; } .trust-inner { grid-template-columns: 1fr; gap: 0; } .trust-item { border-right: none; border-bottom: 1px solid var(--gray); } .trust-item:last-child { border-bottom: none; } .footer-inner { grid-template-columns: 1fr; gap: 32px; } .footer-bottom { flex-direction: column; text-align: center; } }
+</style>
+</head>
+<body>
+
+<div class="announce-bar">
+  <i class="fa-solid fa-star"></i> Free shipping on orders over $75 · <span>Use code KRSELLIFY10 for 10% off</span> · Limited time only
+</div>
+
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo">KR<span>SELLIFY</span></a>
+    <div class="search-bar">
+      <select>
+        <option>All</option>
+        <option>Medallions</option>
+        <option>Collectibles</option>
+        <option>Apparel</option>
+        <option>Accessories</option>
+      </select>
+      <input type="text" placeholder="Search for products…" id="searchInput" />
+      <button class="search-btn" onclick="handleSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
+    <div class="header-actions">
+      <button class="header-icon" title="Account"><i class="fa-regular fa-user"></i></button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="header-icon" title="Cart" onclick="toggleCart()" style="position:relative;">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span class="cart-badge" id="cartCount">0</span>
+        </button>
+        <span class="cart-total" id="cartTotal">$0.00</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="active" onclick="filterCategory('all',this)">Best Sellers</a>
+    <a href="#" onclick="filterCategory('medallions',this)">Medallions</a>
+    <a href="#" onclick="filterCategory('collectibles',this)">Collectibles</a>
+    <a href="#" onclick="filterCategory('apparel',this)">Apparel</a>
+    <a href="#" onclick="filterCategory('accessories',this)">Accessories</a>
+    <a href="#" onclick="filterCategory('crypto',this)">Crypto</a>
+  </div>
+</nav>
+
+<div class="hero" id="hero">
+  <div class="hero-slides" id="heroSlides">
+    <div class="hero-slide">
+      <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1400&q=80" alt="Hero 1" />
+      <div class="hero-content">
+        <p class="hero-eyebrow"><i class="fa-solid fa-star"></i> New Arrivals · 2025 Collection</p>
+        <h1 class="hero-title">Premium Collectibles &amp; Rare Finds</h1>
+        <p class="hero-sub">Handpicked limited-edition pieces. Authentic, verified, and ready to own.</p>
+        <div class="hero-btns">
+          <a href="#products" class="btn-primary">Shop Now</a>
+          <a href="#categories" class="btn-outline">Explore Categories</a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-slide">
+      <img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1400&q=80" alt="Hero 2" />
+      <div class="hero-content">
+        <p class="hero-eyebrow"><i class="fa-solid fa-fire"></i> Founder's Seal Collection</p>
+        <h1 class="hero-title">Gold &amp; Crypto Commemorative Bars</h1>
+        <p class="hero-sub">Own a piece of history. Limited mint. Ships worldwide.</p>
+        <div class="hero-btns">
+          <a href="#products" class="btn-primary">View Collection</a>
+          <a href="#about" class="btn-outline">Learn More</a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-slide">
+      <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=80" alt="Hero 3" />
+      <div class="hero-content">
+        <p class="hero-eyebrow"><i class="fa-solid fa-gem"></i> Exclusive Deal · Save up to 80%</p>
+        <h1 class="hero-title">D.O.G.E Coin &amp; Bitcoin Diamond</h1>
+        <p class="hero-sub">The most sought-after crypto collectibles. Get yours before they're gone.</p>
+        <div class="hero-btns">
+          <a href="#products" class="btn-primary">Grab the Deal</a>
+          <a href="#" class="btn-outline">See All Deals</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-arrows">
+    <button class="hero-arrow" onclick="slideHero(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="hero-arrow" onclick="slideHero(1)"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+  <div class="hero-dots" id="heroDots">
+    <button class="hero-dot active" onclick="goToSlide(0)"></button>
+    <button class="hero-dot" onclick="goToSlide(1)"></button>
+    <button class="hero-dot" onclick="goToSlide(2)"></button>
+  </div>
+</div>
+
+<div class="trust-bar">
+  <div class="trust-inner">
+    <div class="trust-item"><span class="trust-icon"><i class="fa-solid fa-truck-fast"></i></span><div class="trust-text"><h4>Free Shipping</h4><p>On orders over $75</p></div></div>
+    <div class="trust-item"><span class="trust-icon"><i class="fa-solid fa-lock"></i></span><div class="trust-text"><h4>Secure Payment</h4><p>256-bit SSL encryption</p></div></div>
+    <div class="trust-item"><span class="trust-icon"><i class="fa-solid fa-rotate-left"></i></span><div class="trust-text"><h4>Easy Returns</h4><p>30-day return policy</p></div></div>
+    <div class="trust-item"><span class="trust-icon"><i class="fa-solid fa-star"></i></span><div class="trust-text"><h4>4.9/5 Rated</h4><p>2,400+ happy customers</p></div></div>
+  </div>
+</div>
+
+<div id="categories">
+  <div class="section">
+    <div class="section-head"><div><p class="section-label">Browse by Type</p><h2 class="section-title">Shop by Category</h2></div></div>
+    <div class="cat-grid">
+      <a class="cat-card" href="#" onclick="filterCategory('medallions',null)"><div class="cat-icon"><i class="fa-solid fa-medal"></i></div><div class="cat-name">Medallions</div><div class="cat-count">12 items</div></a>
+      <a class="cat-card" href="#" onclick="filterCategory('collectibles',null)"><div class="cat-icon"><i class="fa-solid fa-gem"></i></div><div class="cat-name">Collectibles</div><div class="cat-count">8 items</div></a>
+      <a class="cat-card" href="#" onclick="filterCategory('crypto',null)"><div class="cat-icon"><i class="fa-brands fa-bitcoin"></i></div><div class="cat-name">Crypto</div><div class="cat-count">6 items</div></a>
+      <a class="cat-card" href="#" onclick="filterCategory('apparel',null)"><div class="cat-icon"><i class="fa-solid fa-shirt"></i></div><div class="cat-name">Apparel</div><div class="cat-count">15 items</div></a>
+      <a class="cat-card" href="#" onclick="filterCategory('accessories',null)"><div class="cat-icon"><i class="fa-solid fa-clock"></i></div><div class="cat-name">Accessories</div><div class="cat-count">10 items</div></a>
+      <a class="cat-card" href="#" onclick="filterCategory('all',null)"><div class="cat-icon"><i class="fa-solid fa-bag-shopping"></i></div><div class="cat-name">All Items</div><div class="cat-count">51 items</div></a>
+    </div>
+  </div>
+</div>
+
+<div id="products" style="background: var(--off-white); padding: 20px 0 60px;">
+  <div class="section" style="padding-top:0;">
+    <div class="section-head">
+      <div><p class="section-label">Founder's Seal Collection</p><h2 class="section-title">Featured Products</h2></div>
+      <a href="#" class="view-all">View All <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <div class="product-grid" id="productGrid"></div>
+    <div style="text-align:center; margin-top:36px;">
+      <button class="btn-primary" onclick="loadMore()" id="loadMoreBtn" style="background:var(--navy);">Load More Products</button>
+    </div>
+  </div>
+</div>
+
+<div class="banner-strip" id="about">
+  <div class="banner-inner">
+    <div class="banner-text">
+      <h2>Why Choose KRSELLIFY?</h2>
+      <p>Every product is authenticated, quality-checked, and shipped with care. We partner with verified suppliers to bring you exclusive collectibles you won't find anywhere else.</p>
+      <div class="banner-stats">
+        <div class="banner-stat"><h3>2,400+</h3><p>Orders Shipped</p></div>
+        <div class="banner-stat"><h3>4.9<i class="fa-solid fa-star" style="font-size:28px;"></i></h3><p>Avg. Rating</p></div>
+        <div class="banner-stat"><h3>100%</h3><p>Authentic</p></div>
+      </div>
+    </div>
+    <div class="banner-img-grid">
+      <img src="https://images.unsplash.com/photo-1622473590773-f588134b6ce7?w=600&q=80" alt="Collection" />
+      <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80" alt="Gold" />
+      <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=300&q=80" alt="Crypto" />
+    </div>
+  </div>
+</div>
+
+<div class="testimonials-bg">
+  <div class="section" style="padding-top:60px;">
+    <div class="section-head"><div><p class="section-label">Customer Love</p><h2 class="section-title">What Our Customers Say</h2></div></div>
+    <div class="testimonials-grid">
+      <div class="testi-card"><div class="testi-quote">"</div><p class="testi-text">I ordered the Bitcoin Diamond and it exceeded all expectations. The packaging was gorgeous and the piece itself is stunning. Will definitely be ordering more collectibles!</p><div class="testi-author"><img src="https://i.pravatar.cc/100?img=47" alt="Kristy R." class="testi-avatar" /><div><div class="testi-name">Kristy R.</div><div class="testi-verified"><i class="fa-solid fa-circle-check"></i> Verified Buyer</div></div></div></div>
+      <div class="testi-card"><div class="testi-quote">"</div><p class="testi-text">The gold bar arrived beautifully packaged. As a coin collector, this is one of the most beautiful commemorative pieces I've ever seen. Passing it down to my grandkids for sure.</p><div class="testi-author"><img src="https://i.pravatar.cc/100?img=33" alt="William C." class="testi-avatar" /><div><div class="testi-name">William C.</div><div class="testi-verified"><i class="fa-solid fa-circle-check"></i> Verified Buyer</div></div></div></div>
+      <div class="testi-card"><div class="testi-quote">"</div><p class="testi-text">Shipping was fast and the D.O.G.E Coin is absolutely breathtaking. The detail work is incredible. Customer support was also super helpful when I had questions.</p><div class="testi-author"><img src="https://i.pravatar.cc/100?img=12" alt="James P." class="testi-avatar" /><div><div class="testi-name">James P.</div><div class="testi-verified"><i class="fa-solid fa-circle-check"></i> Verified Buyer</div></div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="newsletter">
+  <div class="newsletter-inner">
+    <h2>Stay in the Loop</h2>
+    <p>Get notified about new arrivals, exclusive deals, and limited-edition drops straight to your inbox.</p>
+    <div class="newsletter-form">
+      <input type="email" placeholder="Enter your email address…" id="emailInput" />
+      <button onclick="subscribeNewsletter()"><i class="fa-solid fa-paper-plane"></i> Subscribe</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="#" class="logo">KR<span>SELLIFY</span></a>
+      <p>Premium collectibles, rare finds, and exclusive memorabilia — authenticated and shipped to your door.</p>
+      <div class="footer-social">
+        <a href="#" class="social-btn"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="#" class="social-btn"><i class="fa-brands fa-x-twitter"></i></a>
+        <a href="#" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" class="social-btn"><i class="fa-brands fa-youtube"></i></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Shop</h4><a href="#">Best Sellers</a><a href="#">Medallions</a><a href="#">Collectibles</a><a href="#">Crypto Items</a><a href="#">Apparel</a><a href="#">Accessories</a><a href="#">Sale Items</a></div>
+    <div class="footer-col"><h4>Support</h4><a href="#">Track Your Order</a><a href="#">FAQ</a><a href="#">Shipping Info</a><a href="#">Returns &amp; Exchanges</a><a href="#">Size Guide</a><a href="#">Contact Us</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="#">About KRSELLIFY</a><a href="#">Blog</a><a href="#">Careers</a><a href="#">Privacy Policy</a><a href="#">Terms of Service</a><a href="#">Wholesale</a></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 KRSELLIFY. All rights reserved. Made with <i class="fa-solid fa-heart" style="color:var(--teal-light);"></i></p>
+    <div class="footer-payments">
+      <span class="pay-badge">VISA</span><span class="pay-badge">MC</span><span class="pay-badge">AMEX</span><span class="pay-badge">PayPal</span><span class="pay-badge">Apple Pay</span>
+    </div>
+  </div>
+</footer>
+
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <h3><i class="fa-solid fa-cart-shopping"></i> Your Cart</h3>
+    <button class="cart-close" onclick="toggleCart()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="cart-body" id="cartBody"></div>
+  <div class="cart-footer">
+    <div class="cart-total-row">
+      <span class="label">Total</span>
+      <span class="amount" id="cartTotalPanel">$0.00</span>
+    </div>
+    <button class="checkout-btn" onclick="checkout()">Proceed to Checkout <i class="fa-solid fa-arrow-right"></i></button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const products = [
+  { id:1, name:"XRP Nesara/Gesara Gold Bar", category:"medallions", price:199.00, oldPrice:null, sale:false, isNew:true, rating:5, reviews:28, img:"https://d2j6dbq0eux0bg.cloudfront.net/images/136003751/products/835331760/5762187052.webp", cat:"Medallions" },
+  { id:2, name:"Bitcoin Diamond 2025", category:"crypto", price:399.00, oldPrice:999.00, sale:true, isNew:false, rating:5, reviews:64, img:"https://d2j6dbq0eux0bg.cloudfront.net/images/136003751/products/835328754/5762178888.webp", cat:"Crypto" },
+  { id:3, name:"D.O.G.E COIN Collectible", category:"crypto", price:199.00, oldPrice:1999.99, sale:true, isNew:false, rating:4, reviews:112, img:"https://d2j6dbq0eux0bg.cloudfront.net/images/136003751/products/835328752/5762183409.webp", cat:"Crypto" },
+  { id:4, name:"Bitcoin Crypto Passport", category:"collectibles", price:399.00, oldPrice:999.00, sale:true, isNew:false, rating:5, reviews:47, img:"https://d2j6dbq0eux0bg.cloudfront.net/images/136003751/products/835331761/5762178792.webp", cat:"Collectibles" },
+  { id:5, name:"Trump 1000 Bitcoins Gold Bar", category:"collectibles", price:199.00, oldPrice:1999.00, sale:true, isNew:false, rating:5, reviews:89, img:"https://d2j6dbq0eux0bg.cloudfront.net/images/136003751/products/835328757/5762187026.webp", cat:"Collectibles" },
+  { id:6, name:"Nesara Gesara QFS Gold Coin", category:"medallions", price:299.00, oldPrice:null, sale:false, isNew:true, rating:5, reviews:33, img:"https://d2j6dbq0eux0bg.cloudfront.net/images/136003751/products/835401009/5762614918.webp", cat:"Medallions" },
+  { id:7, name:"Trump Legacy One Milli BTC Block", category:"collectibles", price:199.00, oldPrice:null, sale:false, isNew:false, rating:4, reviews:21, img:"https://d2j6dbq0eux0bg.cloudfront.net/images/136003751/products/836356299/5773174012.webp", cat:"Collectibles" },
+  { id:8, name:"TRUMP WLFI TOKEN", category:"crypto", price:299.00, oldPrice:null, sale:false, isNew:true, rating:5, reviews:15, img:"https://d2j6dbq0eux0bg.cloudfront.net/images/136003751/products/836356303/5773174048.webp", cat:"Crypto" }
+];
+
+let cart = [];
+let currentFilter = 'all';
+let visibleCount = 8;
+let currentSlide = 0;
+let autoSlideTimer;
+
+function slideHero(dir) {
+  const slides = document.getElementById('heroSlides');
+  const dots = document.querySelectorAll('.hero-dot');
+  currentSlide = (currentSlide + dir + 3) % 3;
+  slides.style.transform = `translateX(-${currentSlide * 100}%)`;
+  dots.forEach((d,i) => d.classList.toggle('active', i === currentSlide));
+  resetAutoSlide();
+}
+function goToSlide(n) {
+  const slides = document.getElementById('heroSlides');
+  const dots = document.querySelectorAll('.hero-dot');
+  currentSlide = n;
+  slides.style.transform = `translateX(-${n * 100}%)`;
+  dots.forEach((d,i) => d.classList.toggle('active', i === n));
+  resetAutoSlide();
+}
+function startAutoSlide() { autoSlideTimer = setInterval(() => slideHero(1), 5000); }
+function resetAutoSlide() { clearInterval(autoSlideTimer); startAutoSlide(); }
+startAutoSlide();
+
+function renderStars(rating) {
+  let h = '';
+  for(let i=1;i<=5;i++) h += i<=rating ? '<i class="fa-solid fa-star" style="color:#f5a623;"></i>' : '<i class="fa-regular fa-star" style="color:#f5a623;"></i>';
+  return h;
+}
+
+function isInCart(id) { return cart.some(i => i.id === id); }
+
+function renderProducts() {
+  const grid = document.getElementById('productGrid');
+  const filtered = currentFilter === 'all' ? products : products.filter(p => p.category === currentFilter);
+  const visible = filtered.slice(0, visibleCount);
+
+  grid.innerHTML = visible.map(p => {
+    const inCart = isInCart(p.id);
+    return `
+    <div class="product-card" id="card-${p.id}">
+      <div class="product-img-wrap">
+        <img src="${p.img}" alt="${p.name}" loading="lazy" />
+        ${p.sale ? '<span class="sale-badge">Sale</span>' : p.isNew ? '<span class="new-badge">New</span>' : ''}
+        <button class="wishlist-btn ${inCart ? 'in-cart' : ''}" id="hbtn-${p.id}"
+          onclick="heartAddToCart(${p.id})" title="${inCart ? 'Remove from cart' : 'Add to cart via heart'}">
+          <i class="fa-${inCart ? 'solid' : 'regular'} fa-heart"></i>
+        </button>
+      </div>
+      <div class="product-body">
+        <p class="product-cat">${p.cat}</p>
+        <h3 class="product-name">${p.name}</h3>
+        <div class="product-stars">${renderStars(p.rating)}<span>(${p.reviews})</span></div>
+        <div class="product-price-row">
+          <div>
+            <span class="price-current">$${p.price.toFixed(2)}</span>
+            ${p.oldPrice ? `<br><span class="price-old">$${p.oldPrice.toFixed(2)}</span>` : ''}
+          </div>
+          <button class="buy-btn" onclick="addToCart(${p.id}, 'btn')">Buy Now</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('loadMoreBtn').style.display = visible.length < filtered.length ? 'inline-block' : 'none';
+}
+
+function loadMore() { visibleCount += 4; renderProducts(); }
+
+function filterCategory(cat, el) {
+  currentFilter = cat; visibleCount = 8;
+  if (el) { document.querySelectorAll('.nav-inner a').forEach(a => a.classList.remove('active')); el.classList.add('active'); }
+  renderProducts();
+  document.getElementById('products').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function handleSearch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!q) { currentFilter = 'all'; renderProducts(); return; }
+  const grid = document.getElementById('productGrid');
+  const results = products.filter(p => p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q));
+  grid.innerHTML = results.length ? results.map(p => `
+    <div class="product-card">
+      <div class="product-img-wrap">
+        <img src="${p.img}" alt="${p.name}" loading="lazy" />
+        ${p.sale ? '<span class="sale-badge">Sale</span>' : p.isNew ? '<span class="new-badge">New</span>' : ''}
+      </div>
+      <div class="product-body">
+        <p class="product-cat">${p.cat}</p>
+        <h3 class="product-name">${p.name}</h3>
+        <div class="product-price-row">
+          <span class="price-current">$${p.price.toFixed(2)}</span>
+          <button class="buy-btn" onclick="addToCart(${p.id},'btn')">Buy Now</button>
+        </div>
+      </div>
+    </div>`).join('')
+    : `<p style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-light);">No products found for "${q}"</p>`;
+  document.getElementById('loadMoreBtn').style.display = 'none';
+  document.getElementById('products').scrollIntoView({ behavior:'smooth' });
+}
+document.getElementById('searchInput').addEventListener('keydown', e => { if(e.key==='Enter') handleSearch(); });
+
+// ── HEART → CART (the key change) ──────────────────────────────
+function heartAddToCart(id) {
+  const btn = document.getElementById(`hbtn-${id}`);
+  const product = products.find(p => p.id === id);
+  const existing = cart.find(i => i.id === id);
+
+  if (existing) {
+    // Heart is red = already in cart → remove
+    cart = cart.filter(i => i.id !== id);
+    btn.classList.remove('in-cart', 'pop');
+    btn.innerHTML = '<i class="fa-regular fa-heart"></i>';
+    btn.title = 'Add to cart via heart';
+    showToast('<i class="fa-regular fa-heart"></i> Removed from cart');
+  } else {
+    // Add to cart, mark heart red
+    cart.push({ ...product, qty: 1, via: 'heart' });
+    btn.classList.add('in-cart');
+    btn.innerHTML = '<i class="fa-solid fa-heart"></i>';
+    btn.title = 'Remove from cart';
+    // pop animation
+    btn.classList.remove('pop');
+    void btn.offsetWidth; // reflow
+    btn.classList.add('pop');
+    showToast('<i class="fa-solid fa-heart" style="color:#e05454;"></i> ' + product.name + ' added to cart!');
+    toggleCart(); // open cart panel so user sees it
+  }
+  updateCartUI();
+}
+
+function addToCart(id, via) {
+  const product = products.find(p => p.id === id);
+  const existing = cart.find(i => i.id === id);
+  if (existing) { existing.qty++; }
+  else { cart.push({ ...product, qty:1, via: via || 'btn' }); }
+  // update heart button state if card is in DOM
+  const btn = document.getElementById(`hbtn-${id}`);
+  if (btn) { btn.classList.add('in-cart'); btn.innerHTML = '<i class="fa-solid fa-heart"></i>'; }
+  updateCartUI();
+  showToast('<i class="fa-solid fa-circle-check"></i> ' + product.name + ' added to cart');
+  const card = document.getElementById(`card-${id}`);
+  if (card) { card.style.transform = 'scale(1.03)'; setTimeout(() => card.style.transform = '', 200); }
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(i => i.id !== id);
+  // reset heart button
+  const btn = document.getElementById(`hbtn-${id}`);
+  if (btn) { btn.classList.remove('in-cart','pop'); btn.innerHTML = '<i class="fa-regular fa-heart"></i>'; }
+  updateCartUI();
+  renderCartPanel();
+}
+
+function updateQty(id, delta) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) { removeFromCart(id); return; }
+  updateCartUI();
+  renderCartPanel();
+}
+
+function updateCartUI() {
+  const count = cart.reduce((s,i) => s+i.qty, 0);
+  const total = cart.reduce((s,i) => s+i.price*i.qty, 0);
+  document.getElementById('cartCount').textContent = count;
+  document.getElementById('cartTotal').textContent = `$${total.toFixed(2)}`;
+  document.getElementById('cartTotalPanel').textContent = `$${total.toFixed(2)}`;
+  renderCartPanel();
+}
+
+function renderCartPanel() {
+  const body = document.getElementById('cartBody');
+  if (cart.length === 0) {
+    body.innerHTML = `<div class="cart-empty"><div class="empty-icon"><i class="fa-solid fa-bag-shopping"></i></div><p>Your cart is empty</p><p style="font-size:13px;margin-top:6px;">Click the <i class="fa-solid fa-heart" style="color:#e05454;"></i> heart or Buy Now to add items!</p></div>`;
+    return;
+  }
+  body.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <img src="${item.img}" alt="${item.name}" />
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-price">$${(item.price * item.qty).toFixed(2)}</div>
+        <div>
+          <span class="cart-item-source ${item.via === 'heart' ? 'from-heart' : 'from-btn'}">
+            ${item.via === 'heart' ? '<i class="fa-solid fa-heart"></i> Added via heart' : '<i class="fa-solid fa-cart-shopping"></i> Added via cart'}
+          </span>
+        </div>
+        <div class="cart-item-qty">
+          <button class="qty-btn" onclick="updateQty(${item.id},-1)">−</button>
+          <span>${item.qty}</span>
+          <button class="qty-btn" onclick="updateQty(${item.id},1)">+</button>
+        </div>
+      </div>
+      <button class="cart-item-remove" onclick="removeFromCart(${item.id})">
+        <i class="fa-solid fa-xmark"></i> Remove
+      </button>
+    </div>`).join('');
+}
+
+function toggleCart() {
+  document.getElementById('cartOverlay').classList.toggle('open');
+  document.getElementById('cartPanel').classList.toggle('open');
+}
+
+function checkout() {
+  if (!cart.length) { showToast('Your cart is empty!'); return; }
+  showToast('<i class="fa-solid fa-circle-check"></i> Order placed! Total: $' + cart.reduce((s,i)=>s+i.price*i.qty,0).toFixed(2));
+  // reset all heart buttons
+  cart.forEach(item => {
+    const btn = document.getElementById(`hbtn-${item.id}`);
+    if (btn) { btn.classList.remove('in-cart','pop'); btn.innerHTML = '<i class="fa-regular fa-heart"></i>'; }
+  });
+  cart = [];
+  updateCartUI();
+  toggleCart();
+}
+
+function subscribeNewsletter() {
+  const email = document.getElementById('emailInput').value.trim();
+  if (!email || !email.includes('@')) { showToast('Please enter a valid email address'); return; }
+  showToast('<i class="fa-solid fa-circle-check"></i> You\'re subscribed! Check ' + email + ' for a welcome gift.');
+  document.getElementById('emailInput').value = '';
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerHTML = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+renderProducts();
+updateCartUI();
+</script>
+</body>
+</html>

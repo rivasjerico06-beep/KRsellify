@@ -1,0 +1,127 @@
+:root {
+  --teal: #58948f;
+  --teal-light: #7ab5b0;
+  --teal-dark: #3d6f6a;
+  --navy: #093459;
+  --navy-dark: #061f37;
+  --navy-light: #0e4a80;
+  --white: #ffffff;
+  --off-white: #f4f8f8;
+  --gray: #e8eff0;
+  --text-dark: #0d1f2d;
+  --text-mid: #4a6170;
+  --text-light: #8ba0aa;
+  --sale-red: #e05454;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
+  background: var(--off-white);
+  color: var(--text-dark);
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--gray); }
+::-webkit-scrollbar-thumb { background: var(--teal); border-radius: 3px; }
+
+/* ── Mobile responsive ─────────────────────────────────────────── */
+
+/* Header */
+.kr-header-search { flex: 1; display: flex; max-width: 560px; }
+.kr-header-cart-label { display: inline; }
+.kr-mobile-menu-btn { display: none; }
+.kr-mobile-nav {
+  display: none;
+  flex-direction: column;
+  background: var(--navy);
+  padding: 8px 0;
+}
+.kr-mobile-nav.open { display: flex; }
+
+/* Footer */
+.kr-footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px;
+  padding-bottom: 48px;
+}
+
+/* Banner */
+.kr-banner-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+/* ProductDetail */
+.kr-detail-trust {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  /* Header */
+  .kr-header-search { display: none !important; }
+  .kr-header-cart-label { display: none; }
+  .kr-mobile-menu-btn { display: flex !important; }
+  .kr-desktop-nav { display: none; }
+
+  /* Footer — 2-column then single */
+  .kr-footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 32px !important;
+  }
+  .kr-footer-brand { grid-column: 1 / -1; }
+
+  /* Banner — stack */
+  .kr-banner-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+
+  /* Cart — full width */
+  .kr-cart-panel { width: 100vw !important; }
+
+  /* Product detail trust mini-bar */
+  .kr-detail-trust {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* General padding reduction */
+  .kr-section-pad { padding-left: 16px !important; padding-right: 16px !important; }
+}
+
+@media (max-width: 480px) {
+  .kr-footer-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
