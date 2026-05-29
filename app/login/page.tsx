@@ -93,17 +93,18 @@ export default function LoginPage() {
 
   const inputStyle = (field: string): React.CSSProperties => ({
     width: '100%',
-    border: `2px solid ${focused === field ? '#58948f' : isDark ? 'rgba(255,255,255,0.1)' : '#e8eff0'}`,
+    border: `2px solid ${focused === field ? '#58948f' : isDark ? 'rgba(255,255,255,0.22)' : '#e8eff0'}`,
     borderRadius: 12,
     padding: '13px 16px 13px 44px',
     fontSize: 14,
     fontFamily: 'inherit',
     outline: 'none',
     background: focused === field
-      ? isDark ? 'rgba(88,148,143,0.12)' : 'rgba(88,148,143,0.04)'
-      : isDark ? 'rgba(255,255,255,0.05)' : '#f9fafb',
+      ? isDark ? 'rgba(88,148,143,0.22)' : 'rgba(88,148,143,0.04)'
+      : isDark ? 'rgba(255,255,255,0.1)' : '#f9fafb',
     transition: 'all 0.2s ease',
     color: isDark ? '#e2f0ef' : '#0d1f2d',
+    colorScheme: isDark ? 'dark' : 'light',
   })
 
   const cardVariants = {
@@ -156,7 +157,7 @@ export default function LoginPage() {
       </motion.button>
 
       {/* Card */}
-      <motion.div variants={cardVariants} initial="hidden" animate="visible"
+      <motion.div variants={cardVariants} initial="hidden" animate="visible" layout
         style={{ background: isDark ? 'rgba(9,28,50,0.88)' : 'rgba(255,255,255,0.97)', backdropFilter: 'blur(24px)', borderRadius: 28, padding: '48px 40px', width: '100%', maxWidth: 460, boxShadow: isDark ? '0 32px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06)' : '0 32px 80px rgba(0,0,0,0.12), 0 0 0 1px rgba(88,148,143,0.12)', position: 'relative', zIndex: 10 }}>
 
         {/* Shimmer top edge */}
@@ -197,8 +198,9 @@ export default function LoginPage() {
           <AnimatePresence initial={false}>
             {mode === 'signup' && (
               <motion.div key="name-field"
-                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
+                initial={{ opacity: 0, maxHeight: 0 }}
+                animate={{ opacity: 1, maxHeight: 150 }}
+                exit={{ opacity: 0, maxHeight: 0 }}
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 style={{ overflow: 'hidden' }}>
                 <FieldWrapper icon="fa-user" label="Full Name" isDark={isDark}>
