@@ -43,7 +43,7 @@
   .cart-badge { background: var(--teal); color: white; font-size: 10px; font-weight: 700; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; position: absolute; top: 0; right: 0; }
   .cart-total { font-weight: 700; font-size: 14px; color: var(--navy); }
   nav { background: var(--navy); }
-  .nav-inner { max-width: 1340px; margin: 0 auto; padding: 0 28px; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  .nav-inner { max-width: 1340px; margin: 0 auto; padding: 0 28px; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; justify-content: center; }
   .nav-inner::-webkit-scrollbar { display: none; }
   .nav-inner a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 13px 16px; white-space: nowrap; transition: color 0.2s, background 0.2s; border-bottom: 3px solid transparent; }
   .nav-inner a:hover, .nav-inner a.active { color: var(--white); border-bottom-color: var(--teal); background: rgba(88,148,143,0.12); }
@@ -136,8 +136,8 @@
   .banner-img-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .banner-img-grid img { width: 100%; height: 140px; object-fit: cover; border-radius: 12px; opacity: 0.85; }
   .banner-img-grid img:first-child { grid-column: span 2; height: 160px; }
-  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
-  .cat-card { background: var(--white); border-radius: 16px; padding: 28px 16px; text-align: center; cursor: pointer; transition: all 0.25s; border: 2px solid transparent; box-shadow: 0 2px 12px rgba(9,52,89,0.05); text-decoration: none; display: block; }
+  .cat-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
+  .cat-card { background: var(--white); border-radius: 16px; padding: 28px 16px; text-align: center; cursor: pointer; transition: all 0.25s; border: 2px solid transparent; box-shadow: 0 2px 12px rgba(9,52,89,0.05); text-decoration: none; display: block; width: 160px; }
   .cat-card:hover { border-color: var(--teal); transform: translateY(-4px); box-shadow: 0 8px 28px rgba(88,148,143,0.2); }
   .cat-icon { font-size: 32px; margin-bottom: 10px; color: var(--teal); }
   .cat-name { font-size: 13px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -323,8 +323,6 @@
       <a class="cat-card" href="#" onclick="filterCategory('medallions',null)"><div class="cat-icon"><i class="fa-solid fa-medal"></i></div><div class="cat-name">Medallions</div><div class="cat-count">12 items</div></a>
       <a class="cat-card" href="#" onclick="filterCategory('collectibles',null)"><div class="cat-icon"><i class="fa-solid fa-gem"></i></div><div class="cat-name">Collectibles</div><div class="cat-count">8 items</div></a>
       <a class="cat-card" href="#" onclick="filterCategory('crypto',null)"><div class="cat-icon"><i class="fa-brands fa-bitcoin"></i></div><div class="cat-name">Crypto</div><div class="cat-count">6 items</div></a>
-      <a class="cat-card" href="#" onclick="filterCategory('apparel',null)"><div class="cat-icon"><i class="fa-solid fa-shirt"></i></div><div class="cat-name">Apparel</div><div class="cat-count">15 items</div></a>
-      <a class="cat-card" href="#" onclick="filterCategory('accessories',null)"><div class="cat-icon"><i class="fa-solid fa-clock"></i></div><div class="cat-name">Accessories</div><div class="cat-count">10 items</div></a>
       <a class="cat-card" href="#" onclick="filterCategory('all',null)"><div class="cat-icon"><i class="fa-solid fa-bag-shopping"></i></div><div class="cat-name">All Items</div><div class="cat-count">51 items</div></a>
     </div>
   </div>
