@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@paypal/react-paypal-js": "^9.2.0",
     "@supabase/supabase-js": "^2.45.0",
     "framer-motion": "^11.3.0",
     "next": "^16.2.6",
