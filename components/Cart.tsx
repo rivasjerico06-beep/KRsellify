@@ -157,7 +157,12 @@ export default function Cart() {
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-dark)', marginBottom: 4 }}>{item.name}</div>
-                        <div style={{ fontWeight: 700, color: 'var(--teal)', fontSize: 15 }}>${(item.price * item.qty).toFixed(2)}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--teal)', fontSize: 15 }}>${((item.bundle_price != null ? item.bundle_price : item.price) * item.qty).toFixed(2)}</div>
+                        {item.bundle_label && (
+                          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--teal)', marginBottom: 4, marginTop: 2 }}>
+                            <i className="fa-solid fa-tag" style={{ marginRight: 4 }} />{item.bundle_label}
+                          </div>
+                        )}
                         <span style={{ fontSize: 11, fontWeight: 600, marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, background: item.via === 'heart' ? '#ffe0e0' : '#e0eef8', color: item.via === 'heart' ? '#c43e3e' : 'var(--navy)' }}>
                           <i className={`fa-solid ${item.via === 'heart' ? 'fa-heart' : 'fa-cart-shopping'}`} />
                           {item.via === 'heart' ? 'Added via heart' : 'Added via cart'}

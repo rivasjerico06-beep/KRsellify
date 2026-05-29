@@ -1,3 +1,9 @@
+export interface QuantityOption {
+  label: string
+  qty: number
+  bundle_total: number
+}
+
 export interface Product {
   id: string
   name: string
@@ -13,12 +19,15 @@ export interface Product {
   cat_label: string
   in_stock: boolean
   description?: string | null
+  quantity_options?: QuantityOption[] | null
   created_at?: string
 }
 
 export interface CartItem extends Product {
   qty: number
   via: 'heart' | 'btn'
+  bundle_price?: number
+  bundle_label?: string
 }
 
 export interface Order {

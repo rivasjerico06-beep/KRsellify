@@ -28,25 +28,36 @@ function Stars({ rating, large }: { rating: number; large?: boolean }) {
 }
 
 export default function ProductDetailClient({ product, related }: { product: Product; related: Product[] }) {
-  const { addToCart, heartToggle, isInCart, showToast, setCartOpen } = useCart()
+  const { addToCart, addBundle, heartToggle, isInCart, showToast, setCartOpen } = useCart()
   const [qty, setQty] = useState(1)
+  const [selectedTierIdx, setSelectedTierIdx] = useState(0)
   const [activeImg, setActiveImg] = useState(0)
   const [justAdded, setJustAdded] = useState(false)
   const inCart = isInCart(product.id)
+  const hasTiers = !!(product.quantity_options && product.quantity_options.length > 0)
+  const selectedTier = hasTiers ? product.quantity_options![selectedTierIdx] : null
 
   const images = product.images?.length ? product.images : [product.img]
   const savings = product.old_price ? Math.round((1 - product.price / product.old_price) * 100) : 0
   const features = FEATURES[product.category] ?? FEATURES.collectibles
 
   function handleAddToCart() {
-    for (let i = 0; i < qty; i++) addToCart(product, 'btn')
+    if (selectedTier) {
+      addBundle(product, selectedTier.label, selectedTier.qty, selectedTier.bundle_total)
+    } else {
+      for (let i = 0; i < qty; i++) addToCart(product, 'btn')
+    }
     showToast(`✓ ${product.name} added to cart`)
     setJustAdded(true)
     setTimeout(() => setJustAdded(false), 1400)
   }
 
   function handleBuyNow() {
-    for (let i = 0; i < qty; i++) addToCart(product, 'btn')
+    if (selectedTier) {
+      addBundle(product, selectedTier.label, selectedTier.qty, selectedTier.bundle_total)
+    } else {
+      for (let i = 0; i < qty; i++) addToCart(product, 'btn')
+    }
     setCartOpen(true)
   }
 
@@ -189,7 +200,22 @@ export default function ProductDetailClient({ product, related }: { product: Pro
             ))}
           </ul>
 
-          {/* Quantity */}
+          {/* Quantity — tier chips or plain stepper */}
+          {hasTiers ? (
+            <div style={{ marginBottom: 24 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-mid)', marginBottom: 12 }}>Select Quantity</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {product.quantity_options!.map((opt, i) => (
+                  <motion.button key={i} onClick={() => setSelectedTierIdx(i)}
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                    style={{ padding: '12px 18px', borderRadius: 12, border: `2px solid ${selectedTierIdx === i ? 'var(--teal)' : 'var(--gray)'}`, background: selectedTierIdx === i ? 'rgba(88,148,143,0.1)' : 'var(--white)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'inherit', fontSize: 13, fontWeight: selectedTierIdx === i ? 700 : 500, color: 'var(--text-dark)', textAlign: 'left', transition: 'border-color 0.2s, background 0.2s' }}>
+                    <span>{opt.label}</span>
+                    <span style={{ color: selectedTierIdx === i ? 'var(--teal)' : 'var(--text-mid)', fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', marginLeft: 12 }}>${opt.bundle_total.toFixed(2)}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Qty</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: 'var(--white)', borderRadius: 50, border: '1.5px solid var(--gray)', overflow: 'hidden', boxShadow: '0 1px 6px rgba(9,52,89,0.06)' }}>
@@ -200,6 +226,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
                 style={{ width: 40, height: 40, border: 'none', background: 'none', fontSize: 16, cursor: 'pointer', color: 'var(--heading)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>+</motion.button>
             </div>
           </div>
+          )}
 
           {/* CTA buttons */}
           <div style={{ display: 'flex', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>

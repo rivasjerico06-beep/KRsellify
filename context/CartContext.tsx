@@ -18,6 +18,7 @@ function loadFromStorage(): CartItem[] {
 interface CartContextType {
   cart: CartItem[]
   addToCart: (product: Product, via: 'heart' | 'btn') => void
+  addBundle: (product: Product, label: string, qty: number, total: number) => void
   heartToggle: (product: Product) => void
   removeFromCart: (id: string) => void
   updateQty: (id: string, delta: number) => void
@@ -71,6 +72,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })
   }, [setCart])
 
+  const addBundle = useCallback((product: Product, label: string, qty: number, total: number) => {
+    setCart(prev => {
+      const existingIdx = prev.findIndex(i => i.id === product.id)
+      const item: CartItem = { ...product, qty: 1, via: 'btn', bundle_price: total, bundle_label: label }
+      if (existingIdx >= 0) return prev.map((i, idx) => idx === existingIdx ? item : i)
+      return [...prev, item]
+    })
+  }, [setCart])
+
   const heartToggle = useCallback((product: Product) => {
     setCart(prev => {
       const wishlistItem = prev.find(i => i.id === product.id && i.via === 'heart')
@@ -102,13 +112,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0)
-  const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0)
+  const cartTotal = cart.reduce((s, i) => s + (i.bundle_price != null ? i.bundle_price : i.price) * i.qty, 0)
 
   // Avoid hydration mismatch: render empty cart until localStorage is loaded
   if (!hydrated) {
     return (
       <CartContext.Provider value={{
-        cart: [], addToCart, heartToggle, removeFromCart, updateQty, clearCart,
+        cart: [], addToCart, addBundle, heartToggle, removeFromCart, updateQty, clearCart,
         isInCart: () => false, cartCount: 0, cartTotal: 0, cartOpen, setCartOpen, toast, showToast,
       }}>
         {children}
@@ -118,7 +128,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider value={{
-      cart, addToCart, heartToggle, removeFromCart, updateQty, clearCart,
+      cart, addToCart, addBundle, heartToggle, removeFromCart, updateQty, clearCart,
       isInCart, cartCount, cartTotal, cartOpen, setCartOpen, toast, showToast,
     }}>
       {children}

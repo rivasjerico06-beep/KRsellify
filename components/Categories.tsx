@@ -98,16 +98,12 @@ export default function Categories({ products }: { products: Product[] }) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        style={{ marginBottom: 40 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <div>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 8 }}>Browse by Type</p>
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 900, color: 'var(--heading)' }}>Shop by Category</h2>
-          </div>
-          <a href="/shop" style={{ color: 'var(--teal)', fontWeight: 700, fontSize: 13, letterSpacing: '0.08em', borderBottom: '2px solid var(--teal)', paddingBottom: 2, textDecoration: 'none' }}>
-            View All <i className="fa-solid fa-arrow-right" />
-          </a>
-        </div>
+        style={{ marginBottom: 40, textAlign: 'center' }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 8 }}>Browse by Type</p>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 900, color: 'var(--heading)', marginBottom: 18 }}>Shop by Category</h2>
+        <a href="/shop" style={{ color: 'var(--teal)', fontWeight: 700, fontSize: 13, letterSpacing: '0.08em', borderBottom: '2px solid var(--teal)', paddingBottom: 2, textDecoration: 'none' }}>
+          View All <i className="fa-solid fa-arrow-right" />
+        </a>
       </motion.div>
 
       <motion.div
