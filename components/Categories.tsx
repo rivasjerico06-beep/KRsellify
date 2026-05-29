@@ -15,12 +15,12 @@ const CATS = [
 ]
 
 const CAT_GRADIENTS: Record<string, string> = {
-  medallions:   'linear-gradient(135deg, #b8860b, #daa520)',
-  collectibles: 'linear-gradient(135deg, #093459, #2563eb)',
-  crypto:       'linear-gradient(135deg, #f59e0b, #ef4444)',
-  apparel:      'linear-gradient(135deg, #58948F, #0d4a44)',
-  accessories:  'linear-gradient(135deg, #7c3aed, #a855f7)',
-  all:          'linear-gradient(135deg, #093459, #58948F)',
+  medallions:   'linear-gradient(135deg, #CA8A04, #d97706)',
+  collectibles: 'linear-gradient(135deg, #0e4a80, #2563eb)',
+  crypto:       'linear-gradient(135deg, #d97706, #ef4444)',
+  apparel:      'linear-gradient(135deg, #58948F, #0d5c4f)',
+  accessories:  'linear-gradient(135deg, #6d28d9, #9333ea)',
+  all:          'linear-gradient(135deg, #0a1e33, #093459)',
 }
 
 // filterCat is kept for on-page use; CategoryCard uses router to /shop
@@ -58,10 +58,10 @@ function CategoryCard({ c }: { c: Cat }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={onLeave}
         onClick={() => router.push(`/shop?cat=${c.cat}`)}
-        whileHover={{ boxShadow: '0 20px 48px rgba(88,148,143,0.22)', borderColor: 'var(--teal)' }}
+        whileHover={{ boxShadow: '0 22px 52px rgba(202,138,4,0.16)', borderColor: 'rgba(202,138,4,0.5)' }}
         whileTap={{ scale: 0.97 }}
         transition={{ duration: 0.25 }}
-        style={{ background: 'var(--white)', borderRadius: 20, padding: '32px 16px 26px', textAlign: 'center', cursor: 'pointer', border: '2px solid transparent', boxShadow: '0 2px 14px rgba(9,52,89,0.07)', fontFamily: 'inherit', rotateX, rotateY, position: 'relative', overflow: 'hidden', userSelect: 'none' }}>
+        style={{ background: 'var(--white)', borderRadius: 20, padding: '32px 16px 26px', textAlign: 'center', cursor: 'pointer', border: '1.5px solid var(--gray)', boxShadow: '0 2px 12px rgba(9,52,89,0.06)', fontFamily: 'inherit', rotateX, rotateY, position: 'relative', overflow: 'hidden', userSelect: 'none' }}>
 
         {/* inner glow on hover */}
         <motion.div
@@ -79,8 +79,8 @@ function CategoryCard({ c }: { c: Cat }) {
           </div>
         </motion.div>
 
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 5 }}>{c.name}</div>
-        <div style={{ fontSize: 11, color: 'var(--teal)', fontWeight: 600 }}>{c.count} items</div>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>{c.name}</div>
+        <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 600 }}>{c.count} items</div>
       </motion.div>
     </motion.div>
   )

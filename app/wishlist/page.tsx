@@ -9,17 +9,7 @@ import Footer from '@/components/Footer'
 import Cart from '@/components/Cart'
 import Toast from '@/components/Toast'
 import { CartItem } from '@/lib/types'
-
-function Stars({ rating }: { rating: number }) {
-  return (
-    <div style={{ display: 'flex', gap: 3 }}>
-      {Array.from({ length: 5 }, (_, i) => (
-        <i key={i} className={i < rating ? 'fa-solid fa-star' : 'fa-regular fa-star'}
-          style={{ color: '#f59e0b', fontSize: 10 }} />
-      ))}
-    </div>
-  )
-}
+import Stars from '@/components/Stars'
 
 function WishlistCard({ item }: { item: CartItem }) {
   const { removeFromCart, addToCart, showToast, setCartOpen } = useCart()

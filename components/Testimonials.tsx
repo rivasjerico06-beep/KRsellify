@@ -19,11 +19,11 @@ function StarRow({ n }: { n: number }) {
       {Array.from({ length: 5 }, (_, i) => (
         <motion.i key={i}
           className={i < n ? 'fa-solid fa-star' : 'fa-regular fa-star'}
-          initial={{ opacity: 0, scale: 0.5 }}
+          initial={{ opacity: 0, scale: 0.4 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: i * 0.06, duration: 0.3, type: 'spring', stiffness: 300 }}
-          style={{ color: '#f59e0b', fontSize: 11 }} />
+          transition={{ delay: i * 0.07, duration: 0.35, type: 'spring', stiffness: 340 }}
+          style={{ color: 'var(--gold)', fontSize: 11 }} />
       ))}
     </div>
   )
@@ -32,15 +32,15 @@ function StarRow({ n }: { n: number }) {
 function ReviewCard({ r }: { r: typeof REVIEWS[0] }) {
   return (
     <motion.div
-      whileHover={{ y: -4, boxShadow: '0 24px 60px rgba(9,52,89,0.18)', borderColor: 'rgba(88,148,143,0.4)' }}
+      whileHover={{ y: -5, boxShadow: '0 24px 60px rgba(9,52,89,0.15)', borderColor: 'rgba(202,138,4,0.3)' }}
       transition={{ duration: 0.25 }}
       style={{ background: 'var(--white)', borderRadius: 22, padding: '28px 26px', boxShadow: '0 4px 22px rgba(9,52,89,0.08)', width: 324, flexShrink: 0, position: 'relative', overflow: 'hidden', border: '1.5px solid rgba(9,52,89,0.06)', cursor: 'default' }}>
 
-      {/* Accent bar */}
-      <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '100%', background: 'linear-gradient(180deg, var(--teal), transparent)', borderRadius: '22px 0 0 22px' }} />
+      {/* Gold accent bar */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: 3, height: '100%', background: 'linear-gradient(180deg, var(--gold), transparent)', borderRadius: '22px 0 0 22px' }} />
 
-      {/* Large background quote */}
-      <span style={{ fontSize: 110, lineHeight: 0.8, color: 'var(--teal)', opacity: 0.055, fontFamily: 'Georgia, serif', position: 'absolute', top: 10, right: 14, pointerEvents: 'none', userSelect: 'none' }}>"</span>
+      {/* Large Cormorant quote mark */}
+      <span style={{ fontSize: 130, lineHeight: 0.75, color: 'var(--gold)', opacity: 0.06, fontFamily: 'var(--font-cormorant)', position: 'absolute', top: 4, right: 16, pointerEvents: 'none', userSelect: 'none' }}>"</span>
 
       <StarRow n={r.stars} />
       <p style={{ fontSize: 13.5, lineHeight: 1.74, color: 'var(--text-mid)', marginBottom: 22, position: 'relative' }}>{r.text}</p>
@@ -80,7 +80,7 @@ export default function Testimonials() {
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--white)', padding: '8px 16px', borderRadius: 50, boxShadow: '0 2px 10px rgba(9,52,89,0.07)', border: '1px solid var(--gray)' }}>
               <div style={{ display: 'flex', gap: 2 }}>
-                {[1,2,3,4,5].map(i => <i key={i} className="fa-solid fa-star" style={{ color: '#f59e0b', fontSize: 10 }} />)}
+                {[1,2,3,4,5].map(i => <i key={i} className="fa-solid fa-star" style={{ color: 'var(--gold)', fontSize: 10 }} />)}
               </div>
               <strong style={{ fontSize: 13, color: 'var(--navy)' }}>4.9</strong>
               <span style={{ fontSize: 12, color: 'var(--text-light)' }}>· 2,400+ reviews</span>

@@ -147,7 +147,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
 
           {/* Price */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 24, padding: '20px 24px', background: 'var(--white)', borderRadius: 16, boxShadow: '0 2px 12px rgba(9,52,89,0.07)' }}>
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 38, fontWeight: 900, color: 'var(--navy)', lineHeight: 1 }}>
+            <span style={{ fontFamily: 'var(--font-cormorant)', fontSize: 46, fontWeight: 700, color: 'var(--navy)', lineHeight: 1 }}>
               ${product.price.toFixed(2)}
             </span>
             {product.old_price && (
@@ -210,19 +210,21 @@ export default function ProductDetailClient({ product, related }: { product: Pro
                 initial={{ scale: 0.96, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.96, opacity: 0 }}
-                whileHover={!justAdded ? { background: 'var(--teal)', boxShadow: '0 6px 24px rgba(88,148,143,0.4)' } : {}}
+                whileHover={!justAdded ? { boxShadow: '0 8px 28px rgba(202,138,4,0.55)' } : {}}
                 whileTap={{ scale: 0.97 }}
                 disabled={!product.in_stock}
-                style={{ flex: 1, minWidth: 160, background: justAdded ? '#059669' : 'var(--navy)', color: 'white', border: 'none', padding: '16px 24px', borderRadius: 50, fontSize: 14, fontWeight: 700, letterSpacing: '0.07em', cursor: product.in_stock ? 'pointer' : 'not-allowed', textTransform: 'uppercase', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: product.in_stock ? 1 : 0.5, transition: 'background 0.2s' }}>
+                style={{ flex: 1, minWidth: 160, background: justAdded ? '#059669' : 'linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%)', color: 'white', border: 'none', padding: '16px 24px', borderRadius: 50, fontSize: 14, fontWeight: 700, letterSpacing: '0.07em', cursor: product.in_stock ? 'pointer' : 'not-allowed', textTransform: 'uppercase', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: product.in_stock ? 1 : 0.5, boxShadow: '0 4px 18px rgba(202,138,4,0.32)' }}>
                 {justAdded
                   ? <><i className="fa-solid fa-check" /> Added to Cart!</>
                   : <><i className="fa-solid fa-cart-plus" /> Add to Cart</>}
               </motion.button>
             </AnimatePresence>
 
-            <motion.button onClick={handleBuyNow} whileHover={{ boxShadow: '0 6px 24px rgba(88,148,143,0.3)' }} whileTap={{ scale: 0.97 }}
+            <motion.button onClick={handleBuyNow}
+              whileHover={{ borderColor: 'var(--gold)', color: 'var(--gold)', boxShadow: '0 4px 18px rgba(202,138,4,0.2)' }}
+              whileTap={{ scale: 0.97 }}
               disabled={!product.in_stock}
-              style={{ flex: 1, minWidth: 160, background: 'transparent', color: 'var(--navy)', border: '2px solid var(--navy)', padding: '16px 24px', borderRadius: 50, fontSize: 14, fontWeight: 700, letterSpacing: '0.07em', cursor: product.in_stock ? 'pointer' : 'not-allowed', textTransform: 'uppercase', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: product.in_stock ? 1 : 0.5 }}>
+              style={{ flex: 1, minWidth: 160, background: 'transparent', color: 'var(--navy)', border: '2px solid var(--navy)', padding: '16px 24px', borderRadius: 50, fontSize: 14, fontWeight: 700, letterSpacing: '0.07em', cursor: product.in_stock ? 'pointer' : 'not-allowed', textTransform: 'uppercase', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: product.in_stock ? 1 : 0.5, transition: 'all 0.22s' }}>
               <i className="fa-solid fa-bolt" /> Buy Now
             </motion.button>
           </div>

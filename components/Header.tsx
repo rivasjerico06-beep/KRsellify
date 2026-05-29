@@ -20,6 +20,7 @@ export default function Header() {
   const { user, profile, isAdmin, isApprovedAgent, signOut } = useAuth()
   const router = useRouter()
   const [searchVal, setSearchVal] = useState('')
+  const [searchCat, setSearchCat] = useState('all')
   const [activeNav, setActiveNav] = useState('all')
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -28,7 +29,8 @@ export default function Header() {
   function handleSearch() {
     const q = searchVal.trim()
     if (!q) return
-    router.push(`/search?q=${encodeURIComponent(q)}`)
+    const catParam = searchCat !== 'all' ? `&cat=${searchCat}` : ''
+    router.push(`/search?q=${encodeURIComponent(q)}${catParam}`)
     setMobileSearchOpen(false)
   }
 
@@ -54,11 +56,14 @@ export default function Header() {
 
         {/* desktop search */}
         <div className="kr-header-search" style={{ flex: 1, display: 'flex', maxWidth: 560, border: '2px solid var(--gray)', borderRadius: 50, overflow: 'hidden' }}>
-          <select style={{ border: 'none', outline: 'none', background: 'var(--gray)', padding: '0 14px', fontSize: 13, color: 'var(--text-mid)', cursor: 'pointer', fontFamily: 'inherit' }}>
-            <option>All</option>
-            <option>Medallions</option>
-            <option>Collectibles</option>
-            <option>Crypto</option>
+          <select
+            value={searchCat}
+            onChange={e => setSearchCat(e.target.value)}
+            style={{ border: 'none', outline: 'none', background: 'var(--gray)', padding: '0 14px', fontSize: 13, color: 'var(--text-mid)', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <option value="all">All</option>
+            <option value="medallions">Medallions</option>
+            <option value="collectibles">Collectibles</option>
+            <option value="crypto">Crypto</option>
           </select>
           <input
             type="text"

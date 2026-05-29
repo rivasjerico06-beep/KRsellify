@@ -24,10 +24,11 @@ function SearchResults() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const initialQ = searchParams.get('q') ?? ''
+  const initialCat = searchParams.get('cat') ?? 'all'
 
   const [query, setQuery] = useState(initialQ)
   const [inputVal, setInputVal] = useState(initialQ)
-  const [category, setCategory] = useState('all')
+  const [category, setCategory] = useState(initialCat)
   const [sortBy, setSortBy] = useState<'relevance' | 'price_asc' | 'price_desc' | 'newest'>('relevance')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)

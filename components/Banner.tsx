@@ -57,10 +57,10 @@ function AnimatedStat({ num, label, delay = 0 }: { num: string; label: string; d
       viewport={{ once: true }}
       transition={{ delay, duration: 0.5 }}>
       <motion.h3
-        style={{ fontFamily: 'var(--font-playfair)', fontSize: 40, color: 'var(--teal-light)', fontWeight: 900, lineHeight: 1 }}>
+        style={{ fontFamily: 'var(--font-cormorant)', fontSize: 52, color: 'var(--gold)', fontWeight: 700, lineHeight: 1 }}>
         {rawNum >= 1000 ? displayVal + '+' : displayVal}
       </motion.h3>
-      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 6 }}>{label}</p>
+      <p style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.52)', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 6 }}>{label}</p>
     </motion.div>
   )
 }

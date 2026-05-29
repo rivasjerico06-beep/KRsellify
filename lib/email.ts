@@ -103,7 +103,7 @@ export async function sendOrderConfirmation({
   await resend.emails.send({
     from: FROM,
     to,
-    reply_to: 'rivasjerico06@gmail.com',
+    replyTo: 'rivasjerico06@gmail.com',
     subject: `✓ Order Confirmed — KRSELLIFY (#${orderId.slice(0, 8).toUpperCase()})`,
     html,
   })

@@ -1,17 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+
 :root {
-  --teal: #58948f;
-  --teal-light: #7ab5b0;
-  --teal-dark: #3d6f6a;
-  --navy: #093459;
-  --navy-dark: #061f37;
-  --navy-light: #0e4a80;
-  --white: #ffffff;
-  --off-white: #f4f8f8;
-  --gray: #e8eff0;
-  --text-dark: #0d1f2d;
-  --text-mid: #4a6170;
-  --text-light: #8ba0aa;
-  --sale-red: #e05454;
+  /* Brand */
+  --teal:        #58948f;
+  --teal-light:  #7ab5b0;
+  --teal-dark:   #3d6f6a;
+  --navy:        #093459;
+  --navy-dark:   #061f37;
+  --navy-light:  #0e4a80;
+
+  /* Gold — premium accent */
+  --gold:        #CA8A04;
+  --gold-light:  #d97706;
+  --gold-pale:   #fef3c7;
+  --gold-glow:   rgba(202,138,4,0.38);
+
+  /* Neutrals */
+  --white:       #ffffff;
+  --off-white:   #f4f8f8;
+  --gray:        #e8eff0;
+  --text-dark:   #0d1f2d;
+  --text-mid:    #4a6170;
+  --text-light:  #8ba0aa;
+  --sale-red:    #e05454;
+
+  /* Fonts */
+  --font-cormorant: 'Cormorant Garamond', Georgia, serif;
+
+  /* Transitions */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 *, *::before, *::after {
@@ -20,9 +38,7 @@
   padding: 0;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
@@ -31,40 +47,73 @@ body {
   overflow-x: hidden;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+img { max-width: 100%; display: block; }
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+
+/* ── Utilities ──────────────────────────────────────────── */
+.font-cormorant { font-family: var(--font-cormorant) !important; }
+
+.glass {
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+}
+.glass-dark {
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  background: rgba(6,31,55,0.72);
+  border: 1px solid rgba(88,148,143,0.18);
 }
 
-button {
-  font-family: inherit;
+.gradient-text-gold {
+  background: linear-gradient(135deg, #CA8A04 0%, #f59e0b 50%, #CA8A04 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-img {
-  max-width: 100%;
-  display: block;
+/* Shimmer animation for loading/accent effects */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+.shimmer-gold {
+  background: linear-gradient(90deg, var(--gold) 0%, #f59e0b 40%, var(--gold-light) 60%, var(--gold) 100%);
+  background-size: 200% auto;
+  animation: shimmer 2.4s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--gray); }
-::-webkit-scrollbar-thumb { background: var(--teal); border-radius: 3px; }
+/* Reveal animation utility */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.6s var(--ease-out) both; }
 
-/* ── Mobile responsive ─────────────────────────────────────────── */
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
-/* Header */
-.kr-header-search { flex: 1; display: flex; max-width: 560px; }
+/* ── Layout responsive ──────────────────────────────────── */
+.kr-header-search  { flex: 1; display: flex; max-width: 560px; }
 .kr-header-cart-label { display: inline; }
 .kr-mobile-menu-btn { display: none; }
-.kr-mobile-nav {
-  display: none;
-  flex-direction: column;
-  background: var(--navy);
-  padding: 8px 0;
-}
-.kr-mobile-nav.open { display: flex; }
 
-/* Footer */
 .kr-footer-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
@@ -72,7 +121,6 @@ img {
   padding-bottom: 48px;
 }
 
-/* Banner */
 .kr-banner-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -80,7 +128,6 @@ img {
   align-items: center;
 }
 
-/* ProductDetail */
 .kr-detail-trust {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -88,40 +135,27 @@ img {
 }
 
 @media (max-width: 768px) {
-  /* Header */
-  .kr-header-search { display: none !important; }
+  .kr-header-search    { display: none !important; }
   .kr-header-cart-label { display: none; }
-  .kr-mobile-menu-btn { display: flex !important; }
-  .kr-desktop-nav { display: none; }
+  .kr-mobile-menu-btn  { display: flex !important; }
+  .kr-desktop-nav      { display: none; }
 
-  /* Footer — 2-column then single */
   .kr-footer-grid {
     grid-template-columns: 1fr 1fr !important;
     gap: 32px !important;
   }
   .kr-footer-brand { grid-column: 1 / -1; }
 
-  /* Banner — stack */
   .kr-banner-grid {
     grid-template-columns: 1fr !important;
     gap: 32px !important;
   }
 
-  /* Cart — full width */
-  .kr-cart-panel { width: 100vw !important; }
-
-  /* Product detail trust mini-bar */
-  .kr-detail-trust {
-    grid-template-columns: 1fr !important;
-    gap: 8px !important;
-  }
-
-  /* General padding reduction */
-  .kr-section-pad { padding-left: 16px !important; padding-right: 16px !important; }
+  .kr-cart-panel    { width: 100vw !important; }
+  .kr-detail-trust  { grid-template-columns: 1fr !important; gap: 8px !important; }
+  .kr-section-pad   { padding-left: 16px !important; padding-right: 16px !important; }
 }
 
 @media (max-width: 480px) {
-  .kr-footer-grid {
-    grid-template-columns: 1fr !important;
-  }
+  .kr-footer-grid { grid-template-columns: 1fr !important; }
 }

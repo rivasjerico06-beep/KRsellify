@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Playfair_Display, DM_Sans } from 'next/font/google'
+import { Playfair_Display, DM_Sans, Cormorant_Garamond } from 'next/font/google'
 import Providers from '@/components/Providers'
 import ScrollProgress from '@/components/ScrollProgress'
 import AgentAssistButton from '@/components/AgentAssistButton'
@@ -9,6 +9,13 @@ const playfair = Playfair_Display({
   subsets: ['latin'],
   weight: ['700', '900'],
   variable: '--font-playfair',
+})
+
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-cormorant',
 })
 
 const dmSans = DM_Sans({
@@ -32,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         />
       </head>
-      <body className={`${dmSans.variable} ${playfair.variable}`}>
+      <body className={`${dmSans.variable} ${playfair.variable} ${cormorant.variable}`}>
         <ScrollProgress />
         <Providers>
           {children}
