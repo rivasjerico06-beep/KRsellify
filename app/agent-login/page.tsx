@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
 
 export default function AgentLoginPage() {
   const { user, signIn, isApprovedAgent, agentProfile, loading } = useAuth()
+  const { isDark, toggleDark } = useTheme()
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -39,6 +41,25 @@ export default function AgentLoginPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 60%, var(--teal-dark) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      {/* Theme toggle button */}
+      <motion.button
+        onClick={toggleDark}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        style={{
+          position: 'fixed', top: 20, right: 20, zIndex: 50,
+          width: 44, height: 44, borderRadius: '50%',
+          border: isDark ? '1.5px solid rgba(255,255,255,0.18)' : '1.5px solid rgba(9,52,89,0.18)',
+          background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(9,52,89,0.08)',
+          backdropFilter: 'blur(12px)',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: isDark ? '#CA8A04' : '#093459', fontSize: 16,
+        }}
+        title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        <i className={isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon'} />
+      </motion.button>
+
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

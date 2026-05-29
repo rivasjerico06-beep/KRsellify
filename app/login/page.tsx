@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
 
 const ORBS = [
   { size: 520, color: 'rgba(88,148,143,0.28)', x: 8,  y: 12, dur: 22, delay: 0 },
@@ -47,6 +48,7 @@ function TrustBadge({ icon, text }: { icon: string; text: string }) {
 
 export default function LoginPage() {
   const { user, signIn, signUp, isAdmin, isApprovedAgent } = useAuth()
+  const { isDark, toggleDark } = useTheme()
   const router = useRouter()
 
   const [mode, setMode] = useState<'login' | 'signup'>('login')
@@ -118,7 +120,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#061f37', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: isDark ? '#061f37' : 'linear-gradient(135deg, #dff0ec 0%, #eaf4f8 50%, #daeee9 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', position: 'relative', overflow: 'hidden' }}>
 
       {/* Animated gradient orbs */}
       {ORBS.map((orb, i) => (
@@ -139,10 +141,29 @@ export default function LoginPage() {
       ))}
 
       {/* Dot grid overlay */}
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)', backgroundSize: '36px 36px', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(9,52,89,0.06)'} 1px, transparent 1px)`, backgroundSize: '36px 36px', pointerEvents: 'none' }} />
 
       {/* Subtle vignette */}
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, transparent 40%, rgba(6,31,55,0.6) 100%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, background: isDark ? 'radial-gradient(ellipse at center, transparent 40%, rgba(6,31,55,0.6) 100%)' : 'radial-gradient(ellipse at center, transparent 40%, rgba(180,215,210,0.5) 100%)', pointerEvents: 'none' }} />
+
+      {/* Theme toggle button */}
+      <motion.button
+        onClick={toggleDark}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        style={{
+          position: 'fixed', top: 20, right: 20, zIndex: 50,
+          width: 44, height: 44, borderRadius: '50%',
+          border: isDark ? '1.5px solid rgba(255,255,255,0.18)' : '1.5px solid rgba(9,52,89,0.18)',
+          background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(9,52,89,0.08)',
+          backdropFilter: 'blur(12px)',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: isDark ? '#CA8A04' : '#093459', fontSize: 16,
+        }}
+        title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        <i className={isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon'} />
+      </motion.button>
 
       {/* Card */}
       <motion.div variants={cardVariants} initial="hidden" animate="visible"
