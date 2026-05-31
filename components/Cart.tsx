@@ -283,8 +283,11 @@ export default function Cart() {
                         await onPayPalApprove(data.orderID)
                       }}
                       onError={(err) => {
+                        const msg = typeof err === 'object' && err !== null && 'message' in err
+                          ? (err as { message: string }).message
+                          : String(err)
                         console.error('PayPal error', err)
-                        showToast('PayPal encountered an error. Please try again.')
+                        showToast(`Payment error: ${msg || 'Please try again.'}`)
                       }}
                       onCancel={() => {
                         showToast('Payment cancelled.')
