@@ -31,7 +31,7 @@ function Stars({ rating, large }: { rating: number; large?: boolean }) {
 }
 
 export default function ProductDetailClient({ product, related }: { product: Product; related: Product[] }) {
-  const { addToCart, addBundle, heartToggle, isInCart, showToast, setCartOpen } = useCart()
+  const { cart, addToCart, addBundle, heartToggle, showToast, setCartOpen } = useCart()
   const { user } = useAuth()
   const { flyToCart } = useFlyToCart()
   const addBtnRef = useRef<HTMLButtonElement>(null)
@@ -40,7 +40,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
   const [activeImg, setActiveImg] = useState(0)
   const [justAdded, setJustAdded] = useState(false)
   const [showBuyNowModal, setShowBuyNowModal] = useState(false)
-  const inCart = isInCart(product.id)
+  const inCart = cart.some(i => i.id === product.id && i.via === 'heart')
   const hasTiers = !!(product.quantity_options && product.quantity_options.length > 0)
   const selectedTier = hasTiers ? product.quantity_options![selectedTierIdx] : null
 
