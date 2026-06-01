@@ -10,12 +10,35 @@ export async function GET(request: Request) {
   if (isNextResponse(auth)) return auth
 
   const admin = getAdminSupabase()
-  const { data, error } = await admin
-    .from('agent_profiles')
-    .select('*')
-    .order('created_at', { ascending: false })
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data ?? [])
+
+  const [agentsRes, leadsRes, authRes] = await Promise.all([
+    admin.from('agent_profiles').select('*').order('created_at', { ascending: false }),
+    admin.from('leads').select('agent_id,status'),
+    admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
+  ])
+
+  if (agentsRes.error) return NextResponse.json({ error: agentsRes.error.message }, { status: 500 })
+
+  const emailMap: Record<string, string> = {}
+  for (const u of authRes.data?.users ?? []) emailMap[u.id] = u.email ?? ''
+
+  const leadCountMap: Record<string, number> = {}
+  const convertedCountMap: Record<string, number> = {}
+  for (const l of leadsRes.data ?? []) {
+    if (!l.agent_id) continue
+    leadCountMap[l.agent_id]     = (leadCountMap[l.agent_id] ?? 0) + 1
+    if (l.status === 'converted')
+      convertedCountMap[l.agent_id] = (convertedCountMap[l.agent_id] ?? 0) + 1
+  }
+
+  const enriched = (agentsRes.data ?? []).map(a => ({
+    ...a,
+    email:           emailMap[a.user_id] ?? null,
+    lead_count:      leadCountMap[a.user_id] ?? 0,
+    converted_count: convertedCountMap[a.user_id] ?? 0,
+  }))
+
+  return NextResponse.json(enriched)
 }
 
 export async function PATCH(request: Request) {

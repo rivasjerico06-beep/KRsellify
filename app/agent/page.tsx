@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -16,29 +16,34 @@ export default function AgentPage() {
 }
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  new:              { bg: '#dbeafe', text: '#1e40af', label: 'New' },
-  assigned:         { bg: '#e0f2fe', text: '#0369a1', label: 'Assigned' },
-  attempted:        { bg: '#fef9c3', text: '#854d0e', label: 'Attempted' },
-  interested:       { bg: '#dcfce7', text: '#166534', label: 'Interested' },
-  follow_up:        { bg: '#ede9fe', text: '#5b21b6', label: 'Follow Up' },
-  converted:        { bg: '#d1fae5', text: '#065f46', label: 'Converted' },
-  not_interested:   { bg: '#f3f4f6', text: '#374151', label: 'Not Interested' },
-  do_not_contact:   { bg: '#fee2e2', text: '#991b1b', label: 'Do Not Contact' },
+  new:             { bg: '#dbeafe', text: '#1e40af', label: 'New' },
+  assigned:        { bg: '#e0f2fe', text: '#0369a1', label: 'Assigned' },
+  attempted:       { bg: '#fef9c3', text: '#854d0e', label: 'Attempted' },
+  interested:      { bg: '#dcfce7', text: '#166534', label: 'Interested' },
+  follow_up:       { bg: '#ede9fe', text: '#5b21b6', label: 'Follow Up' },
+  converted:       { bg: '#d1fae5', text: '#065f46', label: 'Converted' },
+  not_interested:  { bg: '#f3f4f6', text: '#374151', label: 'Not Interested' },
+  do_not_contact:  { bg: '#fee2e2', text: '#991b1b', label: 'Do Not Contact' },
 }
 
 function AgentContent() {
   const { user, profile, agentProfile, signOut } = useAuth()
   const supabase = getBrowserSupabase()
-  const [leads, setLeads] = useState<Lead[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [leads, setLeads]         = useState<Lead[]>([])
+  const [loading, setLoading]     = useState(true)
+  const [search, setSearch]       = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [selected, setSelected] = useState<Lead | null>(null)
-  const [noteText, setNoteText] = useState('')
-  const [updating, setUpdating] = useState(false)
+  const [selected, setSelected]   = useState<Lead | null>(null)
+  const [noteText, setNoteText]   = useState('')
+  const [followUpDate, setFollowUpDate] = useState('')
+  const [updating, setUpdating]   = useState(false)
 
   const fetchLeads = useCallback(async () => {
-    const { data } = await supabase.from('leads').select('*').eq('agent_id', user!.id).order('created_at', { ascending: false })
+    const { data } = await supabase
+      .from('leads')
+      .select('*')
+      .eq('agent_id', user!.id)
+      .order('created_at', { ascending: false })
     setLeads(data ?? [])
     setLoading(false)
   }, [supabase, user])
@@ -47,7 +52,9 @@ function AgentContent() {
 
   const filtered = leads.filter(l => {
     const matchStatus = statusFilter === 'all' || l.status === statusFilter
-    const matchSearch = !search || l.customer_name.toLowerCase().includes(search.toLowerCase()) || l.customer_phone.includes(search)
+    const matchSearch = !search ||
+      l.customer_name.toLowerCase().includes(search.toLowerCase()) ||
+      l.customer_phone.includes(search)
     return matchStatus && matchSearch
   })
 
@@ -67,11 +74,13 @@ function AgentContent() {
     setUpdating(false)
   }
 
+  const converted = leads.filter(l => l.status === 'converted').length
   const stats = {
-    total: leads.length,
-    ready: leads.filter(l => ['new', 'assigned'].includes(l.status)).length,
-    followUp: leads.filter(l => l.status === 'follow_up').length,
-    converted: leads.filter(l => l.status === 'converted').length,
+    total:          leads.length,
+    ready:          leads.filter(l => ['new', 'assigned'].includes(l.status)).length,
+    followUp:       leads.filter(l => l.status === 'follow_up').length,
+    converted,
+    conversionRate: leads.length > 0 ? Math.round(converted / leads.length * 100) : 0,
   }
 
   const [copied, setCopied] = useState(false)
@@ -80,6 +89,12 @@ function AgentContent() {
     navigator.clipboard.writeText(agentProfile.referral_code)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  function formatDate(d: string | null | undefined) {
+    if (!d) return null
+    const dt = new Date(d + 'T00:00:00')
+    return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
   }
 
   return (
@@ -126,20 +141,21 @@ function AgentContent() {
           )}
         </div>
 
-        {/* stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 32 }}>
+        {/* stats — 5 cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 16, marginBottom: 32 }}>
           {[
-            { label: 'Total Leads', value: stats.total, icon: 'fa-users', color: 'var(--heading)' },
-            { label: 'Ready to Call', value: stats.ready, icon: 'fa-phone', color: 'var(--teal)' },
-            { label: 'Follow Ups', value: stats.followUp, icon: 'fa-clock', color: '#7c3aed' },
-            { label: 'Converted', value: stats.converted, icon: 'fa-check-circle', color: '#059669' },
+            { label: 'Total Leads',      value: stats.total,          icon: 'fa-users',        color: 'var(--heading)' },
+            { label: 'Ready to Call',    value: stats.ready,          icon: 'fa-phone',        color: 'var(--teal)' },
+            { label: 'Follow Ups',       value: stats.followUp,       icon: 'fa-clock',        color: '#7c3aed' },
+            { label: 'Converted',        value: stats.converted,      icon: 'fa-check-circle', color: '#059669' },
+            { label: 'Conversion Rate',  value: `${stats.conversionRate}%`, icon: 'fa-percent',color: '#d97706' },
           ].map((s, i) => (
-            <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+            <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
               style={{ background: 'var(--white)', borderRadius: 16, padding: 20, boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <p style={{ fontSize: 12, color: 'var(--text-light)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</p>
-                  <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 900, color: 'var(--heading)' }}>{s.value}</p>
+                  <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 30, fontWeight: 900, color: 'var(--heading)' }}>{s.value}</p>
                 </div>
                 <i className={`fa-solid ${s.icon}`} style={{ fontSize: 20, color: s.color, opacity: 0.7 }} />
               </div>
@@ -149,14 +165,16 @@ function AgentContent() {
 
         {/* filters */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search leads…" style={{ flex: 1, minWidth: 200, border: '2px solid var(--gray)', borderRadius: 50, padding: '10px 18px', fontSize: 14, fontFamily: 'inherit', outline: 'none' }} />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ border: '2px solid var(--gray)', borderRadius: 50, padding: '10px 18px', fontSize: 13, fontFamily: 'inherit', outline: 'none', cursor: 'pointer' }}>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search leads…"
+            style={{ flex: 1, minWidth: 200, border: '2px solid var(--gray)', borderRadius: 50, padding: '10px 18px', fontSize: 14, fontFamily: 'inherit', outline: 'none' }} />
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+            style={{ border: '2px solid var(--gray)', borderRadius: 50, padding: '10px 18px', fontSize: 13, fontFamily: 'inherit', outline: 'none', cursor: 'pointer' }}>
             <option value="all">All Statuses</option>
             {Object.entries(STATUS_COLORS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
         </div>
 
-        {/* leads table */}
+        {/* leads list */}
         <div style={{ background: 'var(--white)', borderRadius: 16, boxShadow: '0 2px 12px rgba(9,52,89,0.06)', overflow: 'hidden' }}>
           {loading ? (
             <div style={{ padding: 60, textAlign: 'center', color: 'var(--text-light)' }}><i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 24 }} /></div>
@@ -167,13 +185,21 @@ function AgentContent() {
             </div>
           ) : filtered.map(lead => (
             <motion.div key={lead.id} layout whileHover={{ background: 'var(--off-white)' }}
-              onClick={() => { setSelected(lead); setNoteText(lead.notes ?? '') }}
+              onClick={() => { setSelected(lead); setNoteText(lead.notes ?? ''); setFollowUpDate(lead.follow_up_date ?? '') }}
               style={{ padding: '16px 24px', borderBottom: '1px solid var(--gray)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }}>
               <div style={{ flex: 1 }}>
                 <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-dark)' }}>{lead.customer_name}</p>
-                <p style={{ fontSize: 13, color: 'var(--text-mid)', marginTop: 2 }}>{lead.customer_phone} {lead.product_interest && `· Interested in: ${lead.product_interest}`}</p>
+                <p style={{ fontSize: 13, color: 'var(--text-mid)', marginTop: 2 }}>
+                  {lead.customer_phone}
+                  {lead.product_interest && ` · ${lead.product_interest}`}
+                </p>
               </div>
-              {lead.follow_up_date && <p style={{ fontSize: 12, color: '#7c3aed', fontWeight: 600 }}><i className="fa-solid fa-clock" /> {lead.follow_up_date}</p>}
+              {lead.follow_up_date && (
+                <p style={{ fontSize: 12, color: '#7c3aed', fontWeight: 600 }}>
+                  <i className="fa-solid fa-clock" style={{ marginRight: 4 }} />
+                  {formatDate(lead.follow_up_date)}
+                </p>
+              )}
               <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: STATUS_COLORS[lead.status]?.bg, color: STATUS_COLORS[lead.status]?.text }}>
                 {STATUS_COLORS[lead.status]?.label}
               </span>
@@ -188,7 +214,8 @@ function AgentContent() {
         {selected && (
           <>
             <motion.div key="overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 100 }} />
+              onClick={() => setSelected(null)}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 100 }} />
             <motion.div key="drawer" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 32 }}
               style={{ position: 'fixed', top: 0, right: 0, width: 420, maxWidth: '100vw', height: '100%', background: 'white', zIndex: 101, display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 40px rgba(0,0,0,0.15)' }}>
@@ -199,32 +226,67 @@ function AgentContent() {
                 </div>
                 <p style={{ fontSize: 14, opacity: 0.8, marginTop: 4 }}>{selected.customer_phone}</p>
               </div>
+
               <div style={{ flex: 1, padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {/* Status */}
                 <div>
                   <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Update Status</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {Object.entries(STATUS_COLORS).map(([k, v]) => (
-                      <button key={k} disabled={updating} onClick={() => updateLead(selected.id, { status: k as Lead['status'] })}
-                        style={{ padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, border: 'none', cursor: 'pointer', background: selected.status === k ? v.bg : 'var(--gray)', color: selected.status === k ? v.text : 'var(--text-mid)', fontFamily: 'inherit' }}>
+                      <button key={k} disabled={updating}
+                        onClick={() => updateLead(selected.id, { status: k as Lead['status'] })}
+                        style={{ padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                          background: selected.status === k ? v.bg : 'var(--gray)',
+                          color: selected.status === k ? v.text : 'var(--text-mid)' }}>
                         {v.label}
                       </button>
                     ))}
                   </div>
                 </div>
+
+                {/* Notes */}
                 <div>
                   <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Notes</p>
-                  <textarea value={noteText} onChange={e => setNoteText(e.target.value)} style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 12, padding: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', resize: 'vertical', minHeight: 100 }} />
+                  <textarea value={noteText} onChange={e => setNoteText(e.target.value)}
+                    style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 12, padding: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', resize: 'vertical', minHeight: 100 }} />
                   <button onClick={() => updateLead(selected.id, { notes: noteText })} disabled={updating}
                     style={{ marginTop: 8, background: 'var(--navy)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                    Save Notes
+                    {updating ? 'Saving…' : 'Save Notes'}
                   </button>
                 </div>
+
+                {/* Follow-up date */}
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Follow-up Date</p>
+                  <input type="date" value={followUpDate} onChange={e => setFollowUpDate(e.target.value)}
+                    style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none' }} />
+                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    <button onClick={() => updateLead(selected.id, { follow_up_date: followUpDate || null })} disabled={updating}
+                      style={{ background: '#7c3aed', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                      Save Date
+                    </button>
+                    {followUpDate && (
+                      <button disabled={updating}
+                        onClick={() => { setFollowUpDate(''); updateLead(selected.id, { follow_up_date: null }) }}
+                        style={{ background: 'var(--gray)', color: 'var(--text-mid)', border: 'none', padding: '10px 16px', borderRadius: 50, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Product interest */}
                 {selected.product_interest && (
                   <div>
                     <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Product Interest</p>
                     <p style={{ fontSize: 14, color: 'var(--text-dark)' }}>{selected.product_interest}</p>
                   </div>
                 )}
+
+                <p style={{ fontSize: 12, color: 'var(--text-light)' }}>
+                  <i className="fa-solid fa-clock" style={{ marginRight: 6 }} />
+                  Added {selected.created_at ? new Date(selected.created_at).toLocaleDateString() : '—'}
+                </p>
               </div>
             </motion.div>
           </>

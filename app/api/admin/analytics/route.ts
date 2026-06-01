@@ -25,13 +25,14 @@ export async function GET(request: Request) {
 
   const admin = getAdminSupabase()
 
-  const thirtyAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const thirtyAgo  = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
 
-  const [ordersRes, agentsRes, profilesRes] = await Promise.all([
+  const [ordersRes, agentsRes, profilesRes, leadsRes] = await Promise.all([
     admin.from('orders').select('id,total,discount_amount,status,items,referral_code,user_id,created_at').order('created_at', { ascending: false }),
     admin.from('agent_profiles').select('user_id,display_name,referral_code,status').eq('status', 'approved'),
     admin.from('profiles').select('id,full_name,role').eq('role', 'customer'),
+    admin.from('leads').select('agent_id,status'),
   ])
 
   const allOrders = ordersRes.data ?? []
@@ -82,15 +83,30 @@ export async function GET(request: Request) {
     color: STATUS_COLORS[name] ?? '#e5e7eb',
   }))
 
+  // ── Lead stats per agent ────────────────────────────────────
+  const leadTotalMap: Record<string, number> = {}
+  const leadConvertedMap: Record<string, number> = {}
+  for (const l of leadsRes.data ?? []) {
+    if (!l.agent_id) continue
+    leadTotalMap[l.agent_id]     = (leadTotalMap[l.agent_id] ?? 0) + 1
+    if (l.status === 'converted')
+      leadConvertedMap[l.agent_id] = (leadConvertedMap[l.agent_id] ?? 0) + 1
+  }
+
   // ── Agent performance ───────────────────────────────────────
   const agentStats: AgentStat[] = agents.map(a => {
-    const referred = active.filter(o => o.referral_code === a.referral_code)
+    const referred      = active.filter(o => o.referral_code === a.referral_code)
+    const total_leads   = leadTotalMap[a.user_id] ?? 0
+    const converted_leads = leadConvertedMap[a.user_id] ?? 0
     return {
-      user_id:      a.user_id,
-      display_name: a.display_name,
-      referral_code: a.referral_code ?? '',
-      orders:  referred.length,
-      revenue: referred.reduce((s, o) => s + Number(o.total), 0),
+      user_id:              a.user_id,
+      display_name:         a.display_name,
+      referral_code:        a.referral_code ?? '',
+      orders:               referred.length,
+      revenue:              referred.reduce((s, o) => s + Number(o.total), 0),
+      total_leads,
+      converted_leads,
+      lead_conversion_rate: total_leads > 0 ? Math.round(converted_leads / total_leads * 100) : 0,
     }
   }).sort((a, b) => b.revenue - a.revenue)
 
@@ -103,7 +119,7 @@ export async function GET(request: Request) {
     orderCountMap[o.user_id] = (orderCountMap[o.user_id] ?? 0) + 1
   }
   const customerTiers: CustomerTierRow[] = profiles.map(p => ({
-    id: p.id,
+    id:          p.id,
     full_name:   p.full_name ?? '(no name)',
     total_spent: spendMap[p.id] ?? 0,
     tier:        getTier(spendMap[p.id] ?? 0),

@@ -40,6 +40,12 @@ export interface Order {
   coupon_code?: string | null
   discount_amount?: number | null
   created_at?: string
+  // enriched by /api/admin/orders
+  customer_name?: string | null
+  customer_email?: string | null
+  customer_phone?: string | null
+  customer_address?: string | null
+  customer_city?: string | null
 }
 
 export interface NewsletterSubscriber {
@@ -60,6 +66,11 @@ export interface Profile {
   profile_photo_url?: string | null
   created_at?: string
   updated_at?: string
+  // enriched by /api/admin/users
+  email?: string | null
+  order_count?: number
+  total_spent?: number
+  tier?: 'bronze' | 'silver' | 'gold' | 'platinum'
 }
 
 export interface AgentProfile {
@@ -74,6 +85,10 @@ export interface AgentProfile {
   created_at?: string
   updated_at?: string
   profiles?: Profile
+  // enriched by /api/admin/agents
+  email?: string | null
+  lead_count?: number
+  converted_count?: number
 }
 
 export interface Lead {
@@ -127,6 +142,9 @@ export interface AgentStat {
   referral_code: string
   orders: number
   revenue: number
+  total_leads?: number
+  converted_leads?: number
+  lead_conversion_rate?: number
 }
 
 export interface CustomerTierRow {
