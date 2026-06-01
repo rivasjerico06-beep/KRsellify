@@ -13,7 +13,7 @@ export default function Cart() {
   const { cart, cartOpen, setCartOpen, cartTotal, updateQty, removeFromCart, clearCart, showToast } = useCart()
   const { user } = useAuth()
   const router = useRouter()
-  const [{ isPending: paypalLoading }] = usePayPalScriptReducer()
+  const [{ isPending: paypalLoading, isRejected: paypalFailed }] = usePayPalScriptReducer()
 
   const [referralCode, setReferralCode] = useState('')
   const [couponCode, setCouponCode] = useState('')
@@ -272,6 +272,11 @@ export default function Cart() {
                     <div style={{ textAlign: 'center', padding: '14px 0', color: 'var(--text-mid)', fontSize: 13 }}>
                       <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 6 }} />
                       Loading PayPal…
+                    </div>
+                  ) : paypalFailed ? (
+                    <div style={{ textAlign: 'center', padding: '12px 0', color: '#dc2626', fontSize: 13 }}>
+                      <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }} />
+                      PayPal failed to load. Please refresh the page.
                     </div>
                   ) : (
                     <PayPalButtons
