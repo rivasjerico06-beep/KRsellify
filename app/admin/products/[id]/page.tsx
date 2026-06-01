@@ -88,7 +88,8 @@ function ProductEditor({ id }: { id: string }) {
   const [catLabel, setCatLabel]     = useState('Collectibles')
   const [price, setPrice]           = useState('')
   const [oldPrice, setOldPrice]     = useState('')
-  const [img, setImg]               = useState('')
+  const [gallery, setGallery]       = useState<string[]>([])
+  const [pasteUrl, setPasteUrl]     = useState('')
   const [description, setDescription] = useState('')
   const [isSale, setIsSale]         = useState(false)
   const [isNew_, setIsNew_]         = useState(false)
@@ -118,7 +119,9 @@ function ProductEditor({ id }: { id: string }) {
         if (p) {
           setName(p.name); setCategory(p.category); setCatLabel(p.cat_label)
           setPrice(p.price.toString()); setOldPrice(p.old_price?.toString() ?? '')
-          setImg(p.img); setIsSale(p.is_sale); setIsNew_(p.is_new)
+          const existing = p.images?.length ? p.images : (p.img ? [p.img] : [])
+          setGallery(existing)
+          setIsSale(p.is_sale); setIsNew_(p.is_new)
           setInStock(p.in_stock); setRating(p.rating); setReviews(p.reviews_count)
           setDescription(p.description ?? '')
         }
@@ -133,14 +136,14 @@ function ProductEditor({ id }: { id: string }) {
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
 
-    const maxMB = 5
-    if (file.size > maxMB * 1024 * 1024) {
-      setError(`Image too large. Max ${maxMB}MB.`)
-      return
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) { setError(`${file.name} is over 5MB — skipped.`); continue }
     }
+    const valid = files.filter(f => f.size <= 5 * 1024 * 1024)
+    if (!valid.length) return
 
     setUploading(true)
     setError('')
@@ -148,51 +151,62 @@ function ProductEditor({ id }: { id: string }) {
 
     try {
       const supabase = getBrowserSupabase()
-      const ext = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const uploaded: string[] = []
 
-      // Simulate progress since Supabase doesn't expose upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress(p => Math.min(p + 15, 85))
-      }, 200)
+      for (let i = 0; i < valid.length; i++) {
+        const file = valid[i]
+        const ext = file.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 
-      const { data, error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(fileName, file, { cacheControl: '3600', upsert: false })
+        const progressInterval = setInterval(() => {
+          setUploadProgress(p => Math.min(p + 15, 85))
+        }, 200)
 
-      clearInterval(progressInterval)
+        const { data, error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(fileName, file, { cacheControl: '3600', upsert: false })
 
-      if (uploadError) {
-        setError(`Upload failed: ${uploadError.message}`)
-        setUploading(false)
-        return
+        clearInterval(progressInterval)
+
+        if (uploadError) { setError(`Upload failed: ${uploadError.message}`); continue }
+
+        setUploadProgress(Math.round(((i + 1) / valid.length) * 100))
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(data.path)
+
+        uploaded.push(publicUrl)
       }
 
-      setUploadProgress(100)
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(data.path)
-
-      setImg(publicUrl)
+      if (uploaded.length) setGallery(prev => [...prev, ...uploaded])
       setTimeout(() => setUploadProgress(0), 800)
     } catch {
-      setError('Upload failed. Please check your Supabase storage bucket is set up.')
+      setError('Upload failed. Check your Supabase storage bucket is set up.')
     }
     setUploading(false)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
+  function addPasteUrl() {
+    const url = pasteUrl.trim()
+    if (!url) return
+    setGallery(prev => [...prev, url])
+    setPasteUrl('')
+  }
+
   async function save(e: React.FormEvent) {
     e.preventDefault()
-    if (!name || !price || !img) { setError('Name, price, and image are required.'); return }
+    if (!name || !price || gallery.length === 0) { setError('Name, price, and at least one photo are required.'); return }
     setSaving(true); setError('')
     const body = {
       id: isNew ? undefined : id,
       name, category, cat_label: catLabel,
       price: parseFloat(price),
       old_price: oldPrice ? parseFloat(oldPrice) : null,
-      img, description: description || null,
+      img: gallery[0],
+      images: gallery,
+      description: description || null,
       is_sale: isSale, is_new: isNew_,
       in_stock: inStock, rating, reviews_count: reviews,
     }
@@ -211,7 +225,7 @@ function ProductEditor({ id }: { id: string }) {
     setSaving(false)
   }
 
-  const preview: Partial<Product> = { name, category, cat_label: catLabel, price: parseFloat(price) || 0, old_price: oldPrice ? parseFloat(oldPrice) : null, img, is_sale: isSale, is_new: isNew_, in_stock: inStock }
+  const preview: Partial<Product> = { name, category, cat_label: catLabel, price: parseFloat(price) || 0, old_price: oldPrice ? parseFloat(oldPrice) : null, img: gallery[0] ?? '', is_sale: isSale, is_new: isNew_, in_stock: inStock }
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--off-white)' }}>
@@ -287,53 +301,85 @@ function ProductEditor({ id }: { id: string }) {
               </div>
             </div>
 
-            {/* Image */}
+            {/* Gallery */}
             <div style={{ background: 'var(--white)', borderRadius: 16, padding: 28, boxShadow: '0 2px 12px rgba(9,52,89,0.06)', marginBottom: 20 }}>
-              <p style={{ fontWeight: 700, color: 'var(--heading)', marginBottom: 18, fontSize: 14 }}>Product Image</p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+                <div>
+                  <p style={{ fontWeight: 700, color: 'var(--heading)', fontSize: 14, marginBottom: 3 }}>Product Photos</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-light)' }}>First photo is the main image shown in cards. Add up to 8 photos.</p>
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--teal)' }}>{gallery.length} / 8</span>
+              </div>
+
+              {/* Existing gallery grid */}
+              {gallery.length > 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 10, marginBottom: 20 }}>
+                  {gallery.map((src, i) => (
+                    <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: 12, overflow: 'hidden', border: i === 0 ? '2.5px solid var(--teal)' : '2px solid var(--gray)', background: 'var(--gray)' }}>
+                      <Image src={src} alt="" fill style={{ objectFit: 'cover' }} sizes="120px" />
+                      {i === 0 && (
+                        <span style={{ position: 'absolute', bottom: 5, left: 5, background: 'var(--teal)', color: 'white', fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Main</span>
+                      )}
+                      <button type="button"
+                        onClick={() => setGallery(prev => prev.filter((_, idx) => idx !== i))}
+                        style={{ position: 'absolute', top: 5, right: 5, background: 'rgba(0,0,0,0.65)', border: 'none', color: 'white', borderRadius: '50%', width: 24, height: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, padding: 0 }}>
+                        <i className="fa-solid fa-xmark" />
+                      </button>
+                      {i > 0 && (
+                        <button type="button"
+                          onClick={() => setGallery(prev => { const a = [...prev]; [a[0], a[i]] = [a[i], a[0]]; return a })}
+                          style={{ position: 'absolute', bottom: 5, right: 5, background: 'rgba(0,0,0,0.65)', border: 'none', color: 'white', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 9, fontWeight: 700 }}>
+                          SET MAIN
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Upload zone */}
-              <div
-                onClick={() => !uploading && fileInputRef.current?.click()}
-                style={{ border: '2px dashed var(--teal)', borderRadius: 14, padding: '24px 20px', textAlign: 'center', cursor: uploading ? 'wait' : 'pointer', marginBottom: 16, background: 'rgba(88,148,143,0.03)', transition: 'background 0.2s' }}
-                onMouseEnter={e => { if (!uploading) e.currentTarget.style.background = 'rgba(88,148,143,0.07)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(88,148,143,0.03)' }}
-              >
-                <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
-                {uploading ? (
-                  <div>
-                    <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 28, color: 'var(--teal)', marginBottom: 10, display: 'block' }} />
-                    <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--teal)', marginBottom: 8 }}>Uploading…</p>
-                    <div style={{ height: 6, background: 'var(--gray)', borderRadius: 3, overflow: 'hidden', maxWidth: 200, margin: '0 auto' }}>
-                      <motion.div animate={{ width: `${uploadProgress}%` }} transition={{ duration: 0.3 }}
-                        style={{ height: '100%', background: 'var(--teal)', borderRadius: 3 }} />
-                    </div>
+              {gallery.length < 8 && (
+                <>
+                  <div
+                    onClick={() => !uploading && fileInputRef.current?.click()}
+                    style={{ border: '2px dashed var(--teal)', borderRadius: 14, padding: '20px', textAlign: 'center', cursor: uploading ? 'wait' : 'pointer', marginBottom: 14, background: 'rgba(88,148,143,0.03)', transition: 'background 0.2s' }}
+                    onMouseEnter={e => { if (!uploading) e.currentTarget.style.background = 'rgba(88,148,143,0.07)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(88,148,143,0.03)' }}
+                  >
+                    <input ref={fileInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleImageUpload} />
+                    {uploading ? (
+                      <div>
+                        <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 24, color: 'var(--teal)', marginBottom: 8, display: 'block' }} />
+                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--teal)', marginBottom: 6 }}>Uploading…</p>
+                        <div style={{ height: 5, background: 'var(--gray)', borderRadius: 3, overflow: 'hidden', maxWidth: 180, margin: '0 auto' }}>
+                          <motion.div animate={{ width: `${uploadProgress}%` }} transition={{ duration: 0.3 }}
+                            style={{ height: '100%', background: 'var(--teal)', borderRadius: 3 }} />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: 24, color: 'var(--teal)', marginBottom: 8, display: 'block' }} />
+                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--heading)', marginBottom: 3 }}>Click to upload photos</p>
+                        <p style={{ fontSize: 11, color: 'var(--text-light)' }}>Select multiple — JPG, PNG, WebP — max 5MB each</p>
+                      </>
+                    )}
                   </div>
-                ) : (
-                  <>
-                    <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: 28, color: 'var(--teal)', marginBottom: 10, display: 'block' }} />
-                    <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--heading)', marginBottom: 4 }}>Click to upload image</p>
-                    <p style={{ fontSize: 12, color: 'var(--text-light)' }}>JPG, PNG, WebP — max 5MB</p>
-                  </>
-                )}
-              </div>
 
-              {/* Or paste URL */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                <div style={{ flex: 1, height: 1, background: 'var(--gray)' }} />
-                <span style={{ fontSize: 11, color: 'var(--text-light)', fontWeight: 600 }}>OR PASTE URL</span>
-                <div style={{ flex: 1, height: 1, background: 'var(--gray)' }} />
-              </div>
-              <input style={inputCls} value={img} onChange={e => setImg(e.target.value)} placeholder="https://example.com/image.jpg" />
-
-              {/* Preview */}
-              {img && (
-                <div style={{ marginTop: 14, position: 'relative', height: 130, borderRadius: 12, overflow: 'hidden', background: 'var(--gray)' }}>
-                  <Image src={img} alt="Preview" fill style={{ objectFit: 'cover' }} onError={() => {}} />
-                  <button type="button" onClick={() => setImg('')}
-                    style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.6)', border: 'none', color: 'white', borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
-                    <i className="fa-solid fa-xmark" />
-                  </button>
-                </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+                    <div style={{ flex: 1, height: 1, background: 'var(--gray)' }} />
+                    <span style={{ fontSize: 11, color: 'var(--text-light)', fontWeight: 600 }}>OR PASTE URL</span>
+                    <div style={{ flex: 1, height: 1, background: 'var(--gray)' }} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input style={{ ...inputCls, flex: 1 }} value={pasteUrl} onChange={e => setPasteUrl(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addPasteUrl() } }}
+                      placeholder="https://example.com/photo.jpg" />
+                    <button type="button" onClick={addPasteUrl}
+                      style={{ background: 'var(--teal)', color: 'white', border: 'none', padding: '11px 18px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                      Add
+                    </button>
+                  </div>
+                </>
               )}
             </div>
 
