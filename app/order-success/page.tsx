@@ -50,7 +50,6 @@ interface OrderInfo {
   discount: number
   itemCount: number
   items: { name: string; price: number; qty: number; img: string }[]
-  referral_code?: string
 }
 
 export default function OrderSuccessPage() {

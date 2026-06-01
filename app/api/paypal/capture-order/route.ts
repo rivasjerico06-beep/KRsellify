@@ -45,7 +45,6 @@ export async function POST(request: Request) {
     paypal_order_id,
     items,
     total,
-    referral_code,
     coupon_code,
     discount_amount,
     guest_email,
@@ -53,7 +52,6 @@ export async function POST(request: Request) {
     paypal_order_id: string
     items: CartItem[]
     total: number
-    referral_code?: string
     coupon_code?: string
     discount_amount?: number
     guest_email?: string
@@ -125,7 +123,6 @@ export async function POST(request: Request) {
       })),
       total: capturedAmount,
       discount_amount: appliedDiscount,
-      referral_code: referral_code ?? null,
       coupon_code: coupon_code ?? null,
       status: 'paid',
       paypal_order_id,

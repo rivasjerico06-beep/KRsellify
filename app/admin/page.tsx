@@ -557,7 +557,7 @@ function AdminContent() {
                     <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 800 }}>
                       <thead>
                         <tr style={{ background: 'var(--gray)' }}>
-                          {['Name', 'Email', 'Phone', 'Ref Code', 'Leads', 'Converted', 'Status', 'Applied', 'Actions'].map(h => (
+                          {['Name', 'Email', 'Phone', 'Leads', 'Converted', 'Status', 'Applied', 'Actions'].map(h => (
                             <th key={h} style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-mid)', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
                           ))}
                         </tr>
@@ -570,11 +570,6 @@ function AdminContent() {
                               <td style={{ padding: '12px 14px', fontWeight: 600, fontSize: 14 }}>{a.display_name}</td>
                               <td style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-mid)' }}>{a.email || '—'}</td>
                               <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-mid)' }}>{a.phone}</td>
-                              <td style={{ padding: '12px 14px' }}>
-                                {a.referral_code ? (
-                                  <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 700, color: 'var(--teal)', background: '#f0fdfa', padding: '3px 10px', borderRadius: 8 }}>{a.referral_code}</span>
-                                ) : <span style={{ color: 'var(--text-light)', fontSize: 13 }}>—</span>}
-                              </td>
                               <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 600, color: 'var(--heading)' }}>{a.lead_count ?? 0}</td>
                               <td style={{ padding: '12px 14px' }}>
                                 <span style={{ fontSize: 12, fontWeight: 700, color: '#059669' }}>{a.converted_count ?? 0}</span>
@@ -596,7 +591,7 @@ function AdminContent() {
                             </tr>
                           )
                         })}
-                        {agents.length === 0 && <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No agent applications yet.</td></tr>}
+                        {agents.length === 0 && <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No agent applications yet.</td></tr>}
                       </tbody>
                     </table>
                   </div>
@@ -693,7 +688,7 @@ function AdminContent() {
                     <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
                       <thead>
                         <tr style={{ background: 'var(--gray)' }}>
-                          {['Agent', 'Ref Code', 'Total Leads', 'Converted', 'Lead Rate', 'Orders', 'Revenue', 'Avg. Order'].map(h => (
+                          {['Agent', 'Total Leads', 'Converted', 'Lead Rate', 'Orders', 'Revenue', 'Avg. Order'].map(h => (
                             <th key={h} style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-mid)', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
                           ))}
                         </tr>
@@ -702,9 +697,6 @@ function AdminContent() {
                         {analytics.agentStats.map(a => (
                           <tr key={a.user_id} style={{ borderBottom: '1px solid var(--gray)' }}>
                             <td style={{ padding: '12px 14px', fontWeight: 600, fontSize: 14 }}>{a.display_name}</td>
-                            <td style={{ padding: '12px 14px' }}>
-                              <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 700, color: 'var(--teal)', background: '#f0fdfa', padding: '3px 10px', borderRadius: 8 }}>{a.referral_code}</span>
-                            </td>
                             <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 600 }}>{a.total_leads ?? 0}</td>
                             <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 600, color: '#059669' }}>{a.converted_leads ?? 0}</td>
                             <td style={{ padding: '12px 14px' }}>
@@ -720,7 +712,7 @@ function AdminContent() {
                           </tr>
                         ))}
                         {analytics.agentStats.length === 0 && (
-                          <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No approved agents with referral codes yet.</td></tr>
+                          <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No approved agents yet.</td></tr>
                         )}
                       </tbody>
                     </table>
@@ -867,7 +859,7 @@ function AdminContent() {
                               <select value={newLeadAgent} onChange={e => setNewLeadAgent(e.target.value)}
                                 style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none', cursor: 'pointer' }}>
                                 <option value="">Unassigned</option>
-                                {approvedAgents.map(a => <option key={a.user_id} value={a.user_id}>{a.display_name} ({a.referral_code ?? 'no code'})</option>)}
+                                {approvedAgents.map(a => <option key={a.user_id} value={a.user_id}>{a.display_name}</option>)}
                               </select>
                             </div>
                             <div>
@@ -967,12 +959,6 @@ function AdminContent() {
                       <span style={{ fontSize: 13, fontWeight: 600, color: '#059669' }}>-${Number(selectedOrder.discount_amount).toFixed(2)}</span>
                     </div>
                   ) : null}
-                  {selectedOrder.referral_code && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 13, color: 'var(--text-mid)' }}>Referral Code</span>
-                      <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 700, color: 'var(--teal)' }}>{selectedOrder.referral_code}</span>
-                    </div>
-                  )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, borderTop: '1px solid var(--gray)', marginTop: 2 }}>
                     <span style={{ fontWeight: 700, fontSize: 14 }}>Total</span>
                     <span style={{ fontWeight: 900, fontSize: 18, color: 'var(--heading)' }}>${Number(selectedOrder.total).toFixed(2)}</span>

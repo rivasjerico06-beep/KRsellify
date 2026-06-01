@@ -17,7 +17,6 @@ export default function CheckoutPage() {
 
   const [email, setEmail] = useState('')
   const [editingEmail, setEditingEmail] = useState(false)
-  const [referralCode, setReferralCode] = useState('')
   const [couponCode, setCouponCode] = useState('')
   const [couponDiscount, setCouponDiscount] = useState(0)
   const [couponMsg, setCouponMsg] = useState('')
@@ -41,14 +40,14 @@ export default function CheckoutPage() {
   const finalTotal = cartTotal - discountAmount
 
   async function validateCoupon() {
-    if (!couponCode.trim() || !session?.access_token) return
+    if (!couponCode.trim()) return
     setValidating(true)
     setCouponMsg('')
     const res = await fetch('/api/coupons', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
+        ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
       },
       body: JSON.stringify({ code: couponCode.trim(), cart_total: cartTotal }),
     })
@@ -94,7 +93,6 @@ export default function CheckoutPage() {
         items: cart,
         total: finalTotal,
         discount_amount: discountAmount,
-        referral_code: referralCode.trim() || undefined,
         coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
         guest_email: !user ? email.trim() : undefined,
       }),
@@ -114,7 +112,6 @@ export default function CheckoutPage() {
         discount: discountAmount,
         itemCount: cart.reduce((s, i) => s + i.qty, 0),
         items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, img: i.img })),
-        referral_code: referralCode || undefined,
       }))
     } catch {}
 
@@ -212,47 +209,32 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Coupon — logged-in users only */}
-          {user && (
-            <div style={{ background: 'white', borderRadius: 8, border: '1px solid #e0e0e0', padding: '16px 20px', marginBottom: 20 }}>
-              <p style={{ fontSize: 14, fontWeight: 700, color: '#111', marginBottom: 12 }}>Apply a promo coupon</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', border: '1px solid #ddd', borderRadius: 6 }}>
-                <i className="fa-solid fa-tag" style={{ color: '#aaa', fontSize: 14 }} />
-                <span style={{ fontSize: 13, color: '#555', flex: 1 }}>Promo coupon</span>
-                <input
-                  value={couponCode}
-                  onChange={e => { setCouponCode(e.target.value); setCouponDiscount(0); setCouponMsg('') }}
-                  placeholder="Enter code…"
-                  onKeyDown={e => e.key === 'Enter' && validateCoupon()}
-                  style={{ border: '1px solid #ddd', borderRadius: 4, padding: '7px 10px', fontSize: 13, outline: 'none', width: 130 }}
-                />
-                <button
-                  onClick={validateCoupon}
-                  disabled={validating || !couponCode.trim()}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0070ba', fontSize: 13, fontWeight: 700, padding: '7px 4px', opacity: (!couponCode.trim() || validating) ? 0.45 : 1 }}>
-                  {validating ? '…' : 'Redeem'}
-                </button>
-              </div>
-              {couponMsg && (
-                <p style={{ fontSize: 13, fontWeight: 600, color: couponDiscount > 0 ? '#059669' : '#dc2626', marginTop: 8 }}>
-                  <i className={`fa-solid ${couponDiscount > 0 ? 'fa-check' : 'fa-xmark'}`} style={{ marginRight: 4 }} />
-                  {couponMsg}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Referral code */}
+          {/* Coupon code */}
           <div style={{ background: 'white', borderRadius: 8, border: '1px solid #e0e0e0', padding: '16px 20px', marginBottom: 20 }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#555', marginBottom: 8 }}>
-              Agent Referral Code <span style={{ fontWeight: 400, color: '#999' }}>(optional)</span>
-            </label>
-            <input
-              value={referralCode}
-              onChange={e => setReferralCode(e.target.value)}
-              placeholder="Enter referral code…"
-              style={{ width: '100%', border: '1px solid #ddd', borderRadius: 6, padding: '11px 14px', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
-            />
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#111', marginBottom: 12 }}>Apply a promo coupon</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', border: '1px solid #ddd', borderRadius: 6 }}>
+              <i className="fa-solid fa-tag" style={{ color: '#aaa', fontSize: 14 }} />
+              <span style={{ fontSize: 13, color: '#555', flex: 1 }}>Coupon code</span>
+              <input
+                value={couponCode}
+                onChange={e => { setCouponCode(e.target.value); setCouponDiscount(0); setCouponMsg('') }}
+                placeholder="Enter code…"
+                onKeyDown={e => e.key === 'Enter' && validateCoupon()}
+                style={{ border: '1px solid #ddd', borderRadius: 4, padding: '7px 10px', fontSize: 13, outline: 'none', width: 130 }}
+              />
+              <button
+                onClick={validateCoupon}
+                disabled={validating || !couponCode.trim()}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0070ba', fontSize: 13, fontWeight: 700, padding: '7px 4px', opacity: (!couponCode.trim() || validating) ? 0.45 : 1 }}>
+                {validating ? '…' : 'Redeem'}
+              </button>
+            </div>
+            {couponMsg && (
+              <p style={{ fontSize: 13, fontWeight: 600, color: couponDiscount > 0 ? '#059669' : '#dc2626', marginTop: 8 }}>
+                <i className={`fa-solid ${couponDiscount > 0 ? 'fa-check' : 'fa-xmark'}`} style={{ marginRight: 4 }} />
+                {couponMsg}
+              </p>
+            )}
           </div>
 
           <p style={{ fontSize: 13, color: '#888' }}>
