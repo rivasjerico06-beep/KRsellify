@@ -321,6 +321,20 @@ export default function CheckoutPage() {
                 onCancel={() => showToast('Payment cancelled.')}
               />
 
+              <div style={{ height: 10 }} />
+
+              {/* Debit or Credit Card */}
+              <PayPalButtons
+                fundingSource={FUNDING.CARD}
+                style={{ layout: 'vertical', shape: 'rect', height: 50 }}
+                disabled={placing}
+                forceReRender={[finalTotal, cart.length, email]}
+                createOrder={createPayPalOrder}
+                onApprove={async (data) => { await onPayPalApprove(data.orderID) }}
+                onError={handlePayPalError}
+                onCancel={() => showToast('Payment cancelled.')}
+              />
+
             </>
           )}
 
