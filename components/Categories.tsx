@@ -10,8 +10,6 @@ const CATS = [
   { icon: 'fa-medal',        name: 'Medallions',   cat: 'medallions',  brand: false },
   { icon: 'fa-gem',          name: 'Collectibles', cat: 'collectibles', brand: false },
   { icon: 'fa-bitcoin',      name: 'Crypto',       cat: 'crypto',       brand: true  },
-  { icon: 'fa-shirt',        name: 'Apparel',      cat: 'apparel',      brand: false },
-  { icon: 'fa-clock',        name: 'Accessories',  cat: 'accessories',  brand: false },
   { icon: 'fa-bag-shopping', name: 'All Items',    cat: 'all',          brand: false },
 ]
 
