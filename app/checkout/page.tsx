@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -22,6 +22,8 @@ export default function CheckoutPage() {
   const [couponMsg, setCouponMsg] = useState('')
   const [validating, setValidating] = useState(false)
   const [placing, setPlacing] = useState(false)
+  const [emailShake, setEmailShake] = useState(false)
+  const emailRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (user?.email) {
@@ -275,25 +277,25 @@ export default function CheckoutPage() {
                   ← Cancel
                 </button>
               )}
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="Enter your email address *"
-                required
-                style={{ width: '100%', border: `1.5px solid ${emailMissing ? '#f5a623' : '#ddd'}`, borderRadius: 6, padding: '13px 16px', fontSize: 14, color: '#111', background: 'white', marginBottom: 20, outline: 'none', boxSizing: 'border-box' }}
-              />
+              <motion.div
+                animate={emailShake ? { x: [0, -8, 8, -8, 8, -4, 4, 0] } : {}}
+                transition={{ duration: 0.45 }}
+                onAnimationComplete={() => setEmailShake(false)}
+              >
+                <input
+                  ref={emailRef}
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="Enter your email address *"
+                  required
+                  style={{ width: '100%', border: `1.5px solid ${emailShake ? '#ef4444' : emailMissing ? '#f5a623' : '#ddd'}`, borderRadius: 6, padding: '13px 16px', fontSize: 14, color: '#111', background: emailShake ? '#fff5f5' : 'white', marginBottom: 20, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s, background 0.2s' }}
+                />
+              </motion.div>
             </>
           )}
 
           {/* Payment buttons */}
-          {emailMissing && (
-            <div style={{ background: '#fff8e6', border: '1px solid #fcd34d', borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 13, color: '#92400e', textAlign: 'center' }}>
-              <i className="fa-solid fa-envelope" style={{ marginRight: 6 }} />
-              Enter your email above to receive your order confirmation
-            </div>
-          )}
-
           {placing ? (
             <div style={{ textAlign: 'center', padding: '24px 0', color: '#555', fontSize: 15, fontWeight: 600 }}>
               <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 8, color: '#0070ba' }} />
@@ -319,7 +321,9 @@ export default function CheckoutPage() {
                 forceReRender={[finalTotal, cart.length, email]}
                 onClick={(_, actions) => {
                   if (!email.trim()) {
-                    showToast('Please enter your email address first')
+                    setEmailShake(true)
+                    emailRef.current?.focus()
+                    emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
                     return actions.reject()
                   }
                   return actions.resolve()
@@ -340,7 +344,9 @@ export default function CheckoutPage() {
                 forceReRender={[finalTotal, cart.length, email]}
                 onClick={(_, actions) => {
                   if (!email.trim()) {
-                    showToast('Please enter your email address first')
+                    setEmailShake(true)
+                    emailRef.current?.focus()
+                    emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
                     return actions.reject()
                   }
                   return actions.resolve()
