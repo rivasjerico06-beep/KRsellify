@@ -1,118 +1,17 @@
 'use client'
 
-import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { PayPalButtons, usePayPalScriptReducer, FUNDING } from '@paypal/react-paypal-js'
 import { useCart } from '@/context/CartContext'
-import { useAuth } from '@/context/AuthContext'
-import BuyNowModal from '@/components/BuyNowModal'
 
 export default function Cart() {
-  const { cart, cartOpen, setCartOpen, cartTotal, updateQty, removeFromCart, clearCart, showToast } = useCart()
-  const { user, session } = useAuth()
+  const { cart, cartOpen, setCartOpen, cartTotal, updateQty, removeFromCart } = useCart()
   const router = useRouter()
-  const [{ isPending: paypalLoading, isRejected: paypalFailed }] = usePayPalScriptReducer()
 
-  const [authModalOpen, setAuthModalOpen] = useState(false)
-  const [referralCode, setReferralCode] = useState('')
-  const [couponCode, setCouponCode] = useState('')
-  const [couponDiscount, setCouponDiscount] = useState(0)
-  const [couponMsg, setCouponMsg] = useState('')
-  const [validating, setValidating] = useState(false)
-  const [placing, setPlacing] = useState(false)
-
-  const discountAmount = couponDiscount > 0 ? cartTotal * (couponDiscount / 100) : 0
-  const finalTotal = cartTotal - discountAmount
-
-  async function validateCoupon() {
-    if (!couponCode.trim()) return
-    setValidating(true)
-    setCouponMsg('')
-    const res = await fetch('/api/coupons', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
-      },
-      body: JSON.stringify({ code: couponCode.trim(), cart_total: cartTotal }),
-    })
-    const data = await res.json()
-    if (data.valid) {
-      setCouponDiscount(data.discount_pct)
-      setCouponMsg(data.message)
-    } else {
-      setCouponDiscount(0)
-      setCouponMsg(data.message)
-    }
-    setValidating(false)
-  }
-
-  function goToLogin() {
+  function goToCheckout() {
     setCartOpen(false)
-    router.push('/login?next=checkout')
-  }
-
-  async function createPayPalOrder() {
-    if (!session?.access_token) throw new Error('Session expired — please refresh and sign in again.')
-    const res = await fetch('/api/paypal/create-order', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ amount: finalTotal }),
-    })
-    const data = await res.json()
-    if (!data.id) throw new Error(data.error ?? 'Failed to create PayPal order')
-    return data.id as string
-  }
-
-  async function onPayPalApprove(paypalOrderId: string) {
-    setPlacing(true)
-    const res = await fetch('/api/paypal/capture-order', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token}`,
-      },
-      body: JSON.stringify({
-        paypal_order_id: paypalOrderId,
-        items: cart,
-        total: finalTotal,
-        discount_amount: discountAmount,
-        referral_code: referralCode.trim() || undefined,
-        coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
-      }),
-    })
-
-    const order = await res.json()
-    if (!res.ok) {
-      showToast(`Payment error: ${order.error ?? 'Unknown error'}`)
-      setPlacing(false)
-      return
-    }
-
-    try {
-      localStorage.setItem('krsellify_last_order', JSON.stringify({
-        id: order.id ?? '',
-        total: finalTotal,
-        discount: discountAmount,
-        itemCount: cart.reduce((s, i) => s + i.qty, 0),
-        items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, img: i.img })),
-        referral_code: referralCode || undefined,
-      }))
-    } catch {}
-
-    clearCart()
-    setCartOpen(false)
-    setCouponCode('')
-    setCouponDiscount(0)
-    setCouponMsg('')
-    setReferralCode('')
-    setPlacing(false)
-    router.push('/order-success')
+    router.push('/checkout')
   }
 
   return (
@@ -132,7 +31,7 @@ export default function Cart() {
             className="kr-cart-panel"
             style={{ position: 'fixed', top: 0, right: 0, width: 440, maxWidth: '100vw', height: '100%', background: 'var(--white)', zIndex: 2001, boxShadow: '-4px 0 40px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column' }}>
 
-            {/* header */}
+            {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 24, borderBottom: '1px solid var(--gray)', background: 'var(--navy)', color: 'white' }}>
               <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>
                 <i className="fa-solid fa-cart-shopping" /> Your Cart
@@ -142,206 +41,85 @@ export default function Cart() {
               </button>
             </div>
 
-            {/* scrollable body: items + checkout footer together */}
+            {/* Scrollable body */}
             <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
 
-            {/* items */}
-            <div style={{ padding: 20 }}>
-              <AnimatePresence>
-                {cart.length === 0 ? (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-light)' }}>
-                    <div style={{ fontSize: 56, marginBottom: 16, opacity: 0.4, color: 'var(--teal)' }}>
-                      <i className="fa-solid fa-bag-shopping" />
-                    </div>
-                    <p style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-mid)' }}>Your cart is empty</p>
-                    <p style={{ fontSize: 15, marginTop: 8, color: 'var(--text-light)', lineHeight: 1.55 }}>
-                      Tap the <i className="fa-solid fa-heart" style={{ color: 'var(--sale-red)' }} /> heart or <strong>Buy Now</strong> on any product to add items!
-                    </p>
-                  </motion.div>
-                ) : (
-                  cart.map(item => (
-                    <motion.div key={item.id} layout initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -30, height: 0, padding: 0, margin: 0 }} transition={{ duration: 0.25 }}
-                      style={{ display: 'flex', gap: 14, padding: '16px 0', borderBottom: '1px solid var(--gray)' }}>
-                      <div style={{ position: 'relative', width: 72, height: 72, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
-                        <Image src={item.img} alt={item.name} fill style={{ objectFit: 'cover' }} />
+              {/* Items */}
+              <div style={{ padding: 20 }}>
+                <AnimatePresence>
+                  {cart.length === 0 ? (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                      style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-light)' }}>
+                      <div style={{ fontSize: 56, marginBottom: 16, opacity: 0.4, color: 'var(--teal)' }}>
+                        <i className="fa-solid fa-bag-shopping" />
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 4 }}>{item.name}</div>
-                        <div style={{ fontWeight: 700, color: 'var(--teal)', fontSize: 16 }}>${((item.bundle_price != null ? item.bundle_price : item.price) * item.qty).toFixed(2)}</div>
-                        {item.bundle_label && (
-                          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--teal)', marginBottom: 4, marginTop: 2 }}>
-                            <i className="fa-solid fa-tag" style={{ marginRight: 4 }} />{item.bundle_label}
-                          </div>
-                        )}
-                        <span style={{ fontSize: 11, fontWeight: 600, marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, background: item.via === 'heart' ? '#ffe0e0' : '#e0eef8', color: item.via === 'heart' ? '#c43e3e' : 'var(--navy)' }}>
-                          <i className={`fa-solid ${item.via === 'heart' ? 'fa-heart' : 'fa-cart-shopping'}`} />
-                          {item.via === 'heart' ? 'Added via heart' : 'Added via cart'}
-                        </span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
-                          <motion.button whileTap={{ scale: 0.85 }} onClick={() => updateQty(item.id, -1)} style={{ background: 'var(--gray)', border: 'none', width: 40, height: 40, borderRadius: '50%', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</motion.button>
-                          <span style={{ fontSize: 16, fontWeight: 700, minWidth: 24, textAlign: 'center' }}>{item.qty}</span>
-                          <motion.button whileTap={{ scale: 0.85 }} onClick={() => updateQty(item.id, 1)} style={{ background: 'var(--gray)', border: 'none', width: 40, height: 40, borderRadius: '50%', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</motion.button>
-                        </div>
-                      </div>
-                      <button onClick={() => removeFromCart(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-light)', cursor: 'pointer', fontSize: 12, alignSelf: 'flex-start', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <i className="fa-solid fa-xmark" /> Remove
-                      </button>
+                      <p style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-mid)' }}>Your cart is empty</p>
+                      <p style={{ fontSize: 15, marginTop: 8, color: 'var(--text-light)', lineHeight: 1.55 }}>
+                        Tap the <i className="fa-solid fa-heart" style={{ color: 'var(--sale-red)' }} /> heart or <strong>Buy Now</strong> on any product to add items!
+                      </p>
                     </motion.div>
-                  ))
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* footer */}
-            <div style={{ padding: '16px 20px 24px', borderTop: '1px solid var(--gray)' }}>
-              {/* Referral code */}
-              <div style={{ marginBottom: 12 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-mid)', marginBottom: 6 }}>
-                  <i className="fa-solid fa-headset" style={{ marginRight: 6, color: 'var(--teal)', fontSize: 12 }} />
-                  Agent Referral Code <span style={{ fontWeight: 400, color: 'var(--text-light)' }}>(optional)</span>
-                </label>
-                <input value={referralCode} onChange={e => setReferralCode(e.target.value)}
-                  placeholder="Enter referral code…"
-                  style={{ width: '100%', border: '1.5px solid var(--gray)', borderRadius: 10, padding: '12px 14px', fontSize: 15, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
+                  ) : (
+                    cart.map(item => (
+                      <motion.div key={item.id} layout initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -30, height: 0, padding: 0, margin: 0 }} transition={{ duration: 0.25 }}
+                        style={{ display: 'flex', gap: 14, padding: '16px 0', borderBottom: '1px solid var(--gray)' }}>
+                        <div style={{ position: 'relative', width: 72, height: 72, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
+                          <Image src={item.img} alt={item.name} fill style={{ objectFit: 'cover' }} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-dark)', marginBottom: 4 }}>{item.name}</div>
+                          <div style={{ fontWeight: 700, color: 'var(--teal)', fontSize: 15 }}>
+                            ${((item.bundle_price != null ? item.bundle_price : item.price) * item.qty).toFixed(2)}
+                          </div>
+                          {item.bundle_label && (
+                            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--teal)', marginBottom: 4, marginTop: 2 }}>
+                              <i className="fa-solid fa-tag" style={{ marginRight: 4 }} />{item.bundle_label}
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                            <motion.button whileTap={{ scale: 0.85 }} onClick={() => updateQty(item.id, -1)} style={{ background: 'var(--gray)', border: 'none', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</motion.button>
+                            <span style={{ fontSize: 16, fontWeight: 700, minWidth: 24, textAlign: 'center' }}>{item.qty}</span>
+                            <motion.button whileTap={{ scale: 0.85 }} onClick={() => updateQty(item.id, 1)} style={{ background: 'var(--gray)', border: 'none', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</motion.button>
+                          </div>
+                        </div>
+                        <button onClick={() => removeFromCart(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-light)', cursor: 'pointer', fontSize: 12, alignSelf: 'flex-start', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <i className="fa-solid fa-xmark" /> Remove
+                        </button>
+                      </motion.div>
+                    ))
+                  )}
+                </AnimatePresence>
               </div>
 
-              {/* Coupon code */}
-              <div style={{ marginBottom: 6 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-mid)', marginBottom: 6 }}>
-                  <i className="fa-solid fa-tag" style={{ marginRight: 6, color: 'var(--teal)', fontSize: 12 }} />
-                  Coupon Code
-                </label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <input value={couponCode}
-                    onChange={e => { setCouponCode(e.target.value); setCouponDiscount(0); setCouponMsg('') }}
-                    placeholder="Enter coupon…"
-                    style={{ flex: 1, border: '1.5px solid var(--gray)', borderRadius: 10, padding: '12px 14px', fontSize: 15, fontFamily: 'inherit', outline: 'none' }}
-                    onKeyDown={e => e.key === 'Enter' && validateCoupon()} />
-                  <button onClick={validateCoupon} disabled={validating || !couponCode.trim()}
-                    style={{ background: 'var(--teal)', color: 'white', border: 'none', padding: '12px 18px', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: (!couponCode.trim() || validating) ? 0.5 : 1 }}>
-                    {validating ? '…' : 'Apply'}
-                  </button>
-                </div>
-              </div>
-
-              {couponMsg && (
-                <p style={{ fontSize: 14, fontWeight: 600, color: couponDiscount > 0 ? '#059669' : '#dc2626', marginBottom: 10, marginTop: 6 }}>
-                  <i className={`fa-solid ${couponDiscount > 0 ? 'fa-tag' : 'fa-xmark'}`} style={{ marginRight: 5 }} />
-                  {couponMsg}
-                </p>
-              )}
-
-              {/* Totals */}
-              <div style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, color: 'var(--text-mid)', marginBottom: 4 }}>
-                  <span>Subtotal</span>
-                  <span>${cartTotal.toFixed(2)}</span>
-                </div>
-                {discountAmount > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, color: '#059669', fontWeight: 600, marginBottom: 4 }}>
-                    <span>Discount ({couponDiscount}% off)</span>
-                    <span>−${discountAmount.toFixed(2)}</span>
+              {/* Footer */}
+              {cart.length > 0 && (
+                <div style={{ padding: '16px 20px 32px', borderTop: '1px solid var(--gray)' }}>
+                  {/* Total */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                    <span style={{ fontWeight: 600, fontSize: 16, color: 'var(--text-mid)' }}>Total</span>
+                    <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: 'var(--heading)' }}>
+                      ${cartTotal.toFixed(2)}
+                    </span>
                   </div>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 600, color: 'var(--text-mid)' }}>Total</span>
-                  <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: 'var(--heading)' }}>${finalTotal.toFixed(2)}</span>
-                </div>
-              </div>
 
-              {/* Checkout area */}
-              {!user ? (
-                <>
-                  <p style={{ fontSize: 15, color: 'var(--text-mid)', textAlign: 'center', marginBottom: 14, lineHeight: 1.6 }}>
-                    <i className="fa-solid fa-lock" style={{ marginRight: 5, color: 'var(--teal)' }} />
-                    Sign in or create a free account to complete your order
-                  </p>
-                  <motion.button onClick={() => setAuthModalOpen(true)} whileHover={{ scale: 1.02, boxShadow: '0 6px 24px rgba(9,52,89,0.28)' }} whileTap={{ scale: 0.98 }}
-                    style={{ width: '100%', background: 'linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%)', color: 'white', border: 'none', padding: 16, borderRadius: 50, fontSize: 16, fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontFamily: 'inherit' }}>
-                    <i className="fa-solid fa-arrow-right-to-bracket" /> Sign In to Checkout
+                  {/* Proceed to Checkout */}
+                  <motion.button
+                    onClick={goToCheckout}
+                    whileHover={{ scale: 1.02, boxShadow: '0 8px 28px rgba(9,52,89,0.30)' }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{ width: '100%', background: 'linear-gradient(135deg, var(--navy) 0%, #0e4a80 100%)', color: 'white', border: 'none', padding: '17px 24px', borderRadius: 50, fontSize: 16, fontWeight: 700, letterSpacing: '0.05em', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontFamily: 'inherit', marginBottom: 12 }}>
+                    <i className="fa-solid fa-credit-card" />
+                    Proceed to Checkout
+                    <i className="fa-solid fa-arrow-right" style={{ fontSize: 13 }} />
                   </motion.button>
-                  <BuyNowModal
-                    open={authModalOpen}
-                    onClose={() => setAuthModalOpen(false)}
-                    onSuccess={() => setAuthModalOpen(false)}
-                  />
-                </>
-              ) : cart.length === 0 ? (
-                <motion.button disabled
-                  style={{ width: '100%', background: 'var(--gray)', color: 'var(--text-light)', border: 'none', padding: 16, borderRadius: 50, fontSize: 16, fontWeight: 700, cursor: 'not-allowed', fontFamily: 'inherit', textAlign: 'center' }}>
-                  Cart is empty
-                </motion.button>
-              ) : placing ? (
-                <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--text-mid)', fontSize: 16, fontWeight: 600 }}>
-                  <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 8, color: 'var(--teal)' }} />
-                  Processing payment…
-                </div>
-              ) : (
-                <>
-                  {/* Secure badge */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 10, fontSize: 13, color: 'var(--text-light)' }}>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, color: 'var(--text-light)' }}>
                     <i className="fa-solid fa-shield-halved" style={{ color: '#0070ba' }} />
                     Secure checkout — SSL encrypted
                   </div>
-
-                  {paypalLoading ? (
-                    <div style={{ textAlign: 'center', padding: '14px 0', color: 'var(--text-mid)', fontSize: 13 }}>
-                      <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 6 }} />
-                      Loading payment options…
-                    </div>
-                  ) : paypalFailed ? (
-                    <div style={{ textAlign: 'center', padding: '12px 0', color: '#dc2626', fontSize: 13 }}>
-                      <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }} />
-                      Payment failed to load. Please refresh the page.
-                    </div>
-                  ) : (
-                    <>
-                      {/* Credit / Debit Card — primary */}
-                      <PayPalButtons
-                        fundingSource={FUNDING.CARD}
-                        style={{ layout: 'vertical', shape: 'pill', height: 48 }}
-                        disabled={placing}
-                        forceReRender={[finalTotal, cart.length]}
-                        createOrder={createPayPalOrder}
-                        onApprove={async (data) => { await onPayPalApprove(data.orderID) }}
-                        onError={(err) => {
-                          const msg = typeof err === 'object' && err !== null && 'message' in err
-                            ? (err as { message: string }).message : String(err)
-                          showToast(`Payment error: ${msg || 'Please try again.'}`)
-                        }}
-                        onCancel={() => showToast('Payment cancelled.')}
-                      />
-
-                      {/* Divider */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0' }}>
-                        <div style={{ flex: 1, height: 1, background: 'var(--gray)' }} />
-                        <span style={{ fontSize: 13, color: 'var(--text-light)', fontWeight: 500 }}>or pay with</span>
-                        <div style={{ flex: 1, height: 1, background: 'var(--gray)' }} />
-                      </div>
-
-                      {/* PayPal — secondary */}
-                      <PayPalButtons
-                        fundingSource={FUNDING.PAYPAL}
-                        style={{ layout: 'vertical', color: 'gold', shape: 'pill', label: 'pay', height: 44 }}
-                        disabled={placing}
-                        forceReRender={[finalTotal, cart.length]}
-                        createOrder={createPayPalOrder}
-                        onApprove={async (data) => { await onPayPalApprove(data.orderID) }}
-                        onError={(err) => {
-                          const msg = typeof err === 'object' && err !== null && 'message' in err
-                            ? (err as { message: string }).message : String(err)
-                          showToast(`Payment error: ${msg || 'Please try again.'}`)
-                        }}
-                        onCancel={() => showToast('Payment cancelled.')}
-                      />
-                    </>
-                  )}
-                </>
+                </div>
               )}
             </div>
-            </div>{/* end scrollable body */}
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { getBrowserSupabase } from '@/lib/supabase-browser'
 
 const PAYPAL_BASE = process.env.PAYPAL_API_URL ?? 'https://api-m.sandbox.paypal.com'
 
@@ -21,13 +20,6 @@ async function getAccessToken() {
 }
 
 export async function POST(request: Request) {
-  const token = request.headers.get('authorization')?.replace('Bearer ', '').trim()
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const auth = getBrowserSupabase()
-  const { data: { user } } = await auth.auth.getUser(token)
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
   const { amount } = await request.json()
   if (typeof amount !== 'number' || amount <= 0 || amount > 100000) {
     return NextResponse.json({ error: 'Invalid amount' }, { status: 400 })
@@ -48,10 +40,10 @@ export async function POST(request: Request) {
           currency_code: 'USD',
           value: amount.toFixed(2),
         },
-        description: 'KRSELLIFY Collectibles Order',
+        description: 'THE MAGA OFFERS Collectibles Order',
       }],
       application_context: {
-        brand_name: 'KRSELLIFY',
+        brand_name: 'THE MAGA OFFERS',
         shipping_preference: 'NO_SHIPPING',
         user_action: 'PAY_NOW',
       },

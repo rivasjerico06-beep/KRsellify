@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
@@ -64,8 +65,15 @@ export default function Header() {
     >
       {/* top row */}
       <div style={{ maxWidth: 1340, margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', gap: 16, height: 64, borderBottom: pathname === '/' ? '1px solid var(--gray)' : '2px solid var(--gray)' }}>
-        <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 900, color: 'var(--heading)', letterSpacing: '-0.02em', flexShrink: 0 }}>
-          KR<span style={{ color: 'var(--teal)' }}>SELLIFY</span>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}>
+          <Image
+            src="/logo.png"
+            alt="The MAGA Offers"
+            width={52}
+            height={52}
+            style={{ objectFit: 'contain', borderRadius: 6 }}
+            priority
+          />
         </a>
 
         {/* desktop search */}

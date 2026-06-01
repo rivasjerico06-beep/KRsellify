@@ -30,13 +30,15 @@ const TIERS = [
 ]
 
 export async function POST(request: Request) {
+  // Auth is optional — guests can pay without an account
   const token = request.headers.get('authorization')?.replace('Bearer ', '').trim()
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  let userId: string | null = null
 
-  const auth = getBrowserSupabase()
-  const { data: { user } } = await auth.auth.getUser(token)
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const userId = user.id
+  if (token) {
+    const auth = getBrowserSupabase()
+    const { data: { user } } = await auth.auth.getUser(token)
+    if (user) userId = user.id
+  }
 
   const body = await request.json()
   const {
@@ -46,6 +48,7 @@ export async function POST(request: Request) {
     referral_code,
     coupon_code,
     discount_amount,
+    guest_email,
   }: {
     paypal_order_id: string
     items: CartItem[]
@@ -53,6 +56,7 @@ export async function POST(request: Request) {
     referral_code?: string
     coupon_code?: string
     discount_amount?: number
+    guest_email?: string
   } = body
 
   if (!paypal_order_id || !Array.isArray(items) || items.length === 0) {
@@ -91,9 +95,9 @@ export async function POST(request: Request) {
 
   const admin = getAdminSupabase()
 
-  // Validate and apply coupon
+  // Validate and apply coupon (only for logged-in users who have coupons)
   let appliedDiscount = discount_amount ?? 0
-  if (coupon_code) {
+  if (coupon_code && userId) {
     const { data: coupon } = await admin
       .from('coupons')
       .select('id, discount_pct, min_spend, is_used')
@@ -131,45 +135,57 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: 'Failed to save order' }, { status: 500 })
 
-  // Auto-issue loyalty coupons
-  const { data: userOrders } = await admin
-    .from('orders')
-    .select('total, discount_amount')
-    .eq('user_id', userId)
-    .neq('status', 'cancelled')
+  // Auto-issue loyalty coupons for logged-in users only
+  if (userId) {
+    const { data: userOrders } = await admin
+      .from('orders')
+      .select('total, discount_amount')
+      .eq('user_id', userId)
+      .neq('status', 'cancelled')
 
-  const totalSpent = (userOrders ?? []).reduce(
-    (sum, o) => sum + Number(o.total) - Number(o.discount_amount ?? 0), 0
-  )
+    const totalSpent = (userOrders ?? []).reduce(
+      (sum, o) => sum + Number(o.total) - Number(o.discount_amount ?? 0), 0
+    )
 
-  for (const { min, tier, pct, label } of TIERS) {
-    if (totalSpent >= min) {
-      const { data: existing } = await admin
-        .from('coupons').select('id')
-        .eq('user_id', userId).eq('tier', tier).maybeSingle()
-      if (!existing) {
-        const suffix = Math.random().toString(36).slice(2, 7).toUpperCase()
-        await admin.from('coupons').insert({
-          code: `${label}-${suffix}`,
-          discount_pct: pct, min_spend: 0, user_id: userId, tier,
-        })
+    for (const { min, tier, pct, label } of TIERS) {
+      if (totalSpent >= min) {
+        const { data: existing } = await admin
+          .from('coupons').select('id')
+          .eq('user_id', userId).eq('tier', tier).maybeSingle()
+        if (!existing) {
+          const suffix = Math.random().toString(36).slice(2, 7).toUpperCase()
+          await admin.from('coupons').insert({
+            code: `${label}-${suffix}`,
+            discount_pct: pct, min_spend: 0, user_id: userId, tier,
+          })
+        }
+        break
       }
-      break
     }
   }
 
-  // Confirmation email (non-blocking)
-  const { data: userRecord } = await admin.auth.admin.getUserById(userId)
-  const email = userRecord?.user?.email
-  if (email) {
-    const { data: profile } = await admin
-      .from('profiles').select('full_name').eq('id', userId).single()
+  // Send confirmation email (non-blocking)
+  let confirmEmail: string | undefined
+
+  if (userId) {
+    const { data: userRecord } = await admin.auth.admin.getUserById(userId)
+    confirmEmail = userRecord?.user?.email
+  } else if (guest_email) {
+    confirmEmail = guest_email
+  }
+
+  if (confirmEmail) {
+    const name = userId
+      ? await admin.from('profiles').select('full_name').eq('id', userId).single()
+          .then(r => r.data?.full_name ?? confirmEmail!.split('@')[0])
+      : confirmEmail.split('@')[0]
+
     sendOrderConfirmation({
-      to: email,
-      name: profile?.full_name ?? email.split('@')[0],
+      to: confirmEmail,
+      name: typeof name === 'string' ? name : confirmEmail.split('@')[0],
       orderId: order.id,
       items,
-      total,
+      total: capturedAmount,
       discountAmount: appliedDiscount > 0 ? appliedDiscount : undefined,
     }).catch(() => {})
   }

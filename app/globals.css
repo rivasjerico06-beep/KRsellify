@@ -256,6 +256,15 @@ html.theme-transition *::after {
   .kr-cart-panel    { width: 100vw !important; }
   .kr-detail-trust  { grid-template-columns: 1fr !important; gap: 8px !important; }
   .kr-section-pad   { padding-left: 16px !important; padding-right: 16px !important; }
+
+  /* Checkout page — stack right panel (checkout) above left (items) on mobile */
+  .kr-checkout-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  .kr-checkout-grid > *:nth-child(2) {
+    order: -1;
+  }
 }
 
 @media (max-width: 480px) {
