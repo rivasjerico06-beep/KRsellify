@@ -201,18 +201,57 @@ export default function Header() {
           {/* cart */}
           <motion.button id="kr-cart-btn" whileTap={{ scale: 0.9 }} onClick={() => setCartOpen(true)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-mid)', padding: '6px 8px', borderRadius: 8, position: 'relative', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ position: 'relative', fontSize: 18 }}>
+            <span style={{ position: 'relative', fontSize: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20 }}>
+              {cartBounce > 0 && (
+                <>
+                  {/* outer ring ripple */}
+                  <motion.span
+                    key={`ring-${cartBounce}`}
+                    initial={{ scale: 0, opacity: 0.55 }}
+                    animate={{ scale: 3.2, opacity: 0 }}
+                    transition={{ duration: 1.15, ease: 'easeOut' }}
+                    style={{ position: 'absolute', top: '50%', left: '50%', width: 20, height: 20, marginTop: -10, marginLeft: -10, borderRadius: '50%', border: '1.5px solid #38948F', background: 'transparent', pointerEvents: 'none', display: 'block' }}
+                  />
+                  {/* liquid blob burst */}
+                  <motion.span
+                    key={`blob-${cartBounce}`}
+                    initial={{ scale: 0, opacity: 0.88 }}
+                    animate={{
+                      scale: [0, 1.08, 1.6, 2.2],
+                      opacity: [0.88, 0.68, 0.32, 0],
+                      borderRadius: [
+                        '50%',
+                        '46% 54% 56% 44% / 54% 44% 56% 46%',
+                        '57% 43% 46% 54% / 43% 57% 54% 46%',
+                        '50%',
+                      ],
+                    }}
+                    transition={{ duration: 1.05, ease: 'easeOut', times: [0, 0.28, 0.65, 1] }}
+                    style={{ position: 'absolute', top: '50%', left: '50%', width: 22, height: 22, marginTop: -11, marginLeft: -11, borderRadius: '50%', background: 'linear-gradient(135deg, #38948F 0%, #5ec4be 100%)', pointerEvents: 'none', display: 'block' }}
+                  />
+                </>
+              )}
+              {/* icon: liquid squash-and-stretch */}
               <motion.i
                 key={cartBounce}
                 className="fa-solid fa-cart-shopping"
-                initial={cartBounce ? { scale: 1.5, rotate: -18, color: 'var(--teal)' } : {}}
-                animate={{ scale: 1, rotate: 0, color: 'var(--text-mid)' }}
-                transition={{ type: 'spring', stiffness: 420, damping: 12 }}
-                style={{ display: 'block' }}
+                initial={cartBounce ? { scaleX: 0.62, scaleY: 1.42, color: '#38948F' } : {}}
+                animate={cartBounce ? {
+                  scaleX: [0.62, 1.32, 0.82, 1.12, 0.96, 1],
+                  scaleY: [1.42, 0.70, 1.24, 0.90, 1.05, 1],
+                  color: 'var(--text-mid)',
+                } : {}}
+                transition={cartBounce ? {
+                  duration: 1.1,
+                  ease: [0.22, 1, 0.36, 1],
+                  times: [0, 0.24, 0.46, 0.66, 0.83, 1],
+                } : {}}
+                style={{ display: 'block', position: 'relative', zIndex: 1 }}
               />
               {cartCount > 0 && (
                 <motion.span key={cartCount} initial={{ scale: 0 }} animate={{ scale: 1 }}
-                  style={{ background: 'var(--teal)', color: 'white', fontSize: 10, fontWeight: 700, borderRadius: '50%', width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: -4, right: -6 }}>
+                  transition={{ type: 'spring', stiffness: 380, damping: 14 }}
+                  style={{ background: 'var(--teal)', color: 'white', fontSize: 10, fontWeight: 700, borderRadius: '50%', width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: -4, right: -6, zIndex: 2 }}>
                   {cartCount}
                 </motion.span>
               )}
