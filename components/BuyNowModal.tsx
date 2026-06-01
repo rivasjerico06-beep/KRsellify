@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 
 export default function BuyNowModal({ open, onClose, onSuccess }: Props) {
   const { signIn, signUp } = useAuth()
+  const { isDark } = useTheme()
   const [tab, setTab] = useState<'signin' | 'new'>('signin')
 
   const [email, setEmail]         = useState('')
@@ -78,16 +80,21 @@ export default function BuyNowModal({ open, onClose, onSuccess }: Props) {
     reset(); onSuccess()
   }
 
+  const modalBg    = isDark ? '#1a2e42' : '#ffffff'
+  const inputBg    = isDark ? '#0f1e2d' : '#f8fafc'
+  const inputBorder = isDark ? '#2e4a62' : '#c8d8e0'
+  const inputColor  = isDark ? '#daeefa' : '#0d1f2d'
+
   const inputStyle: React.CSSProperties = {
-    width: '100%', height: 54, border: '2px solid var(--gray)', borderRadius: 12,
-    padding: '0 16px', fontSize: 17, fontFamily: 'inherit', color: 'var(--heading)',
-    background: 'var(--white)', outline: 'none', boxSizing: 'border-box',
+    width: '100%', height: 54, border: `2px solid ${inputBorder}`, borderRadius: 12,
+    padding: '0 16px', fontSize: 17, fontFamily: 'inherit', color: inputColor,
+    background: inputBg, outline: 'none', boxSizing: 'border-box',
     transition: 'border-color 0.2s',
   }
 
   const labelStyle: React.CSSProperties = {
     display: 'block', fontSize: 15, fontWeight: 700,
-    color: 'var(--text-mid)', marginBottom: 7,
+    color: isDark ? '#94c0d8' : '#4a6170', marginBottom: 7,
   }
 
   return (
@@ -112,7 +119,7 @@ export default function BuyNowModal({ open, onClose, onSuccess }: Props) {
               exit={{ scale: 0.93, y: 24 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               onClick={e => e.stopPropagation()}
-              style={{ pointerEvents: 'all', background: 'var(--bg)', borderRadius: 24, padding: '36px 32px', width: '100%', maxWidth: 460, boxShadow: '0 24px 64px rgba(9,52,89,0.22)', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
+              style={{ pointerEvents: 'all', background: modalBg, borderRadius: 24, padding: '36px 32px', width: '100%', maxWidth: 460, boxShadow: '0 24px 64px rgba(9,52,89,0.35)', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
 
               {/* Close */}
               <button onClick={handleClose}
@@ -125,30 +132,44 @@ export default function BuyNowModal({ open, onClose, onSuccess }: Props) {
                 <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'linear-gradient(135deg, var(--teal) 0%, var(--navy) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
                   <i className="fa-solid fa-bag-shopping" style={{ color: 'white', fontSize: 26 }} />
                 </div>
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 800, color: 'var(--heading)', marginBottom: 6 }}>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 800, color: isDark ? '#daeefa' : '#0d1f2d', marginBottom: 6 }}>
                   Complete Your Order
                 </h2>
-                <p style={{ fontSize: 15, color: 'var(--text-mid)', lineHeight: 1.55 }}>
+                <p style={{ fontSize: 15, color: isDark ? '#94c0d8' : '#4a6170', lineHeight: 1.55 }}>
                   Sign in or create a free account to proceed
                 </p>
               </div>
 
               {/* Tabs */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 24, background: 'var(--gray)', borderRadius: 12, padding: 4 }}>
-                {(['signin', 'new'] as const).map(t => (
-                  <button key={t}
-                    onClick={() => { setTab(t); setError(''); setInfo('') }}
-                    style={{
-                      flex: 1, height: 46, border: 'none', borderRadius: 9,
-                      fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-                      transition: 'all 0.2s',
-                      background: tab === t ? 'var(--white)' : 'transparent',
-                      color: tab === t ? 'var(--navy)' : 'var(--text-light)',
-                      boxShadow: tab === t ? '0 2px 8px rgba(9,52,89,0.1)' : 'none',
-                    }}>
-                    {t === 'signin' ? 'I have an account' : "I'm new here"}
-                  </button>
-                ))}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 24 }}>
+                <button
+                  onClick={() => { setTab('signin'); setError(''); setInfo('') }}
+                  style={{
+                    padding: '14px 8px', borderRadius: 12, cursor: 'pointer',
+                    fontSize: 15, fontWeight: 700, fontFamily: 'inherit',
+                    border: tab === 'signin' ? '2.5px solid #093459' : `2px solid ${isDark ? '#2e4a62' : '#c8d8e0'}`,
+                    background: tab === 'signin' ? '#093459' : (isDark ? '#0f1e2d' : '#f0f5f7'),
+                    color: tab === 'signin' ? '#ffffff' : (isDark ? '#94c0d8' : '#4a6170'),
+                    transition: 'all 0.2s',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}>
+                  <i className="fa-solid fa-user" />
+                  Sign In
+                </button>
+                <button
+                  onClick={() => { setTab('new'); setError(''); setInfo('') }}
+                  style={{
+                    padding: '14px 8px', borderRadius: 12, cursor: 'pointer',
+                    fontSize: 15, fontWeight: 700, fontFamily: 'inherit',
+                    border: tab === 'new' ? '2.5px solid #58948f' : `2px solid ${isDark ? '#2e4a62' : '#c8d8e0'}`,
+                    background: tab === 'new' ? '#58948f' : (isDark ? '#0f1e2d' : '#f0f5f7'),
+                    color: tab === 'new' ? '#ffffff' : (isDark ? '#94c0d8' : '#4a6170'),
+                    transition: 'all 0.2s',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}>
+                  <i className="fa-solid fa-user-plus" />
+                  New Here?
+                </button>
               </div>
 
               {/* Alert */}
