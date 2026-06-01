@@ -470,6 +470,8 @@ function renderStars(rating) {
 
 function isInCart(id) { return cart.some(i => i.id === id); }
 
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 function renderProducts() {
   const grid = document.getElementById('productGrid');
   const filtered = currentFilter === 'all' ? products : products.filter(p => p.category === currentFilter);
@@ -480,7 +482,7 @@ function renderProducts() {
     return `
     <div class="product-card" id="card-${p.id}">
       <div class="product-img-wrap">
-        <img src="${p.img}" alt="${p.name}" loading="lazy" />
+        <img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy" />
         ${p.sale ? '<span class="sale-badge">Sale</span>' : p.isNew ? '<span class="new-badge">New</span>' : ''}
         <button class="wishlist-btn ${inCart ? 'in-cart' : ''}" id="hbtn-${p.id}"
           onclick="heartAddToCart(${p.id})" title="${inCart ? 'Remove from cart' : 'Add to cart via heart'}">
@@ -488,8 +490,8 @@ function renderProducts() {
         </button>
       </div>
       <div class="product-body">
-        <p class="product-cat">${p.cat}</p>
-        <h3 class="product-name">${p.name}</h3>
+        <p class="product-cat">${esc(p.cat)}</p>
+        <h3 class="product-name">${esc(p.name)}</h3>
         <div class="product-stars">${renderStars(p.rating)}<span>(${p.reviews})</span></div>
         <div class="product-price-row">
           <div>
@@ -522,12 +524,12 @@ function handleSearch() {
   grid.innerHTML = results.length ? results.map(p => `
     <div class="product-card">
       <div class="product-img-wrap">
-        <img src="${p.img}" alt="${p.name}" loading="lazy" />
+        <img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy" />
         ${p.sale ? '<span class="sale-badge">Sale</span>' : p.isNew ? '<span class="new-badge">New</span>' : ''}
       </div>
       <div class="product-body">
-        <p class="product-cat">${p.cat}</p>
-        <h3 class="product-name">${p.name}</h3>
+        <p class="product-cat">${esc(p.cat)}</p>
+        <h3 class="product-name">${esc(p.name)}</h3>
         <div class="product-price-row">
           <span class="price-current">$${p.price.toFixed(2)}</span>
           <button class="buy-btn" onclick="addToCart(${p.id},'btn')">Buy Now</button>

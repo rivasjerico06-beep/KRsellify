@@ -25,16 +25,24 @@ export async function GET(request: Request) {
 
 // POST /api/coupons/validate — { code, cart_total } → { valid, discount_pct, message }
 export async function POST(request: Request) {
-  const { code, cart_total, user_id } = await request.json()
+  const token = request.headers.get('authorization')?.replace('Bearer ', '').trim()
+  const { code, cart_total } = await request.json()
   if (!code) return NextResponse.json({ valid: false, message: 'No code provided' })
 
-  const admin = getAdminSupabase()
-  const query = admin.from('coupons').select('*').eq('code', code.toUpperCase().trim()).eq('is_used', false)
+  // Resolve the authenticated user if a token is present — user_id is never trusted from the body
+  let userId: string | undefined
+  if (token) {
+    const auth = getBrowserSupabase()
+    const { data: { user } } = await auth.auth.getUser(token)
+    userId = user?.id
+  }
 
-  // If user_id provided, match it; otherwise try as a global coupon
-  const { data: coupons } = await query
+  const admin = getAdminSupabase()
+  const { data: coupons } = await admin.from('coupons').select('*').eq('code', code.toUpperCase().trim()).eq('is_used', false)
+
+  // Match user-specific coupon (only for the authenticated user) or a global coupon (no user_id)
   const coupon = coupons?.find(c =>
-    (user_id && c.user_id === user_id) || !c.user_id
+    (userId && c.user_id === userId) || !c.user_id
   )
 
   if (!coupon) {

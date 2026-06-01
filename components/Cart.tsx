@@ -29,10 +29,15 @@ export default function Cart() {
     if (!couponCode.trim()) return
     setValidating(true)
     setCouponMsg('')
+    const supabase = getBrowserSupabase()
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch('/api/coupons', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: couponCode.trim(), cart_total: cartTotal, user_id: user?.id }),
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+      },
+      body: JSON.stringify({ code: couponCode.trim(), cart_total: cartTotal }),
     })
     const data = await res.json()
     if (data.valid) {

@@ -81,6 +81,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Payment was not completed' }, { status: 400 })
   }
 
+  // Use PayPal's verified captured amount — never trust the client-supplied total
+  const capturedAmount = parseFloat(
+    capture.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value ?? '0'
+  )
+  if (!capturedAmount || capturedAmount <= 0) {
+    return NextResponse.json({ error: 'Could not verify captured amount' }, { status: 400 })
+  }
+
   const admin = getAdminSupabase()
 
   // Validate and apply coupon
@@ -111,7 +119,7 @@ export async function POST(request: Request) {
         id: i.id, name: i.name, price: i.price, qty: i.qty,
         img: i.img, via: i.via, category: i.category,
       })),
-      total,
+      total: capturedAmount,
       discount_amount: appliedDiscount,
       referral_code: referral_code ?? null,
       coupon_code: coupon_code ?? null,

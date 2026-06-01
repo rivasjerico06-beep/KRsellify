@@ -36,6 +36,15 @@ export async function POST(request: Request) {
 
   const admin = getAdminSupabase()
 
+  // Verify total against DB prices — client cannot inflate or fabricate prices
+  const itemIds = [...new Set(items.map(i => i.id))]
+  const { data: dbProducts } = await admin.from('products').select('id, price').in('id', itemIds)
+  const priceMap = Object.fromEntries((dbProducts ?? []).map((p: { id: string; price: number }) => [p.id, Number(p.price)]))
+  const serverMaxTotal = items.reduce((sum, item) => sum + (priceMap[item.id] ?? 0) * item.qty, 0)
+  if (serverMaxTotal > 0 && total > serverMaxTotal + 0.01) {
+    return NextResponse.json({ error: 'Invalid order total' }, { status: 400 })
+  }
+
   // Validate coupon if provided
   let appliedDiscount = discount_amount ?? 0
   if (coupon_code) {

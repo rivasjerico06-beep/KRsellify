@@ -26,6 +26,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'customer_name and customer_phone are required' }, { status: 400 })
   }
 
+  if (agent_id) {
+    const { data: agent } = await admin
+      .from('agent_profiles')
+      .select('id')
+      .eq('id', agent_id)
+      .eq('status', 'approved')
+      .single()
+    if (!agent) {
+      return NextResponse.json({ error: 'Invalid agent' }, { status: 400 })
+    }
+  }
+
   const { data, error } = await admin
     .from('leads')
     .insert({ customer_name, customer_phone, product_interest, agent_id: agent_id || null, notes, status: agent_id ? 'assigned' : 'new' })

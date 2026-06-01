@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useRef, useEffect, ReactNode } from 'react'
 import { CartItem, Product } from '@/lib/types'
+import { getBrowserSupabase } from '@/lib/supabase-browser'
 
 const LS_KEY = 'krsellify_cart'
 
@@ -104,6 +105,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [setCart])
 
   const isInCart = useCallback((id: string) => cart.some(i => i.id === id), [cart])
+
+  // Clear cart when user signs out
+  useEffect(() => {
+    const supabase = getBrowserSupabase()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') setCart([])
+    })
+    return () => subscription.unsubscribe()
+  }, [setCart])
 
   useEffect(() => {
     function handleOpenCart() { setCartOpen(true) }
