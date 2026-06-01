@@ -26,7 +26,7 @@ const PARTICLES = [
 function FieldWrapper({ icon, label, isDark, children }: { icon: string; label: string; isDark: boolean; children: React.ReactNode }) {
   return (
     <div>
-      <label style={{ fontSize: 11, fontWeight: 700, color: isDark ? '#7ab5b0' : '#4a6170', display: 'block', marginBottom: 7, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+      <label style={{ fontSize: 14, fontWeight: 700, color: isDark ? '#7ab5b0' : '#4a6170', display: 'block', marginBottom: 7, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
         {label}
       </label>
       <div style={{ position: 'relative' }}>
@@ -39,7 +39,7 @@ function FieldWrapper({ icon, label, isDark, children }: { icon: string; label: 
 
 function TrustBadge({ icon, text, isDark }: { icon: string; text: string; isDark: boolean }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: isDark ? '#7ab5b0' : '#8ba0aa', fontSize: 11, fontWeight: 600 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: isDark ? '#7ab5b0' : '#8ba0aa', fontSize: 13, fontWeight: 600 }}>
       <i className={`fa-solid ${icon}`} style={{ color: '#58948f', fontSize: 11 }} />
       {text}
     </div>
@@ -95,8 +95,8 @@ export default function LoginPage() {
     width: '100%',
     border: `2px solid ${focused === field ? '#58948f' : isDark ? 'rgba(255,255,255,0.22)' : '#e8eff0'}`,
     borderRadius: 12,
-    padding: '13px 16px 13px 44px',
-    fontSize: 14,
+    padding: '15px 18px 15px 48px',
+    fontSize: 16,
     fontFamily: 'inherit',
     outline: 'none',
     background: focused === field
@@ -170,7 +170,7 @@ export default function LoginPage() {
             style={{ fontFamily: 'var(--font-playfair)', fontSize: 34, fontWeight: 900, color: isDark ? '#e2f0ef' : '#093459', display: 'block', marginBottom: 6, letterSpacing: '-0.02em', textDecoration: 'none' }}>
             KR<span style={{ color: '#58948f', textShadow: '0 0 28px rgba(88,148,143,0.5)' }}>SELLIFY</span>
           </motion.a>
-          <motion.p variants={fadeUp} style={{ color: isDark ? '#7ab5b0' : '#8ba0aa', fontSize: 14 }}>
+          <motion.p variants={fadeUp} style={{ color: isDark ? '#7ab5b0' : '#8ba0aa', fontSize: 16 }}>
             {mode === 'login' ? 'Welcome back, Patriot' : 'Join the movement today'}
           </motion.p>
         </motion.div>
@@ -187,7 +187,7 @@ export default function LoginPage() {
                 boxShadow: mode === m ? (isDark ? '0 4px 14px rgba(88,148,143,0.2)' : '0 4px 14px rgba(9,52,89,0.28)') : 'none',
               }}
               transition={{ duration: 0.25 }}
-              style={{ flex: 1, border: 'none', borderRadius: 50, padding: '11px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.04em' }}>
+              style={{ flex: 1, border: 'none', borderRadius: 50, padding: '13px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.03em' }}>
               {m === 'login' ? 'Sign In' : 'Sign Up'}
             </motion.button>
           ))}
@@ -245,7 +245,7 @@ export default function LoginPage() {
           <motion.button type="submit" disabled={loading}
             whileHover={!loading ? { scale: 1.02, boxShadow: isDark ? '0 10px 28px rgba(88,148,143,0.3)' : '0 10px 28px rgba(9,52,89,0.38)' } : {}}
             whileTap={!loading ? { scale: 0.98 } : {}}
-            style={{ background: loading ? (isDark ? 'rgba(255,255,255,0.15)' : '#8ba0aa') : isDark ? 'linear-gradient(135deg, #0e4a80 0%, #58948f 100%)' : 'linear-gradient(135deg, #093459 0%, #0e4a80 100%)', color: 'white', border: 'none', padding: '15px', borderRadius: 50, fontSize: 14, fontWeight: 700, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', marginTop: 4, boxShadow: isDark ? '0 4px 18px rgba(88,148,143,0.2)' : '0 4px 18px rgba(9,52,89,0.28)', transition: 'background 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            style={{ background: loading ? (isDark ? 'rgba(255,255,255,0.15)' : '#8ba0aa') : isDark ? 'linear-gradient(135deg, #0e4a80 0%, #58948f 100%)' : 'linear-gradient(135deg, #093459 0%, #0e4a80 100%)', color: 'white', border: 'none', padding: '18px', borderRadius: 50, fontSize: 17, fontWeight: 700, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', marginTop: 4, boxShadow: isDark ? '0 4px 18px rgba(88,148,143,0.2)' : '0 4px 18px rgba(9,52,89,0.28)', transition: 'background 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             {loading
               ? <><i className="fa-solid fa-spinner fa-spin" />Processing…</>
               : mode === 'login'
@@ -264,8 +264,8 @@ export default function LoginPage() {
 
         {/* Agent link */}
         <div style={{ textAlign: 'center', marginTop: 18 }}>
-          <p style={{ fontSize: 13, color: isDark ? '#7ab5b0' : '#8ba0aa', marginBottom: 6 }}>Are you an approved agent?</p>
-          <a href="/agent-login" style={{ color: '#58948f', fontWeight: 700, fontSize: 13, letterSpacing: '0.02em' }}>
+          <p style={{ fontSize: 14, color: isDark ? '#7ab5b0' : '#8ba0aa', marginBottom: 6 }}>Are you an approved agent?</p>
+          <a href="/agent-login" style={{ color: '#58948f', fontWeight: 700, fontSize: 15, letterSpacing: '0.02em' }}>
             Agent Sign In <i className="fa-solid fa-arrow-right" />
           </a>
         </div>

@@ -81,7 +81,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32, fontSize: 13, color: 'var(--text-light)', flexWrap: 'wrap' }}>
+        style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32, fontSize: 14, color: 'var(--text-light)', flexWrap: 'wrap' }}>
         <Link href="/" style={{ color: 'var(--teal)', fontWeight: 600, textDecoration: 'none' }}>Home</Link>
         <i className="fa-solid fa-chevron-right" style={{ fontSize: 9, opacity: 0.5 }} />
         <Link href="/#products" style={{ color: 'var(--teal)', fontWeight: 600, textDecoration: 'none' }}>Shop</Link>
@@ -148,7 +148,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
         {/* Right — Product info */}
         <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
           {/* Category */}
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.26em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 10 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 10 }}>
             {product.cat_label}
           </p>
 
@@ -160,8 +160,8 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           {/* Rating */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
             <Stars rating={product.rating} large />
-            <span style={{ fontSize: 14, color: 'var(--text-mid)', fontWeight: 600 }}>{product.rating}.0</span>
-            <span style={{ fontSize: 13, color: 'var(--text-light)' }}>({product.reviews_count} reviews)</span>
+            <span style={{ fontSize: 15, color: 'var(--text-mid)', fontWeight: 600 }}>{product.rating}.0</span>
+            <span style={{ fontSize: 14, color: 'var(--text-light)' }}>({product.reviews_count} reviews)</span>
           </div>
 
           {/* Price */}
@@ -172,7 +172,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
             {product.old_price && (
               <>
                 <span style={{ fontSize: 20, color: 'var(--text-light)', textDecoration: 'line-through' }}>${product.old_price.toFixed(2)}</span>
-                <span style={{ background: 'rgba(220,38,38,0.1)', color: 'var(--sale-red)', fontSize: 13, fontWeight: 700, padding: '4px 10px', borderRadius: 50 }}>
+                <span style={{ background: 'rgba(220,38,38,0.1)', color: 'var(--sale-red)', fontSize: 14, fontWeight: 700, padding: '5px 12px', borderRadius: 50 }}>
                   You save ${(product.old_price - product.price).toFixed(2)}
                 </span>
               </>
@@ -182,14 +182,14 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           {/* Stock */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
             <span style={{ width: 10, height: 10, borderRadius: '50%', background: product.in_stock ? '#10b981' : '#ef4444', display: 'inline-block', boxShadow: product.in_stock ? '0 0 6px rgba(16,185,129,0.6)' : 'none' }} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: product.in_stock ? '#059669' : '#dc2626' }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: product.in_stock ? '#059669' : '#dc2626' }}>
               {product.in_stock ? 'In Stock — Ready to Ship' : 'Out of Stock'}
             </span>
           </div>
 
           {/* Description */}
           {product.description && (
-            <p style={{ fontSize: 15, lineHeight: 1.75, color: 'var(--text-mid)', marginBottom: 28 }}>
+            <p style={{ fontSize: 17, lineHeight: 1.75, color: 'var(--text-mid)', marginBottom: 28 }}>
               {product.description}
             </p>
           )}
@@ -201,8 +201,8 @@ export default function ProductDetailClient({ product, related }: { product: Pro
                 initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 + i * 0.07, duration: 0.4 }}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: 'var(--text-mid)' }}>
-                <i className="fa-solid fa-circle-check" style={{ color: 'var(--teal)', fontSize: 13, flexShrink: 0 }} />
+                style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 16, color: 'var(--text-mid)' }}>
+                <i className="fa-solid fa-circle-check" style={{ color: 'var(--teal)', fontSize: 15, flexShrink: 0 }} />
                 {f}
               </motion.li>
             ))}
@@ -211,27 +211,27 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           {/* Quantity — tier chips or plain stepper */}
           {hasTiers ? (
             <div style={{ marginBottom: 24 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-mid)', marginBottom: 12 }}>Select Quantity</p>
+              <p style={{ fontSize: 14, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-mid)', marginBottom: 12 }}>Select Quantity</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {product.quantity_options!.map((opt, i) => (
                   <motion.button key={i} onClick={() => setSelectedTierIdx(i)}
                     whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
-                    style={{ padding: '12px 18px', borderRadius: 12, border: `2px solid ${selectedTierIdx === i ? 'var(--teal)' : 'var(--gray)'}`, background: selectedTierIdx === i ? 'rgba(88,148,143,0.1)' : 'var(--white)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'inherit', fontSize: 13, fontWeight: selectedTierIdx === i ? 700 : 500, color: 'var(--text-dark)', textAlign: 'left', transition: 'border-color 0.2s, background 0.2s' }}>
+                    style={{ padding: '14px 18px', borderRadius: 12, border: `2px solid ${selectedTierIdx === i ? 'var(--teal)' : 'var(--gray)'}`, background: selectedTierIdx === i ? 'rgba(88,148,143,0.1)' : 'var(--white)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'inherit', fontSize: 15, fontWeight: selectedTierIdx === i ? 700 : 500, color: 'var(--text-dark)', textAlign: 'left', transition: 'border-color 0.2s, background 0.2s' }}>
                     <span>{opt.label}</span>
-                    <span style={{ color: selectedTierIdx === i ? 'var(--teal)' : 'var(--text-mid)', fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', marginLeft: 12 }}>${opt.bundle_total.toFixed(2)}</span>
+                    <span style={{ color: selectedTierIdx === i ? 'var(--teal)' : 'var(--text-mid)', fontWeight: 700, fontSize: 17, whiteSpace: 'nowrap', marginLeft: 12 }}>${opt.bundle_total.toFixed(2)}</span>
                   </motion.button>
                 ))}
               </div>
             </div>
           ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Qty</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Qty</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: 'var(--white)', borderRadius: 50, border: '1.5px solid var(--gray)', overflow: 'hidden', boxShadow: '0 1px 6px rgba(9,52,89,0.06)' }}>
               <motion.button whileTap={{ scale: 0.88 }} onClick={() => setQty(q => Math.max(1, q - 1))}
-                style={{ width: 40, height: 40, border: 'none', background: 'none', fontSize: 16, cursor: 'pointer', color: 'var(--heading)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>−</motion.button>
-              <span style={{ width: 32, textAlign: 'center', fontSize: 15, fontWeight: 700, color: 'var(--heading)' }}>{qty}</span>
+                style={{ width: 52, height: 52, border: 'none', background: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--heading)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>−</motion.button>
+              <span style={{ width: 36, textAlign: 'center', fontSize: 17, fontWeight: 700, color: 'var(--heading)' }}>{qty}</span>
               <motion.button whileTap={{ scale: 0.88 }} onClick={() => setQty(q => q + 1)}
-                style={{ width: 40, height: 40, border: 'none', background: 'none', fontSize: 16, cursor: 'pointer', color: 'var(--heading)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>+</motion.button>
+                style={{ width: 52, height: 52, border: 'none', background: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--heading)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>+</motion.button>
             </div>
           </div>
           )}
@@ -248,7 +248,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
                 whileHover={!justAdded ? { boxShadow: '0 8px 28px rgba(202,138,4,0.55)' } : {}}
                 whileTap={{ scale: 0.97 }}
                 disabled={!product.in_stock}
-                style={{ flex: 1, minWidth: 160, background: justAdded ? '#059669' : 'linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%)', color: 'white', border: 'none', padding: '16px 24px', borderRadius: 50, fontSize: 14, fontWeight: 700, letterSpacing: '0.07em', cursor: product.in_stock ? 'pointer' : 'not-allowed', textTransform: 'uppercase', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: product.in_stock ? 1 : 0.5, boxShadow: '0 4px 18px rgba(202,138,4,0.32)' }}>
+                style={{ flex: 1, minWidth: 160, background: justAdded ? '#059669' : 'linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%)', color: 'white', border: 'none', padding: '18px 24px', borderRadius: 50, fontSize: 16, fontWeight: 700, letterSpacing: '0.07em', cursor: product.in_stock ? 'pointer' : 'not-allowed', textTransform: 'uppercase', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: product.in_stock ? 1 : 0.5, boxShadow: '0 4px 18px rgba(202,138,4,0.32)' }}>
                 {justAdded
                   ? <><i className="fa-solid fa-check" /> Added to Cart!</>
                   : <><i className="fa-solid fa-cart-plus" /> Add to Cart</>}
@@ -259,7 +259,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
               whileHover={{ borderColor: 'var(--gold)', color: 'var(--gold)', boxShadow: '0 4px 18px rgba(202,138,4,0.2)' }}
               whileTap={{ scale: 0.97 }}
               disabled={!product.in_stock}
-              style={{ flex: 1, minWidth: 160, background: 'transparent', color: 'var(--heading)', border: '2px solid var(--heading)', padding: '16px 24px', borderRadius: 50, fontSize: 14, fontWeight: 700, letterSpacing: '0.07em', cursor: product.in_stock ? 'pointer' : 'not-allowed', textTransform: 'uppercase', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: product.in_stock ? 1 : 0.5, transition: 'all 0.22s' }}>
+              style={{ flex: 1, minWidth: 160, background: 'transparent', color: 'var(--heading)', border: '2px solid var(--heading)', padding: '18px 24px', borderRadius: 50, fontSize: 16, fontWeight: 700, letterSpacing: '0.07em', cursor: product.in_stock ? 'pointer' : 'not-allowed', textTransform: 'uppercase', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: product.in_stock ? 1 : 0.5, transition: 'all 0.22s' }}>
               <i className="fa-solid fa-bolt" /> Buy Now
             </motion.button>
           </div>
@@ -273,8 +273,8 @@ export default function ProductDetailClient({ product, related }: { product: Pro
             ].map(t => (
               <div key={t.icon} style={{ textAlign: 'center', padding: '14px 8px', background: 'var(--white)', borderRadius: 14, boxShadow: '0 1px 8px rgba(9,52,89,0.06)' }}>
                 <i className={`fa-solid ${t.icon}`} style={{ color: 'var(--teal)', fontSize: 18, marginBottom: 6, display: 'block' }} />
-                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--heading)', marginBottom: 2 }}>{t.label}</p>
-                <p style={{ fontSize: 10, color: 'var(--text-light)' }}>{t.sub}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--heading)', marginBottom: 2 }}>{t.label}</p>
+                <p style={{ fontSize: 12, color: 'var(--text-light)' }}>{t.sub}</p>
               </div>
             ))}
           </div>
@@ -290,10 +290,10 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 12 }}>
             <div>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.26em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 6 }}>More Like This</p>
+              <p style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 6 }}>More Like This</p>
               <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 34px)', fontWeight: 900, color: 'var(--heading)' }}>Related Products</h2>
             </div>
-            <Link href="/#products" style={{ color: 'var(--teal)', fontWeight: 700, fontSize: 13, letterSpacing: '0.08em', borderBottom: '2px solid var(--teal)', paddingBottom: 2, textDecoration: 'none' }}>
+            <Link href="/#products" style={{ color: 'var(--teal)', fontWeight: 700, fontSize: 15, letterSpacing: '0.05em', borderBottom: '2px solid var(--teal)', paddingBottom: 2, textDecoration: 'none' }}>
               View All <i className="fa-solid fa-arrow-right" />
             </Link>
           </div>

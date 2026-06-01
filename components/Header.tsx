@@ -66,7 +66,7 @@ export default function Header() {
           <select
             value={searchCat}
             onChange={e => setSearchCat(e.target.value)}
-            style={{ border: 'none', outline: 'none', background: 'var(--gray)', padding: '0 14px', fontSize: 13, color: 'var(--text-mid)', cursor: 'pointer', fontFamily: 'inherit' }}>
+            style={{ border: 'none', outline: 'none', background: 'var(--gray)', padding: '0 14px', fontSize: 14, color: 'var(--text-mid)', cursor: 'pointer', fontFamily: 'inherit' }}>
             <option value="all">All</option>
             <option value="medallions">Medallions</option>
             <option value="collectibles">Collectibles</option>
@@ -78,7 +78,7 @@ export default function Header() {
             value={searchVal}
             onChange={e => setSearchVal(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            style={{ border: 'none', outline: 'none', flex: 1, padding: '0 16px', fontSize: 14, fontFamily: 'inherit', background: 'var(--white)' }}
+            style={{ border: 'none', outline: 'none', flex: 1, padding: '0 16px', fontSize: 15, fontFamily: 'inherit', background: 'var(--white)' }}
           />
           <button onClick={handleSearch}
             style={{ background: 'var(--teal)', border: 'none', padding: '0 20px', cursor: 'pointer', color: 'white', fontSize: 16 }}>
@@ -102,7 +102,7 @@ export default function Header() {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setUserMenuOpen(o => !o)}
-              style={{ background: user ? 'var(--navy)' : 'none', border: 'none', cursor: 'pointer', fontSize: user ? 13 : 18, color: user ? 'white' : 'var(--text-mid)', padding: user ? '7px 14px' : '6px', borderRadius: user ? 50 : 8, display: 'flex', alignItems: 'center', gap: 7, fontWeight: 700, fontFamily: 'inherit' }}
+              style={{ background: user ? 'var(--navy)' : 'none', border: 'none', cursor: 'pointer', fontSize: user ? 14 : 18, color: user ? 'white' : 'var(--text-mid)', padding: user ? '8px 16px' : '8px', borderRadius: user ? 50 : 8, display: 'flex', alignItems: 'center', gap: 7, fontWeight: 700, fontFamily: 'inherit', minHeight: 44 }}
             >
               {user ? (
                 <>
@@ -140,14 +140,14 @@ export default function Header() {
                         ...(isApprovedAgent ? [{ href: '/agent', icon: 'fa-headset', label: 'Agent Dashboard' }] : []),
                       ].map(item => (
                         <a key={item.label} href={item.href} onClick={() => setUserMenuOpen(false)}
-                          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 18px', fontSize: 14, color: 'var(--text-dark)', borderBottom: '1px solid var(--gray)', fontWeight: 500 }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 18px', fontSize: 15, color: 'var(--text-dark)', borderBottom: '1px solid var(--gray)', fontWeight: 500 }}
                           onMouseEnter={e => (e.currentTarget.style.background = 'var(--off-white)')}
                           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                           <i className={`fa-solid ${item.icon}`} style={{ color: 'var(--teal)', width: 16 }} /> {item.label}
                         </a>
                       ))}
                       <button onClick={() => { signOut(); setUserMenuOpen(false) }}
-                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 18px', fontSize: 14, color: 'var(--sale-red)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 18px', fontSize: 15, color: 'var(--sale-red)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}
                         onMouseEnter={e => (e.currentTarget.style.background = '#fff5f5')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                         <i className="fa-solid fa-arrow-right-from-bracket" style={{ width: 16 }} /> Sign Out
@@ -156,13 +156,13 @@ export default function Header() {
                   ) : (
                     <>
                       <a href="/login" onClick={() => setUserMenuOpen(false)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 18px', fontSize: 14, color: 'var(--heading)', fontWeight: 700 }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '15px 18px', fontSize: 15, color: 'var(--heading)', fontWeight: 700 }}
                         onMouseEnter={e => (e.currentTarget.style.background = 'var(--off-white)')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                         <i className="fa-solid fa-user" style={{ color: 'var(--teal)', width: 16 }} /> Sign In / Sign Up
                       </a>
                       <a href="/agent-login" onClick={() => setUserMenuOpen(false)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 18px', fontSize: 14, color: 'var(--text-mid)', fontWeight: 500, borderTop: '1px solid var(--gray)' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '15px 18px', fontSize: 15, color: 'var(--text-mid)', fontWeight: 500, borderTop: '1px solid var(--gray)' }}
                         onMouseEnter={e => (e.currentTarget.style.background = 'var(--off-white)')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                         <i className="fa-solid fa-headset" style={{ color: 'var(--teal)', width: 16 }} /> Agent Login
@@ -203,7 +203,7 @@ export default function Header() {
                 </motion.span>
               )}
             </span>
-            <span className="kr-header-cart-label" style={{ fontWeight: 700, fontSize: 14, color: 'var(--heading)' }}>${cartTotal.toFixed(2)}</span>
+            <span className="kr-header-cart-label" style={{ fontWeight: 700, fontSize: 15, color: 'var(--heading)' }}>${cartTotal.toFixed(2)}</span>
           </motion.button>
 
           {/* hamburger */}
@@ -225,7 +225,7 @@ export default function Header() {
                 onChange={e => setSearchVal(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSearch()}
                 autoFocus
-                style={{ flex: 1, border: '2px solid var(--gray)', borderRadius: 50, padding: '10px 18px', fontSize: 14, outline: 'none', fontFamily: 'inherit' }} />
+                style={{ flex: 1, border: '2px solid var(--gray)', borderRadius: 50, padding: '12px 18px', fontSize: 15, outline: 'none', fontFamily: 'inherit' }} />
               <button onClick={handleSearch}
                 style={{ background: 'var(--teal)', border: 'none', borderRadius: 50, padding: '0 20px', color: 'white', fontSize: 15, cursor: 'pointer', fontFamily: 'inherit' }}>
                 <i className="fa-solid fa-magnifying-glass" />
@@ -241,18 +241,18 @@ export default function Header() {
           <div style={{ maxWidth: 1340, margin: '0 auto', padding: '0 20px', display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none' }}>
             {NAV_LINKS.map(link => (
               <button key={link.cat} onClick={() => handleCatClick(link.cat)}
-                style={{ color: activeNav === link.cat ? 'var(--white)' : 'rgba(255,255,255,0.8)', background: activeNav === link.cat ? 'rgba(88,148,143,0.12)' : 'transparent', border: 'none', borderBottom: activeNav === link.cat ? '3px solid var(--teal)' : '3px solid transparent', fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '12px 14px', whiteSpace: 'nowrap', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit' }}>
+                style={{ color: activeNav === link.cat ? 'var(--white)' : 'rgba(255,255,255,0.85)', background: activeNav === link.cat ? 'rgba(88,148,143,0.15)' : 'transparent', border: 'none', borderBottom: activeNav === link.cat ? '3px solid var(--teal)' : '3px solid transparent', fontSize: 14, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '13px 16px', whiteSpace: 'nowrap', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit' }}>
                 {link.label}
               </button>
             ))}
             {isAdmin && (
-              <a href="/admin" style={{ color: 'rgba(255,255,255,0.8)', border: 'none', borderBottom: '3px solid transparent', fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '12px 14px', whiteSpace: 'nowrap', cursor: 'pointer', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <i className="fa-solid fa-shield-halved" style={{ fontSize: 11 }} /> Admin
+              <a href="/admin" style={{ color: 'rgba(255,255,255,0.85)', border: 'none', borderBottom: '3px solid transparent', fontSize: 14, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '13px 16px', whiteSpace: 'nowrap', cursor: 'pointer', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <i className="fa-solid fa-shield-halved" style={{ fontSize: 12 }} /> Admin
               </a>
             )}
             {isApprovedAgent && (
-              <a href="/agent" style={{ color: 'rgba(255,255,255,0.8)', border: 'none', borderBottom: '3px solid transparent', fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '12px 14px', whiteSpace: 'nowrap', cursor: 'pointer', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <i className="fa-solid fa-headset" style={{ fontSize: 11 }} /> Agent
+              <a href="/agent" style={{ color: 'rgba(255,255,255,0.85)', border: 'none', borderBottom: '3px solid transparent', fontSize: 14, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '13px 16px', whiteSpace: 'nowrap', cursor: 'pointer', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <i className="fa-solid fa-headset" style={{ fontSize: 12 }} /> Agent
               </a>
             )}
           </div>
@@ -266,23 +266,23 @@ export default function Header() {
             style={{ overflow: 'hidden', background: 'var(--navy)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
             {pathname === '/' && NAV_LINKS.map(link => (
               <button key={link.cat} onClick={() => handleCatClick(link.cat)}
-                style={{ width: '100%', textAlign: 'left', color: activeNav === link.cat ? 'var(--teal-light)' : 'rgba(255,255,255,0.85)', background: activeNav === link.cat ? 'rgba(88,148,143,0.1)' : 'transparent', border: 'none', borderLeft: activeNav === link.cat ? '3px solid var(--teal)' : '3px solid transparent', fontSize: 14, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '14px 24px', cursor: 'pointer', fontFamily: 'inherit', display: 'block' }}>
+                style={{ width: '100%', textAlign: 'left', color: activeNav === link.cat ? 'var(--teal-light)' : 'rgba(255,255,255,0.85)', background: activeNav === link.cat ? 'rgba(88,148,143,0.1)' : 'transparent', border: 'none', borderLeft: activeNav === link.cat ? '4px solid var(--teal)' : '4px solid transparent', fontSize: 16, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '16px 24px', cursor: 'pointer', fontFamily: 'inherit', display: 'block' }}>
                 {link.label}
               </button>
             ))}
             {isAdmin && (
-              <a href="/admin" style={{ display: 'block', color: 'rgba(255,255,255,0.85)', fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '14px 24px', borderLeft: '3px solid transparent' }}>
+              <a href="/admin" style={{ display: 'block', color: 'rgba(255,255,255,0.85)', fontSize: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '16px 24px', borderLeft: '4px solid transparent' }}>
                 <i className="fa-solid fa-shield-halved" style={{ marginRight: 8 }} /> Admin
               </a>
             )}
             <div style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
               {user ? (
                 <button onClick={() => { signOut(); setMobileMenuOpen(false) }}
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 10, color: 'white', padding: '12px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 10, color: 'white', padding: '14px', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
                   <i className="fa-solid fa-arrow-right-from-bracket" /> Sign Out
                 </button>
               ) : (
-                <a href="/login" style={{ display: 'block', textAlign: 'center', background: 'var(--teal)', color: 'white', borderRadius: 10, padding: '12px', fontSize: 13, fontWeight: 700 }}>
+                <a href="/login" style={{ display: 'block', textAlign: 'center', background: 'var(--teal)', color: 'white', borderRadius: 10, padding: '14px', fontSize: 15, fontWeight: 700 }}>
                   Sign In / Sign Up
                 </a>
               )}

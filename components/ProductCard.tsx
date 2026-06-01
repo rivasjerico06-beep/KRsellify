@@ -119,7 +119,7 @@ export default function ProductCard({ product, index }: { product: Product; inde
               animate={inWishlist
                 ? { background: 'var(--sale-red)', color: 'white', boxShadow: '0 4px 14px rgba(224,84,84,0.5)' }
                 : { background: 'rgba(255,255,255,0.92)', color: 'var(--text-light)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
-              style={{ position: 'absolute', top: 12, right: 12, border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
+              style={{ position: 'absolute', top: 10, right: 10, border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
               <i className={`fa-${inWishlist ? 'solid' : 'regular'} fa-heart`} />
             </motion.button>
           </div>
@@ -128,11 +128,11 @@ export default function ProductCard({ product, index }: { product: Product; inde
         {/* Body */}
         <Link href={`/products/${product.id}`} style={{ display: 'block', textDecoration: 'none' }}>
           <div style={{ padding: '16px 18px 10px' }}>
-            <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 5 }}>{product.cat_label}</p>
-            <h3 style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-dark)', marginBottom: 8, lineHeight: 1.38, minHeight: 38 }}>{product.name}</h3>
-            <div style={{ fontSize: 10, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 5 }}>{product.cat_label}</p>
+            <h3 style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 8, lineHeight: 1.38, minHeight: 42 }}>{product.name}</h3>
+            <div style={{ fontSize: 11, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
               <Stars rating={product.rating} />
-              <span style={{ color: 'var(--text-light)', fontSize: 11 }}>({product.reviews_count})</span>
+              <span style={{ color: 'var(--text-light)', fontSize: 12 }}>({product.reviews_count})</span>
             </div>
           </div>
         </Link>
@@ -144,7 +144,7 @@ export default function ProductCard({ product, index }: { product: Product; inde
               ${product.price.toFixed(2)}
             </span>
             {product.old_price && (
-              <span style={{ fontSize: 12, color: 'var(--text-light)', textDecoration: 'line-through', marginLeft: 6 }}>
+              <span style={{ fontSize: 13, color: 'var(--text-light)', textDecoration: 'line-through', marginLeft: 6 }}>
                 ${product.old_price.toFixed(2)}
               </span>
             )}
@@ -161,8 +161,8 @@ export default function ProductCard({ product, index }: { product: Product; inde
               whileTap={{ scale: 0.96 }}
               style={{
                 background: justAdded ? '#059669' : 'var(--navy)',
-                color: 'white', border: 'none', padding: '9px 18px', borderRadius: 50,
-                fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer',
+                color: 'white', border: 'none', padding: '11px 20px', borderRadius: 50,
+                fontSize: 13, fontWeight: 700, letterSpacing: '0.05em', cursor: 'pointer',
                 textTransform: 'uppercase', whiteSpace: 'nowrap', fontFamily: 'inherit',
                 display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.22s',
               }}>

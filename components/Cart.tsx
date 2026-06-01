@@ -137,7 +137,7 @@ export default function Cart() {
               <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>
                 <i className="fa-solid fa-cart-shopping" /> Your Cart
               </h3>
-              <button onClick={() => setCartOpen(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: 18, cursor: 'pointer', opacity: 0.7 }}>
+              <button onClick={() => setCartOpen(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: 20, cursor: 'pointer', opacity: 0.8, width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8 }}>
                 <i className="fa-solid fa-xmark" />
               </button>
             </div>
@@ -154,9 +154,9 @@ export default function Cart() {
                     <div style={{ fontSize: 56, marginBottom: 16, opacity: 0.4, color: 'var(--teal)' }}>
                       <i className="fa-solid fa-bag-shopping" />
                     </div>
-                    <p>Your cart is empty</p>
-                    <p style={{ fontSize: 13, marginTop: 6 }}>
-                      Click the <i className="fa-solid fa-heart" style={{ color: 'var(--sale-red)' }} /> heart or Buy Now to add items!
+                    <p style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-mid)' }}>Your cart is empty</p>
+                    <p style={{ fontSize: 15, marginTop: 8, color: 'var(--text-light)', lineHeight: 1.55 }}>
+                      Tap the <i className="fa-solid fa-heart" style={{ color: 'var(--sale-red)' }} /> heart or <strong>Buy Now</strong> on any product to add items!
                     </p>
                   </motion.div>
                 ) : (
@@ -168,8 +168,8 @@ export default function Cart() {
                         <Image src={item.img} alt={item.name} fill style={{ objectFit: 'cover' }} />
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-dark)', marginBottom: 4 }}>{item.name}</div>
-                        <div style={{ fontWeight: 700, color: 'var(--teal)', fontSize: 15 }}>${((item.bundle_price != null ? item.bundle_price : item.price) * item.qty).toFixed(2)}</div>
+                        <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 4 }}>{item.name}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--teal)', fontSize: 16 }}>${((item.bundle_price != null ? item.bundle_price : item.price) * item.qty).toFixed(2)}</div>
                         {item.bundle_label && (
                           <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--teal)', marginBottom: 4, marginTop: 2 }}>
                             <i className="fa-solid fa-tag" style={{ marginRight: 4 }} />{item.bundle_label}
@@ -180,9 +180,9 @@ export default function Cart() {
                           {item.via === 'heart' ? 'Added via heart' : 'Added via cart'}
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
-                          <motion.button whileTap={{ scale: 0.85 }} onClick={() => updateQty(item.id, -1)} style={{ background: 'var(--gray)', border: 'none', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</motion.button>
-                          <span>{item.qty}</span>
-                          <motion.button whileTap={{ scale: 0.85 }} onClick={() => updateQty(item.id, 1)} style={{ background: 'var(--gray)', border: 'none', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</motion.button>
+                          <motion.button whileTap={{ scale: 0.85 }} onClick={() => updateQty(item.id, -1)} style={{ background: 'var(--gray)', border: 'none', width: 40, height: 40, borderRadius: '50%', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</motion.button>
+                          <span style={{ fontSize: 16, fontWeight: 700, minWidth: 24, textAlign: 'center' }}>{item.qty}</span>
+                          <motion.button whileTap={{ scale: 0.85 }} onClick={() => updateQty(item.id, 1)} style={{ background: 'var(--gray)', border: 'none', width: 40, height: 40, borderRadius: '50%', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</motion.button>
                         </div>
                       </div>
                       <button onClick={() => removeFromCart(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-light)', cursor: 'pointer', fontSize: 12, alignSelf: 'flex-start', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -197,27 +197,37 @@ export default function Cart() {
             {/* footer */}
             <div style={{ padding: '16px 20px 24px', borderTop: '1px solid var(--gray)' }}>
               {/* Referral code */}
-              <div style={{ marginBottom: 10 }}>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-mid)', marginBottom: 6 }}>
+                  <i className="fa-solid fa-headset" style={{ marginRight: 6, color: 'var(--teal)', fontSize: 12 }} />
+                  Agent Referral Code <span style={{ fontWeight: 400, color: 'var(--text-light)' }}>(optional)</span>
+                </label>
                 <input value={referralCode} onChange={e => setReferralCode(e.target.value)}
-                  placeholder="Agent referral code (optional)"
-                  style={{ width: '100%', border: '1.5px solid var(--gray)', borderRadius: 10, padding: '9px 14px', fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
+                  placeholder="Enter referral code…"
+                  style={{ width: '100%', border: '1.5px solid var(--gray)', borderRadius: 10, padding: '12px 14px', fontSize: 15, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
               </div>
 
               {/* Coupon code */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
-                <input value={couponCode}
-                  onChange={e => { setCouponCode(e.target.value); setCouponDiscount(0); setCouponMsg('') }}
-                  placeholder="Coupon code"
-                  style={{ flex: 1, border: '1.5px solid var(--gray)', borderRadius: 10, padding: '9px 14px', fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
-                  onKeyDown={e => e.key === 'Enter' && validateCoupon()} />
-                <button onClick={validateCoupon} disabled={validating || !couponCode.trim()}
-                  style={{ background: 'var(--teal)', color: 'white', border: 'none', padding: '9px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: (!couponCode.trim() || validating) ? 0.5 : 1 }}>
-                  {validating ? '…' : 'Apply'}
-                </button>
+              <div style={{ marginBottom: 6 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-mid)', marginBottom: 6 }}>
+                  <i className="fa-solid fa-tag" style={{ marginRight: 6, color: 'var(--teal)', fontSize: 12 }} />
+                  Coupon Code
+                </label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input value={couponCode}
+                    onChange={e => { setCouponCode(e.target.value); setCouponDiscount(0); setCouponMsg('') }}
+                    placeholder="Enter coupon…"
+                    style={{ flex: 1, border: '1.5px solid var(--gray)', borderRadius: 10, padding: '12px 14px', fontSize: 15, fontFamily: 'inherit', outline: 'none' }}
+                    onKeyDown={e => e.key === 'Enter' && validateCoupon()} />
+                  <button onClick={validateCoupon} disabled={validating || !couponCode.trim()}
+                    style={{ background: 'var(--teal)', color: 'white', border: 'none', padding: '12px 18px', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: (!couponCode.trim() || validating) ? 0.5 : 1 }}>
+                    {validating ? '…' : 'Apply'}
+                  </button>
+                </div>
               </div>
 
               {couponMsg && (
-                <p style={{ fontSize: 12, fontWeight: 600, color: couponDiscount > 0 ? '#059669' : '#dc2626', marginBottom: 10 }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: couponDiscount > 0 ? '#059669' : '#dc2626', marginBottom: 10, marginTop: 6 }}>
                   <i className={`fa-solid ${couponDiscount > 0 ? 'fa-tag' : 'fa-xmark'}`} style={{ marginRight: 5 }} />
                   {couponMsg}
                 </p>
@@ -225,12 +235,12 @@ export default function Cart() {
 
               {/* Totals */}
               <div style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-mid)', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, color: 'var(--text-mid)', marginBottom: 4 }}>
                   <span>Subtotal</span>
                   <span>${cartTotal.toFixed(2)}</span>
                 </div>
                 {discountAmount > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#059669', fontWeight: 600, marginBottom: 4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, color: '#059669', fontWeight: 600, marginBottom: 4 }}>
                     <span>Discount ({couponDiscount}% off)</span>
                     <span>−${discountAmount.toFixed(2)}</span>
                   </div>
@@ -244,7 +254,7 @@ export default function Cart() {
               {/* Checkout area */}
               {!user ? (
                 <>
-                  <p style={{ fontSize: 13, color: 'var(--text-mid)', textAlign: 'center', marginBottom: 12, lineHeight: 1.5 }}>
+                  <p style={{ fontSize: 15, color: 'var(--text-mid)', textAlign: 'center', marginBottom: 14, lineHeight: 1.6 }}>
                     <i className="fa-solid fa-lock" style={{ marginRight: 5, color: 'var(--teal)' }} />
                     Sign in or create a free account to complete your order
                   </p>
@@ -260,18 +270,18 @@ export default function Cart() {
                 </>
               ) : cart.length === 0 ? (
                 <motion.button disabled
-                  style={{ width: '100%', background: 'var(--gray)', color: 'var(--text-light)', border: 'none', padding: 14, borderRadius: 50, fontSize: 14, fontWeight: 700, cursor: 'not-allowed', fontFamily: 'inherit', textAlign: 'center' }}>
+                  style={{ width: '100%', background: 'var(--gray)', color: 'var(--text-light)', border: 'none', padding: 16, borderRadius: 50, fontSize: 16, fontWeight: 700, cursor: 'not-allowed', fontFamily: 'inherit', textAlign: 'center' }}>
                   Cart is empty
                 </motion.button>
               ) : placing ? (
-                <div style={{ textAlign: 'center', padding: '14px 0', color: 'var(--text-mid)', fontSize: 14, fontWeight: 600 }}>
+                <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--text-mid)', fontSize: 16, fontWeight: 600 }}>
                   <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 8, color: 'var(--teal)' }} />
                   Processing payment…
                 </div>
               ) : (
                 <>
                   {/* Secure badge */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 10, fontSize: 11, color: 'var(--text-light)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 10, fontSize: 13, color: 'var(--text-light)' }}>
                     <i className="fa-solid fa-shield-halved" style={{ color: '#0070ba' }} />
                     Secure checkout — SSL encrypted
                   </div>
@@ -307,7 +317,7 @@ export default function Cart() {
                       {/* Divider */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0' }}>
                         <div style={{ flex: 1, height: 1, background: 'var(--gray)' }} />
-                        <span style={{ fontSize: 11, color: 'var(--text-light)', fontWeight: 500 }}>or pay with</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-light)', fontWeight: 500 }}>or pay with</span>
                         <div style={{ flex: 1, height: 1, background: 'var(--gray)' }} />
                       </div>
 
