@@ -101,21 +101,30 @@ function ProductEditor({ id }: { id: string }) {
   const [error, setError]           = useState('')
   const [saved, setSaved]           = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [token, setToken]           = useState('')
 
   useEffect(() => {
-    if (isNew) return
-    fetch('/api/admin/products').then(r => r.json()).then((products: Product[]) => {
-      const p = products.find(p => p.id === id)
-      if (p) {
-        setName(p.name); setCategory(p.category); setCatLabel(p.cat_label)
-        setPrice(p.price.toString()); setOldPrice(p.old_price?.toString() ?? '')
-        setImg(p.img); setIsSale(p.is_sale); setIsNew_(p.is_new)
-        setInStock(p.in_stock); setRating(p.rating); setReviews(p.reviews_count)
-        setDescription(p.description ?? '')
-      }
-      setLoading(false)
+    getBrowserSupabase().auth.getSession().then(({ data }) => {
+      setToken(data.session?.access_token ?? '')
     })
-  }, [id, isNew])
+  }, [])
+
+  useEffect(() => {
+    if (isNew) { setLoading(false); return }
+    if (!token) return
+    fetch('/api/admin/products', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then((products: Product[]) => {
+        const p = products.find(p => p.id === id)
+        if (p) {
+          setName(p.name); setCategory(p.category); setCatLabel(p.cat_label)
+          setPrice(p.price.toString()); setOldPrice(p.old_price?.toString() ?? '')
+          setImg(p.img); setIsSale(p.is_sale); setIsNew_(p.is_new)
+          setInStock(p.in_stock); setRating(p.rating); setReviews(p.reviews_count)
+          setDescription(p.description ?? '')
+        }
+        setLoading(false)
+      })
+  }, [id, isNew, token])
 
   function handleCatChange(val: string) {
     setCategory(val)
@@ -189,7 +198,7 @@ function ProductEditor({ id }: { id: string }) {
     }
     const res = await fetch('/api/admin/products', {
       method: isNew ? 'POST' : 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
     })
     if (res.ok) {

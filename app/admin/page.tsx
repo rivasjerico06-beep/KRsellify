@@ -414,7 +414,21 @@ function AdminContent() {
               {/* ── ORDERS ───────────────────────────────── */}
               {tab === 'orders' && (
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)', marginBottom: 20 }}>Orders ({orders.length})</h2>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                    <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)' }}>Orders ({orders.length})</h2>
+                    {orders.length > 0 && (
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`Delete all ${orders.length} orders? This cannot be undone.`)) return
+                          await fetch('/api/admin/orders', { method: 'DELETE', headers: authHeaders() })
+                          flash('✓ All orders cleared')
+                          setOrders([])
+                        }}
+                        style={{ background: '#fee2e2', border: 'none', color: '#991b1b', padding: '9px 18px', borderRadius: 50, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <i className="fa-solid fa-trash" /> Clear All Orders
+                      </button>
+                    )}
+                  </div>
                   <div style={{ background: 'var(--white)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(9,52,89,0.06)', overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
                       <thead>

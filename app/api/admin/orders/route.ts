@@ -41,6 +41,16 @@ export async function GET(request: Request) {
   return NextResponse.json(enriched)
 }
 
+export async function DELETE(request: Request) {
+  const auth = await requireAdmin(request)
+  if (isNextResponse(auth)) return auth
+
+  const admin = getAdminSupabase()
+  const { error } = await admin.from('orders').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ success: true })
+}
+
 export async function PATCH(request: Request) {
   const auth = await requireAdmin(request)
   if (isNextResponse(auth)) return auth
