@@ -67,8 +67,14 @@ export default function CheckoutPage() {
     if (!email.trim()) throw new Error('Please enter your email address')
     const res = await fetch('/api/paypal/create-order', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: finalTotal }),
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+      },
+      body: JSON.stringify({
+        items: cart.map(i => ({ id: i.id, qty: i.qty, bundle_label: i.bundle_label })),
+        coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
+      }),
     })
     const data = await res.json()
     if (!data.id) throw new Error(data.error ?? 'Failed to create PayPal order')

@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { getAdminSupabase } from '@/lib/supabase-admin'
+import { getBrowserSupabase } from '@/lib/supabase-browser'
 
 const PAYPAL_BASE = process.env.PAYPAL_API_URL ?? 'https://api-m.sandbox.paypal.com'
 
@@ -19,10 +21,78 @@ async function getAccessToken() {
   return data.access_token as string
 }
 
+interface OrderItem {
+  id: string
+  qty: number
+  bundle_label?: string
+}
+
 export async function POST(request: Request) {
-  const { amount } = await request.json()
-  if (typeof amount !== 'number' || amount <= 0 || amount > 100000) {
-    return NextResponse.json({ error: 'Invalid amount' }, { status: 400 })
+  const body = await request.json()
+  const { items, coupon_code }: { items: OrderItem[]; coupon_code?: string } = body
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return NextResponse.json({ error: 'No items provided' }, { status: 400 })
+  }
+
+  const admin = getAdminSupabase()
+
+  // Fetch real prices from DB — client-supplied prices are never trusted
+  const itemIds = [...new Set(items.map(i => i.id))]
+  const { data: dbProducts } = await admin
+    .from('products')
+    .select('id, price, quantity_options')
+    .in('id', itemIds)
+
+  if (!dbProducts?.length) {
+    return NextResponse.json({ error: 'Products not found' }, { status: 400 })
+  }
+
+  const productMap = Object.fromEntries(dbProducts.map(p => [p.id, p]))
+
+  // Compute total from DB prices only
+  let amount = 0
+  for (const item of items) {
+    const product = productMap[item.id]
+    if (!product) return NextResponse.json({ error: `Product ${item.id} not found` }, { status: 400 })
+
+    if (item.bundle_label && Array.isArray(product.quantity_options)) {
+      const bundle = (product.quantity_options as { label: string; bundle_total: number }[])
+        .find(o => o.label === item.bundle_label)
+      if (!bundle) return NextResponse.json({ error: 'Bundle option not found' }, { status: 400 })
+      amount += bundle.bundle_total * item.qty
+    } else {
+      amount += Number(product.price) * item.qty
+    }
+  }
+
+  // Apply coupon discount if provided — does NOT mark the coupon as used yet
+  if (coupon_code) {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '').trim()
+    let userId: string | null = null
+    if (token) {
+      const { data: { user } } = await getBrowserSupabase().auth.getUser(token)
+      if (user) userId = user.id
+    }
+
+    const { data: coupons } = await admin
+      .from('coupons')
+      .select('*')
+      .eq('code', coupon_code.toUpperCase().trim())
+      .eq('is_used', false)
+
+    const coupon = coupons?.find(c => (userId && c.user_id === userId) || !c.user_id)
+    if (
+      coupon &&
+      !(coupon.expires_at && new Date(coupon.expires_at) < new Date()) &&
+      Number(coupon.min_spend ?? 0) <= amount
+    ) {
+      amount = amount * (1 - coupon.discount_pct / 100)
+    }
+  }
+
+  if (!isFinite(amount) || amount <= 0 || amount > 100000) {
+    return NextResponse.json({ error: 'Invalid order total' }, { status: 400 })
   }
 
   const accessToken = await getAccessToken()

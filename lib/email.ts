@@ -6,7 +6,7 @@ function getResend() {
   if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY)
   return _resend
 }
-const FROM = process.env.EMAIL_FROM ?? 'KRSELLIFY <orders@krsellify.com>'
+const FROM = process.env.EMAIL_FROM ?? 'The Maga <orders@themagaoffers.com>'
 
 export async function sendOrderConfirmation({
   to,
@@ -43,15 +43,15 @@ export async function sendOrderConfirmation({
     <!-- Header -->
     <div style="background:#093459;padding:28px 36px;text-align:center">
       <p style="font-size:26px;font-weight:900;color:#ffffff;margin:0;letter-spacing:-0.02em">
-        KR<span style="color:#7ab5b0">SELLIFY</span>
+        The <span style="color:#f59e0b">Maga</span>
       </p>
-      <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:6px 0 0;letter-spacing:0.15em;text-transform:uppercase">Premium Collectibles</p>
+      <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:6px 0 0;letter-spacing:0.15em;text-transform:uppercase">Premium Collectibles & Patriot Merchandise</p>
     </div>
 
     <!-- Body -->
     <div style="padding:36px">
       <div style="text-align:center;margin-bottom:28px">
-        <div style="width:56px;height:56px;background:rgba(88,148,143,0.12);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px">
+        <div style="width:56px;height:56px;background:rgba(245,158,11,0.12);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px">
           <span style="font-size:26px">✓</span>
         </div>
         <h1 style="font-size:22px;font-weight:900;color:#093459;margin:0 0 8px">Order Confirmed!</h1>
@@ -85,20 +85,20 @@ export async function sendOrderConfirmation({
         <span style="font-size:20px;font-weight:900;color:#093459">$${total.toFixed(2)}</span>
       </div>
 
-      <div style="background:linear-gradient(135deg,#093459,#58948f);border-radius:14px;padding:20px 24px;margin-top:24px;text-align:center">
+      <div style="background:linear-gradient(135deg,#093459,#b45309);border-radius:14px;padding:20px 24px;margin-top:24px;text-align:center">
         <p style="font-size:13px;color:rgba(255,255,255,0.8);margin:0 0 6px">Your order is being processed</p>
         <p style="font-size:12px;color:rgba(255,255,255,0.55);margin:0">Estimated delivery: <strong style="color:rgba(255,255,255,0.85)">3–7 business days</strong></p>
       </div>
 
       <p style="font-size:13px;color:#8ba0aa;margin:24px 0 0;text-align:center;line-height:1.6">
         Questions? Reply to this email or contact us at<br>
-        <a href="mailto:support@krsellify.com" style="color:#58948f;font-weight:600">support@krsellify.com</a>
+        <a href="mailto:support@themagaoffers.com" style="color:#f59e0b;font-weight:600">support@themagaoffers.com</a>
       </p>
     </div>
 
     <!-- Footer -->
     <div style="background:#f4f8f8;padding:18px 36px;text-align:center;border-top:1px solid #e8eff0">
-      <p style="font-size:11px;color:#8ba0aa;margin:0">© 2025 KRSELLIFY. All rights reserved.</p>
+      <p style="font-size:11px;color:#8ba0aa;margin:0">© 2025 The Maga. All rights reserved.</p>
     </div>
   </div>
 </body>
@@ -108,7 +108,7 @@ export async function sendOrderConfirmation({
     from: FROM,
     to,
     replyTo: 'rivasjerico06@gmail.com',
-    subject: `✓ Order Confirmed — KRSELLIFY (#${orderId.slice(0, 8).toUpperCase()})`,
+    subject: `✓ Order Confirmed — The Maga (#${orderId.slice(0, 8).toUpperCase()})`,
     html,
   })
 
