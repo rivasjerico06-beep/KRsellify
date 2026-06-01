@@ -102,16 +102,20 @@ function AdminContent() {
     'Content-Type': 'application/json',
   }), [session])
 
-  const load = useCallback(async (t: Tab) => {
-    setLoading(true)
+  const load = useCallback(async (t: Tab, silent = false) => {
+    if (!silent) setLoading(true)
     if (t === 'products') {
-      const r = await fetch('/api/admin/products', { headers: authHeaders() }); setProducts(await r.json())
+      const r = await fetch('/api/admin/products', { headers: authHeaders() })
+      const d = await r.json(); setProducts(Array.isArray(d) ? d : [])
     } else if (t === 'orders') {
-      const r = await fetch('/api/admin/orders', { headers: authHeaders() }); setOrders(await r.json())
+      const r = await fetch('/api/admin/orders', { headers: authHeaders() })
+      const d = await r.json(); setOrders(Array.isArray(d) ? d : [])
     } else if (t === 'customers') {
-      const r = await fetch('/api/admin/users', { headers: authHeaders() }); setCustomers(await r.json())
+      const r = await fetch('/api/admin/users', { headers: authHeaders() })
+      const d = await r.json(); setCustomers(Array.isArray(d) ? d : [])
     } else if (t === 'agents') {
-      const r = await fetch('/api/admin/agents', { headers: authHeaders() }); setAgents(await r.json())
+      const r = await fetch('/api/admin/agents', { headers: authHeaders() })
+      const d = await r.json(); setAgents(Array.isArray(d) ? d : [])
     } else if (t === 'sales' || t === 'agent-performance') {
       const r = await fetch('/api/admin/analytics', { headers: authHeaders() })
       setAnalytics(await r.json())
@@ -138,9 +142,13 @@ function AdminContent() {
         fetch('/api/admin/agents',    { headers: authHeaders() }).then(r => r.json()),
         fetch('/api/admin/analytics', { headers: authHeaders() }).then(r => r.json()),
       ])
-      setProducts(p); setOrders(o); setCustomers(c); setAgents(a); setAnalytics(an)
+      setProducts(Array.isArray(p) ? p : [])
+      setOrders(Array.isArray(o) ? o : [])
+      setCustomers(Array.isArray(c) ? c : [])
+      setAgents(Array.isArray(a) ? a : [])
+      setAnalytics(an)
     }
-    setLoading(false)
+    if (!silent) setLoading(false)
   }, [authHeaders])
 
   useEffect(() => { load(tab) }, [tab, load])
@@ -166,17 +174,21 @@ function AdminContent() {
   async function createLead(e: React.FormEvent) {
     e.preventDefault()
     setCreatingLead(true)
-    const res = await fetch('/api/admin/leads', {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify({ customer_name: newLeadName, customer_phone: newLeadPhone, product_interest: newLeadProduct, agent_id: newLeadAgent || null, notes: newLeadNotes }),
-    })
-    if (res.ok) {
-      flash('✓ Lead created')
-      setShowNewLead(false)
-      setNewLeadName(''); setNewLeadPhone(''); setNewLeadProduct(''); setNewLeadAgent(''); setNewLeadNotes('')
-      load('leads')
-    }
+    try {
+      const res = await fetch('/api/admin/leads', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ customer_name: newLeadName, customer_phone: newLeadPhone, product_interest: newLeadProduct, agent_id: newLeadAgent || null, notes: newLeadNotes }),
+      })
+      if (res.ok) {
+        flash('✓ Lead created')
+        setShowNewLead(false)
+        setNewLeadName(''); setNewLeadPhone(''); setNewLeadProduct(''); setNewLeadAgent(''); setNewLeadNotes('')
+        load('leads', true)
+      } else {
+        flash('✗ Failed to create lead')
+      }
+    } catch { flash('✗ Network error') }
     setCreatingLead(false)
   }
 
@@ -189,16 +201,17 @@ function AdminContent() {
     })
     setUpdatingLead(false)
     setSelectedLead(prev => prev?.id === id ? { ...prev, ...updates } : prev)
-    load('leads')
+    load('leads', true)
   }
 
   async function assignLead(leadId: string, agentId: string) {
+    setLeads(prev => prev.map(l => l.id === leadId ? { ...l, agent_id: agentId || null } : l))
     await fetch('/api/admin/leads', {
       method: 'PATCH',
       headers: authHeaders(),
       body: JSON.stringify({ id: leadId, agent_id: agentId || null }),
     })
-    load('leads')
+    load('leads', true)
   }
 
   async function deleteLead(id: string) {
@@ -206,7 +219,7 @@ function AdminContent() {
     await fetch(`/api/admin/leads?id=${id}`, { method: 'DELETE', headers: authHeaders() })
     flash('✓ Lead deleted')
     if (selectedLead?.id === id) setSelectedLead(null)
-    load('leads')
+    load('leads', true)
   }
 
   function flash(m: string) { setMsg(m); setTimeout(() => setMsg(''), 3000) }
@@ -221,12 +234,12 @@ function AdminContent() {
   async function deleteProduct(id: string) {
     if (!confirm('Delete this product?')) return
     await fetch(`/api/admin/products?id=${id}`, { method: 'DELETE', headers: authHeaders() })
-    flash('✓ Product deleted'); load('products')
+    flash('✓ Product deleted'); load('products', true)
   }
 
   async function setAgentStatus(userId: string, status: string) {
     await fetch('/api/admin/agents', { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ user_id: userId, status }) })
-    flash(`✓ Agent ${status}`); load('agents')
+    flash(`✓ Agent ${status}`); load('agents', true)
   }
 
   const TABS: { id: Tab; icon: string; label: string }[] = [
@@ -252,6 +265,7 @@ function AdminContent() {
   )
 
   const ORDER_STATUS_COLOR: Record<string, { bg: string; text: string }> = {
+    paid:      { bg: '#dcfce7', text: '#15803d' },
     pending:   { bg: '#fef9c3', text: '#854d0e' },
     confirmed: { bg: '#dbeafe', text: '#1e40af' },
     packed:    { bg: '#ede9fe', text: '#5b21b6' },
@@ -377,6 +391,9 @@ function AdminContent() {
                         </tr>
                       </thead>
                       <tbody>
+                        {products.length === 0 && (
+                          <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No products yet. Click &quot;Add Product&quot; to create one.</td></tr>
+                        )}
                         {products.map(p => (
                           <tr key={p.id} style={{ borderBottom: '1px solid var(--gray)' }}>
                             <td style={{ padding: '12px 16px' }}>
@@ -968,7 +985,7 @@ function AdminContent() {
                   <select value={selectedOrder.status ?? 'pending'}
                     onChange={e => updateOrderStatus(selectedOrder.id!, e.target.value)}
                     style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', outline: 'none' }}>
-                    {['pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled'].map(s => (
+                    {['paid', 'pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled'].map(s => (
                       <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
                     ))}
                   </select>

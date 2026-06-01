@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAdminSupabase } from '@/lib/supabase-admin'
 import { requireAdmin, isNextResponse } from '@/lib/require-admin'
 
-const VALID_STATUSES = ['pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled']
+const VALID_STATUSES = ['paid', 'pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled']
 
 export async function GET(request: Request) {
   const auth = await requireAdmin(request)
