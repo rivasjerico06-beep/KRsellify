@@ -317,6 +317,13 @@ export default function CheckoutPage() {
                 style={{ layout: 'vertical', color: 'gold', shape: 'rect', label: 'checkout', height: 50 }}
                 disabled={placing}
                 forceReRender={[finalTotal, cart.length, email]}
+                onClick={(_, actions) => {
+                  if (!email.trim()) {
+                    showToast('Please enter your email address first')
+                    return actions.reject()
+                  }
+                  return actions.resolve()
+                }}
                 createOrder={createPayPalOrder}
                 onApprove={async (data) => { await onPayPalApprove(data.orderID) }}
                 onError={handlePayPalError}
@@ -331,6 +338,13 @@ export default function CheckoutPage() {
                 style={{ layout: 'vertical', shape: 'rect', height: 50 }}
                 disabled={placing}
                 forceReRender={[finalTotal, cart.length, email]}
+                onClick={(_, actions) => {
+                  if (!email.trim()) {
+                    showToast('Please enter your email address first')
+                    return actions.reject()
+                  }
+                  return actions.resolve()
+                }}
                 createOrder={createPayPalOrder}
                 onApprove={async (data) => { await onPayPalApprove(data.orderID) }}
                 onError={handlePayPalError}
