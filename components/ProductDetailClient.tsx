@@ -1,11 +1,12 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
+import { useFlyToCart } from '@/components/FlyToCart'
 import { Product } from '@/lib/types'
 import ProductCard from './ProductCard'
 import BuyNowModal from './BuyNowModal'
@@ -32,6 +33,8 @@ function Stars({ rating, large }: { rating: number; large?: boolean }) {
 export default function ProductDetailClient({ product, related }: { product: Product; related: Product[] }) {
   const { addToCart, addBundle, heartToggle, isInCart, showToast, setCartOpen } = useCart()
   const { user } = useAuth()
+  const { flyToCart } = useFlyToCart()
+  const addBtnRef = useRef<HTMLButtonElement>(null)
   const [qty, setQty] = useState(1)
   const [selectedTierIdx, setSelectedTierIdx] = useState(0)
   const [activeImg, setActiveImg] = useState(0)
@@ -51,6 +54,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
     } else {
       for (let i = 0; i < qty; i++) addToCart(product, 'btn')
     }
+    if (addBtnRef.current) flyToCart(addBtnRef.current, product.img)
     showToast(`✓ ${product.name} added to cart`)
     setJustAdded(true)
     setTimeout(() => setJustAdded(false), 1400)
@@ -240,6 +244,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           <div style={{ display: 'flex', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>
             <AnimatePresence mode="wait">
               <motion.button
+                ref={addBtnRef}
                 key={justAdded ? 'added' : 'cart'}
                 onClick={handleAddToCart}
                 initial={{ scale: 0.96, opacity: 0 }}

@@ -5,15 +5,18 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
+import { useFlyToCart } from '@/components/FlyToCart'
 import { Product } from '@/lib/types'
 import Stars from '@/components/Stars'
 
 export default function ProductCard({ product, index }: { product: Product; index: number }) {
   const { cart, addToCart, heartToggle, showToast, setCartOpen } = useCart()
+  const { flyToCart } = useFlyToCart()
   const inWishlist = cart.some(i => i.id === product.id && i.via === 'heart')
   const [imgLoaded, setImgLoaded] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
   const [hovered, setHovered] = useState(false)
+  const buyBtnRef = useRef<HTMLButtonElement>(null)
 
   const mx = useMotionValue(0)
   const my = useMotionValue(0)
@@ -47,6 +50,7 @@ export default function ProductCard({ product, index }: { product: Product; inde
 
   function handleBuy() {
     addToCart(product, 'btn')
+    if (buyBtnRef.current) flyToCart(buyBtnRef.current, product.img)
     showToast(`${product.name} added to cart`)
     setJustAdded(true)
     setTimeout(() => setJustAdded(false), 1300)
@@ -152,6 +156,7 @@ export default function ProductCard({ product, index }: { product: Product; inde
 
           <AnimatePresence mode="wait">
             <motion.button
+              ref={buyBtnRef}
               key={justAdded ? 'added' : 'buy'}
               onClick={e => { e.preventDefault(); handleBuy() }}
               initial={{ scale: 0.92, opacity: 0 }}

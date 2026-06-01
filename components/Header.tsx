@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
@@ -28,6 +28,13 @@ export default function Header() {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  const [cartBounce, setCartBounce] = useState(0)
+  const prevCountRef = useRef(cartCount)
+
+  useEffect(() => {
+    if (cartCount > prevCountRef.current) setCartBounce(b => b + 1)
+    prevCountRef.current = cartCount
+  }, [cartCount])
 
   function handleSearch() {
     const q = searchVal.trim()
@@ -192,10 +199,17 @@ export default function Header() {
           </motion.button>
 
           {/* cart */}
-          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setCartOpen(true)}
+          <motion.button id="kr-cart-btn" whileTap={{ scale: 0.9 }} onClick={() => setCartOpen(true)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-mid)', padding: '6px 8px', borderRadius: 8, position: 'relative', display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ position: 'relative', fontSize: 18 }}>
-              <i className="fa-solid fa-cart-shopping" />
+              <motion.i
+                key={cartBounce}
+                className="fa-solid fa-cart-shopping"
+                initial={cartBounce ? { scale: 1.5, rotate: -18, color: 'var(--teal)' } : {}}
+                animate={{ scale: 1, rotate: 0, color: 'var(--text-mid)' }}
+                transition={{ type: 'spring', stiffness: 420, damping: 12 }}
+                style={{ display: 'block' }}
+              />
               {cartCount > 0 && (
                 <motion.span key={cartCount} initial={{ scale: 0 }} animate={{ scale: 1 }}
                   style={{ background: 'var(--teal)', color: 'white', fontSize: 10, fontWeight: 700, borderRadius: '50%', width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: -4, right: -6 }}>

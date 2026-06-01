@@ -3,6 +3,7 @@
 import { AuthProvider } from '@/context/AuthContext'
 import { CartProvider } from '@/context/CartContext'
 import { ThemeProvider } from '@/context/ThemeContext'
+import { FlyToCartProvider } from '@/components/FlyToCart'
 import { PayPalScriptProvider } from '@paypal/react-paypal-js'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -10,14 +11,16 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <ThemeProvider>
       <AuthProvider>
         <CartProvider>
-          <PayPalScriptProvider options={{
-            clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
-            currency: 'USD',
-            intent: 'capture',
-            'enable-funding': 'card',
-          }}>
-            {children}
-          </PayPalScriptProvider>
+          <FlyToCartProvider>
+            <PayPalScriptProvider options={{
+              clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
+              currency: 'USD',
+              intent: 'capture',
+              'enable-funding': 'card',
+            }}>
+              {children}
+            </PayPalScriptProvider>
+          </FlyToCartProvider>
         </CartProvider>
       </AuthProvider>
     </ThemeProvider>
