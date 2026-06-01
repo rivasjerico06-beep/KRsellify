@@ -4,17 +4,18 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js'
+import { PayPalButtons, usePayPalScriptReducer, FUNDING } from '@paypal/react-paypal-js'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
-import { getBrowserSupabase } from '@/lib/supabase-browser'
+import BuyNowModal from '@/components/BuyNowModal'
 
 export default function Cart() {
   const { cart, cartOpen, setCartOpen, cartTotal, updateQty, removeFromCart, clearCart, showToast } = useCart()
-  const { user } = useAuth()
+  const { user, session } = useAuth()
   const router = useRouter()
   const [{ isPending: paypalLoading, isRejected: paypalFailed }] = usePayPalScriptReducer()
 
+  const [authModalOpen, setAuthModalOpen] = useState(false)
   const [referralCode, setReferralCode] = useState('')
   const [couponCode, setCouponCode] = useState('')
   const [couponDiscount, setCouponDiscount] = useState(0)
@@ -29,8 +30,6 @@ export default function Cart() {
     if (!couponCode.trim()) return
     setValidating(true)
     setCouponMsg('')
-    const supabase = getBrowserSupabase()
-    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch('/api/coupons', {
       method: 'POST',
       headers: {
@@ -56,13 +55,12 @@ export default function Cart() {
   }
 
   async function createPayPalOrder() {
-    const supabase = getBrowserSupabase()
-    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) throw new Error('Session expired — please refresh and sign in again.')
     const res = await fetch('/api/paypal/create-order', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token}`,
+        'Authorization': `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({ amount: finalTotal }),
     })
@@ -73,9 +71,6 @@ export default function Cart() {
 
   async function onPayPalApprove(paypalOrderId: string) {
     setPlacing(true)
-    const supabase = getBrowserSupabase()
-    const { data: { session } } = await supabase.auth.getSession()
-
     const res = await fetch('/api/paypal/capture-order', {
       method: 'POST',
       headers: {
@@ -249,14 +244,19 @@ export default function Cart() {
               {/* Checkout area */}
               {!user ? (
                 <>
-                  <p style={{ fontSize: 12, color: 'var(--text-mid)', textAlign: 'center', marginBottom: 10 }}>
+                  <p style={{ fontSize: 13, color: 'var(--text-mid)', textAlign: 'center', marginBottom: 12, lineHeight: 1.5 }}>
                     <i className="fa-solid fa-lock" style={{ marginRight: 5, color: 'var(--teal)' }} />
-                    Sign in to pay with PayPal
+                    Sign in or create a free account to complete your order
                   </p>
-                  <motion.button onClick={goToLogin} whileHover={{ background: 'var(--teal)' }} whileTap={{ scale: 0.98 }}
-                    style={{ width: '100%', background: 'var(--navy)', color: 'white', border: 'none', padding: 14, borderRadius: 50, fontSize: 14, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit' }}>
-                    Sign In to Checkout <i className="fa-solid fa-arrow-right" />
+                  <motion.button onClick={() => setAuthModalOpen(true)} whileHover={{ scale: 1.02, boxShadow: '0 6px 24px rgba(9,52,89,0.28)' }} whileTap={{ scale: 0.98 }}
+                    style={{ width: '100%', background: 'linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%)', color: 'white', border: 'none', padding: 16, borderRadius: 50, fontSize: 16, fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontFamily: 'inherit' }}>
+                    <i className="fa-solid fa-arrow-right-to-bracket" /> Sign In to Checkout
                   </motion.button>
+                  <BuyNowModal
+                    open={authModalOpen}
+                    onClose={() => setAuthModalOpen(false)}
+                    onSuccess={() => setAuthModalOpen(false)}
+                  />
                 </>
               ) : cart.length === 0 ? (
                 <motion.button disabled
@@ -270,42 +270,63 @@ export default function Cart() {
                 </div>
               ) : (
                 <>
-                  {/* PayPal secure badge */}
+                  {/* Secure badge */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 10, fontSize: 11, color: 'var(--text-light)' }}>
                     <i className="fa-solid fa-shield-halved" style={{ color: '#0070ba' }} />
-                    Secure checkout via PayPal
+                    Secure checkout — SSL encrypted
                   </div>
 
                   {paypalLoading ? (
                     <div style={{ textAlign: 'center', padding: '14px 0', color: 'var(--text-mid)', fontSize: 13 }}>
                       <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 6 }} />
-                      Loading PayPal…
+                      Loading payment options…
                     </div>
                   ) : paypalFailed ? (
                     <div style={{ textAlign: 'center', padding: '12px 0', color: '#dc2626', fontSize: 13 }}>
                       <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }} />
-                      PayPal failed to load. Please refresh the page.
+                      Payment failed to load. Please refresh the page.
                     </div>
                   ) : (
-                    <PayPalButtons
-                      style={{ layout: 'vertical', color: 'gold', shape: 'pill', label: 'pay', height: 48 }}
-                      disabled={placing}
-                      forceReRender={[finalTotal, cart.length]}
-                      createOrder={createPayPalOrder}
-                      onApprove={async (data) => {
-                        await onPayPalApprove(data.orderID)
-                      }}
-                      onError={(err) => {
-                        const msg = typeof err === 'object' && err !== null && 'message' in err
-                          ? (err as { message: string }).message
-                          : String(err)
-                        console.error('PayPal error', err)
-                        showToast(`Payment error: ${msg || 'Please try again.'}`)
-                      }}
-                      onCancel={() => {
-                        showToast('Payment cancelled.')
-                      }}
-                    />
+                    <>
+                      {/* Credit / Debit Card — primary */}
+                      <PayPalButtons
+                        fundingSource={FUNDING.CARD}
+                        style={{ layout: 'vertical', shape: 'pill', height: 48 }}
+                        disabled={placing}
+                        forceReRender={[finalTotal, cart.length]}
+                        createOrder={createPayPalOrder}
+                        onApprove={async (data) => { await onPayPalApprove(data.orderID) }}
+                        onError={(err) => {
+                          const msg = typeof err === 'object' && err !== null && 'message' in err
+                            ? (err as { message: string }).message : String(err)
+                          showToast(`Payment error: ${msg || 'Please try again.'}`)
+                        }}
+                        onCancel={() => showToast('Payment cancelled.')}
+                      />
+
+                      {/* Divider */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0' }}>
+                        <div style={{ flex: 1, height: 1, background: 'var(--gray)' }} />
+                        <span style={{ fontSize: 11, color: 'var(--text-light)', fontWeight: 500 }}>or pay with</span>
+                        <div style={{ flex: 1, height: 1, background: 'var(--gray)' }} />
+                      </div>
+
+                      {/* PayPal — secondary */}
+                      <PayPalButtons
+                        fundingSource={FUNDING.PAYPAL}
+                        style={{ layout: 'vertical', color: 'gold', shape: 'pill', label: 'pay', height: 44 }}
+                        disabled={placing}
+                        forceReRender={[finalTotal, cart.length]}
+                        createOrder={createPayPalOrder}
+                        onApprove={async (data) => { await onPayPalApprove(data.orderID) }}
+                        onError={(err) => {
+                          const msg = typeof err === 'object' && err !== null && 'message' in err
+                            ? (err as { message: string }).message : String(err)
+                          showToast(`Payment error: ${msg || 'Please try again.'}`)
+                        }}
+                        onCancel={() => showToast('Payment cancelled.')}
+                      />
+                    </>
                   )}
                 </>
               )}

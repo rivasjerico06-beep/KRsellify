@@ -5,8 +5,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
+import { useAuth } from '@/context/AuthContext'
 import { Product } from '@/lib/types'
 import ProductCard from './ProductCard'
+import BuyNowModal from './BuyNowModal'
 
 const FEATURES: Record<string, string[]> = {
   medallions:   ['Premium gold-tone alloy finish', 'Limited edition — numbered mint', 'Arrives in collector\'s gift box', 'Certificate of authenticity included', 'Ships worldwide in 3–7 business days'],
@@ -29,10 +31,12 @@ function Stars({ rating, large }: { rating: number; large?: boolean }) {
 
 export default function ProductDetailClient({ product, related }: { product: Product; related: Product[] }) {
   const { addToCart, addBundle, heartToggle, isInCart, showToast, setCartOpen } = useCart()
+  const { user } = useAuth()
   const [qty, setQty] = useState(1)
   const [selectedTierIdx, setSelectedTierIdx] = useState(0)
   const [activeImg, setActiveImg] = useState(0)
   const [justAdded, setJustAdded] = useState(false)
+  const [showBuyNowModal, setShowBuyNowModal] = useState(false)
   const inCart = isInCart(product.id)
   const hasTiers = !!(product.quantity_options && product.quantity_options.length > 0)
   const selectedTier = hasTiers ? product.quantity_options![selectedTierIdx] : null
@@ -58,7 +62,11 @@ export default function ProductDetailClient({ product, related }: { product: Pro
     } else {
       for (let i = 0; i < qty; i++) addToCart(product, 'btn')
     }
-    setCartOpen(true)
+    if (!user) {
+      setShowBuyNowModal(true)
+    } else {
+      setCartOpen(true)
+    }
   }
 
   function handleHeart() {
@@ -294,6 +302,12 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           </div>
         </motion.div>
       )}
+
+      <BuyNowModal
+        open={showBuyNowModal}
+        onClose={() => setShowBuyNowModal(false)}
+        onSuccess={() => { setShowBuyNowModal(false); setCartOpen(true) }}
+      />
     </div>
   )
 }
