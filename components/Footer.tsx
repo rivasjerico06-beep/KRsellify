@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import Link from 'next/link'
 
 const SHOP = [
@@ -19,7 +20,7 @@ const SUPPORT = [
   { label: 'Contact Us',          href: '/contact' },
 ]
 const COMPANY = [
-  { label: 'About KRSELLIFY', href: '/about' },
+  { label: 'About The Maga', href: '/about' },
   { label: 'Privacy Policy',  href: '/privacy' },
   { label: 'Terms of Service',href: '/terms' },
 ]
@@ -36,8 +37,8 @@ export default function Footer() {
       <div className="kr-footer-grid" style={{ maxWidth: 1340, margin: '0 auto' }}>
         {/* brand */}
         <div className="kr-footer-brand">
-          <Link href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 900, color: 'white', display: 'block', marginBottom: 14, textDecoration: 'none' }}>
-            KR<span style={{ color: 'var(--teal-light)' }}>SELLIFY</span>
+          <Link href="/" style={{ display: 'inline-block', marginBottom: 14 }}>
+            <Image src="/logo.png" alt="The Maga" width={64} height={64} style={{ objectFit: 'contain', borderRadius: 6 }} />
           </Link>
           <p style={{ fontSize: 14, lineHeight: 1.7, maxWidth: 280, marginBottom: 22 }}>
             Premium collectibles, rare finds, and exclusive memorabilia — authenticated and shipped to your door.
@@ -98,7 +99,7 @@ export default function Footer() {
 
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', padding: '20px 0', maxWidth: 1340, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <p style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-          © 2025 KRSELLIFY. All rights reserved. Made with{' '}
+          © 2025 The Maga. All rights reserved. Made with{' '}
           <i className="fa-solid fa-heart" style={{ color: 'var(--teal-light)' }} />
         </p>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>

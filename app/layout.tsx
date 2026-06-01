@@ -25,8 +25,8 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'KRSELLIFY — Premium Collectibles & Rare Finds',
-  description: 'Handpicked limited-edition pieces. Authentic, verified, and ready to own.',
+  title: 'The Maga — Premium Collectibles & Patriot Merchandise',
+  description: 'Authentic limited-edition patriot collectibles. Verified, premium quality, and ready to own.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

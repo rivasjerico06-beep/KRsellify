@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 import Link from 'next/link'
 
 const COLORS = ['#58948F', '#093459', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981', '#f97316', '#06b6d4']
@@ -88,8 +89,8 @@ export default function OrderSuccessPage() {
       <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
 
       {/* logo */}
-      <Link href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 900, color: 'var(--heading)', textDecoration: 'none', marginBottom: 32 }}>
-        KR<span style={{ color: 'var(--teal)' }}>SELLIFY</span>
+      <Link href="/" style={{ marginBottom: 32, display: 'block' }}>
+        <Image src="/logo.png" alt="The Maga" width={72} height={72} style={{ objectFit: 'contain' }} />
       </Link>
 
       <motion.div

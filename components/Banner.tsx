@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { SiteBanner } from '@/lib/site-config'
 
 const DEFAULT: SiteBanner = {
-  title: 'Why Choose KRSELLIFY?',
+  title: 'Why Choose The Maga?',
   description: "Every product is authenticated, quality-checked, and shipped with care. We partner with verified suppliers to bring you exclusive collectibles you won't find anywhere else.",
   stats: [
     { num: '2400', label: 'Orders Shipped' },
