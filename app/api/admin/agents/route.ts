@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { randomBytes } from 'crypto'
 import { getAdminSupabase } from '@/lib/supabase-admin'
 import { requireAdmin, isNextResponse } from '@/lib/require-admin'
 
@@ -35,8 +36,7 @@ export async function PATCH(request: Request) {
   const updates: Record<string, unknown> = { status }
 
   if (status === 'approved' && !existing?.referral_code) {
-    const suffix = Math.random().toString(36).slice(2, 8).toUpperCase()
-    updates.referral_code = `KRS-${suffix}`
+    updates.referral_code = `KRS-${randomBytes(6).toString('hex').toUpperCase()}`
   }
 
   const { data, error } = await admin

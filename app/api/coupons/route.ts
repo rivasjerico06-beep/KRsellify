@@ -45,11 +45,8 @@ export async function POST(request: Request) {
     (userId && c.user_id === userId) || !c.user_id
   )
 
-  if (!coupon) {
+  if (!coupon || (coupon.expires_at && new Date(coupon.expires_at) < new Date())) {
     return NextResponse.json({ valid: false, message: 'Invalid or already used coupon' })
-  }
-  if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
-    return NextResponse.json({ valid: false, message: 'This coupon has expired' })
   }
   if (cart_total !== undefined && Number(coupon.min_spend) > cart_total) {
     return NextResponse.json({

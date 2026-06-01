@@ -26,6 +26,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'customer_name and customer_phone are required' }, { status: 400 })
   }
 
+  // Reject duplicate phone submissions within 1 hour to block spam
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+  const { data: recentLead } = await admin
+    .from('leads')
+    .select('id')
+    .eq('customer_phone', customer_phone)
+    .gte('created_at', oneHourAgo)
+    .limit(1)
+    .maybeSingle()
+  if (recentLead) {
+    return NextResponse.json({ error: 'A lead with this phone number was recently submitted. Please try again later.' }, { status: 429 })
+  }
+
   if (agent_id) {
     const { data: agent } = await admin
       .from('agent_profiles')

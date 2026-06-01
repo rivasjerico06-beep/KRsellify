@@ -53,7 +53,15 @@ function AgentContent() {
 
   async function updateLead(id: string, updates: Partial<Lead>) {
     setUpdating(true)
-    await supabase.from('leads').update(updates).eq('id', id)
+    const { data: { session } } = await supabase.auth.getSession()
+    await fetch('/api/agent/leads', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`,
+      },
+      body: JSON.stringify({ id, ...updates }),
+    })
     fetchLeads()
     if (selected?.id === id) setSelected(prev => prev ? { ...prev, ...updates } : null)
     setUpdating(false)
