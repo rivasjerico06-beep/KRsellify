@@ -63,30 +63,6 @@ export default function Header() {
       transition={{ duration: 0.5, delay: 0.1 }}
       style={{ background: 'var(--white)', position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 2px 20px rgba(9,52,89,0.08)' }}
     >
-      {/* Announcement ticker */}
-      <div style={{ background: '#b91c1c', overflow: 'hidden', height: 34, display: 'flex', alignItems: 'center' }}>
-        <div className="kr-ticker-track">
-          {[0, 1].map(copy => (
-            <span key={copy} style={{ display: 'inline-flex', alignItems: 'center' }}>
-              {[
-                { icon: 'fa-truck', text: 'FREE SHIPPING ON ORDERS $399+' },
-                { icon: 'fa-star',  text: 'LIMITED EDITION COLLECTIBLES' },
-                { icon: 'fa-shield-halved', text: 'AUTHENTIC PATRIOT MERCHANDISE' },
-                { icon: 'fa-medal', text: 'PREMIUM QUALITY GUARANTEED' },
-                { icon: 'fa-truck', text: 'FREE SHIPPING ON ORDERS $399+' },
-                { icon: 'fa-tag',   text: 'USE CODE AT CHECKOUT FOR DISCOUNTS' },
-              ].map((item, i) => (
-                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '0 36px', fontSize: 12, fontWeight: 700, letterSpacing: '0.09em', color: 'white' }}>
-                  <i className={`fa-solid ${item.icon}`} style={{ fontSize: 11, opacity: 0.9 }} />
-                  {item.text}
-                  <span style={{ margin: '0 4px', opacity: 0.5 }}>✦</span>
-                </span>
-              ))}
-            </span>
-          ))}
-        </div>
-      </div>
-
       {/* top row */}
       <div style={{ maxWidth: 1340, margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', gap: 16, height: 64, borderBottom: pathname === '/' ? '1px solid var(--gray)' : '2px solid var(--gray)' }}>
         <a href="/" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}>

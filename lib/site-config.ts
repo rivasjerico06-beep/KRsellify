@@ -48,7 +48,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
   announce_bar: {
     visible: true,
     bg_color: 'navy',
-    text: 'Free shipping on orders over $75',
+    text: 'Free shipping on orders $399+',
     highlight: 'Use code KRSELLIFY10 for 10% off',
     suffix: 'Limited time only',
   },
@@ -94,7 +94,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
     ],
   },
   trust_bar: [
-    { icon: 'fa-truck-fast', title: 'Free Shipping',   sub: 'On orders over $75' },
+    { icon: 'fa-truck-fast', title: 'Free Shipping',   sub: 'On orders $399+' },
     { icon: 'fa-lock',       title: 'Secure Payment',  sub: '256-bit SSL encryption' },
     { icon: 'fa-rotate-left',title: 'Easy Returns',    sub: '30-day return policy' },
     { icon: 'fa-star',       title: '4.9/5 Rated',     sub: '2,400+ happy customers' },

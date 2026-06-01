@@ -6,7 +6,7 @@ import { SiteAnnounceBar } from '@/lib/site-config'
 const DEFAULT: SiteAnnounceBar = {
   visible: true,
   bg_color: 'navy',
-  text: 'Free shipping on orders over $75',
+  text: 'Free shipping on orders $399+',
   highlight: 'Use code KRSELLIFY10 for 10% off',
   suffix: 'Limited time only',
 }
