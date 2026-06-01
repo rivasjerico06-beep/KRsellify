@@ -287,15 +287,17 @@ export default function CheckoutPage() {
           )}
 
           {/* Payment buttons */}
+          {emailMissing && (
+            <div style={{ background: '#fff8e6', border: '1px solid #fcd34d', borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 13, color: '#92400e', textAlign: 'center' }}>
+              <i className="fa-solid fa-envelope" style={{ marginRight: 6 }} />
+              Enter your email above to receive your order confirmation
+            </div>
+          )}
+
           {placing ? (
             <div style={{ textAlign: 'center', padding: '24px 0', color: '#555', fontSize: 15, fontWeight: 600 }}>
               <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 8, color: '#0070ba' }} />
               Processing payment…
-            </div>
-          ) : emailMissing ? (
-            <div style={{ background: '#fff8e6', border: '1px solid #fcd34d', borderRadius: 8, padding: '12px 16px', marginBottom: 16, fontSize: 13, color: '#92400e', textAlign: 'center' }}>
-              <i className="fa-solid fa-envelope" style={{ marginRight: 6 }} />
-              Enter your email address above to continue
             </div>
           ) : paypalLoading ? (
             <div style={{ textAlign: 'center', padding: '20px 0', color: '#888', fontSize: 13 }}>
