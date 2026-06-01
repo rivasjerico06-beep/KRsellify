@@ -147,8 +147,11 @@ export default function Cart() {
               </button>
             </div>
 
+            {/* scrollable body: items + checkout footer together */}
+            <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+
             {/* items */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
+            <div style={{ padding: 20 }}>
               <AnimatePresence>
                 {cart.length === 0 ? (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -197,7 +200,7 @@ export default function Cart() {
             </div>
 
             {/* footer */}
-            <div style={{ padding: '16px 20px 20px', borderTop: '1px solid var(--gray)' }}>
+            <div style={{ padding: '16px 20px 24px', borderTop: '1px solid var(--gray)' }}>
               {/* Referral code */}
               <div style={{ marginBottom: 10 }}>
                 <input value={referralCode} onChange={e => setReferralCode(e.target.value)}
@@ -307,6 +310,7 @@ export default function Cart() {
                 </>
               )}
             </div>
+            </div>{/* end scrollable body */}
           </motion.div>
         )}
       </AnimatePresence>
