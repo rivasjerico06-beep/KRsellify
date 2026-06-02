@@ -17,20 +17,18 @@ export default function ShippingPage() {
               </tr>
             </thead>
             <tbody>
-              {[
-                ['United States',   '3–5 business days',   '1–2 business days', 'Orders over $75'],
-                ['Canada',          '5–8 business days',   '3–5 business days', 'Orders over $100'],
-                ['Europe',          '7–14 business days',  '4–7 business days', 'Orders over $150'],
-                ['Asia Pacific',    '10–18 business days', '5–8 business days', 'Orders over $150'],
-                ['Rest of World',   '14–21 business days', '7–14 business days','Not available'],
-              ].map(([region, std, exp, free], i) => (
-                <tr key={region} style={{ borderBottom: '1px solid var(--gray)', background: i % 2 === 0 ? 'transparent' : 'rgba(244,248,248,0.5)' }}>
-                  <td style={{ padding: '12px 14px', fontWeight: 600, color: 'var(--heading)' }}>{region}</td>
-                  <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>{std}</td>
-                  <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>{exp}</td>
-                  <td style={{ padding: '12px 14px', color: 'var(--teal)', fontWeight: 600 }}>{free}</td>
-                </tr>
-              ))}
+              <tr style={{ borderBottom: '1px solid var(--gray)' }}>
+                <td style={{ padding: '12px 14px', fontWeight: 600, color: 'var(--heading)' }}>United States</td>
+                <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>3–5 business days</td>
+                <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>1–2 business days</td>
+                <td style={{ padding: '12px 14px', color: 'var(--teal)', fontWeight: 600 }}>Orders over $2,000</td>
+              </tr>
+              <tr style={{ background: 'rgba(244,248,248,0.5)' }}>
+                <td style={{ padding: '12px 14px', fontWeight: 600, color: 'var(--heading)' }}>International</td>
+                <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>3–14 business days</td>
+                <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>3–7 business days <span style={{ fontSize: 11, color: 'var(--teal)', fontWeight: 700 }}>(orders $2,000+)</span></td>
+                <td style={{ padding: '12px 14px', color: 'var(--teal)', fontWeight: 600 }}>Orders over $2,000</td>
+              </tr>
             </tbody>
           </table>
         </section>
