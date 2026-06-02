@@ -15,7 +15,7 @@ const DEFAULT_SLIDES: SiteHeroSlide[] = [
     outline: 'Explore Categories', outlineLink: '#categories',
   },
   {
-    img: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1400&q=80',
+    img: 'https://insights.som.yale.edu/insights/the-coming-maga-assault-on-capitalism',
     eyebrow: "Founder's Seal Collection",
     title: 'Gold & Crypto Commemorative Bars',
     sub: 'Own a piece of history. Limited mint. Ships worldwide.',

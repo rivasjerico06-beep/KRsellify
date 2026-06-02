@@ -7,7 +7,7 @@ const DEFAULT: SiteAnnounceBar = {
   visible: true,
   bg_color: 'navy',
   text: 'Free shipping on orders $399+',
-  highlight: 'Use code KRSELLIFY10 for 10% off',
+  highlight: '',
   suffix: 'Limited time only',
 }
 
@@ -24,7 +24,7 @@ export default function AnnounceBar({ config = DEFAULT }: { config?: SiteAnnounc
     { text: config.text, icon: 'fa-truck-fast' },
     { text: config.highlight, icon: 'fa-tag', gold: true },
     { text: config.suffix, icon: 'fa-clock' },
-  ]
+  ].filter(item => item.text)
 
   return (
     <motion.div
