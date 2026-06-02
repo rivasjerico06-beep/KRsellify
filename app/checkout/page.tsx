@@ -165,12 +165,6 @@ export default function CheckoutPage() {
                   {item.bundle_label && (
                     <div style={{ fontSize: 12, color: '#666', marginBottom: 5 }}>Quantity: {item.bundle_label}</div>
                   )}
-                  {item.bundle_label && (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(5,150,105,0.1)', border: '1px solid rgba(5,150,105,0.25)', borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700, color: '#059669', marginBottom: 6 }}>
-                      <i className="fa-solid fa-box-open" style={{ fontSize: 10 }} />
-                      You receive: {(item.bundle_qty ?? 1) * item.qty} pcs total
-                    </div>
-                  )}
                   {/* Qty controls */}
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 1, border: '1px solid #ddd', borderRadius: 4, overflow: 'hidden', marginTop: 4 }}>
                     <button onClick={() => updateQty(item.id, -1)}
@@ -197,6 +191,13 @@ export default function CheckoutPage() {
                   <span style={{ fontWeight: 700, fontSize: 15, color: '#111' }}>
                     ${((item.bundle_price ?? item.price) * item.qty).toFixed(2)}
                   </span>
+                  {item.bundle_label && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(5,150,105,0.1)', border: '1px solid rgba(5,150,105,0.25)', borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700, color: '#059669' }}>
+                      <i className="fa-solid fa-box-open" style={{ fontSize: 10 }} />
+                      You receive: {(item.bundle_qty ?? 1) * item.qty} pcs total
+                    </div>
+                  )}
+                  <span style={{ fontSize: 12, color: '#888', fontWeight: 600 }}>Qty: {item.qty}</span>
                 </div>
               </div>
             ))}
