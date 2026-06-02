@@ -23,7 +23,7 @@ export default function ShippingPage() {
                 <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>1–2 business days</td>
                 <td style={{ padding: '12px 14px', color: 'var(--teal)', fontWeight: 600 }}>Orders over $2,000</td>
               </tr>
-              <tr style={{ background: 'rgba(244,248,248,0.5)' }}>
+              <tr>
                 <td style={{ padding: '12px 14px', fontWeight: 600, color: 'var(--heading)' }}>International</td>
                 <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>3–14 business days</td>
                 <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>3–7 business days <span style={{ fontSize: 11, color: 'var(--teal)', fontWeight: 700 }}>(orders $2,000+)</span></td>
