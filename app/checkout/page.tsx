@@ -23,7 +23,21 @@ export default function CheckoutPage() {
   const [validating, setValidating] = useState(false)
   const [placing, setPlacing] = useState(false)
   const [emailShake, setEmailShake] = useState(false)
+  const [productOptions, setProductOptions] = useState<Record<string, { label: string; qty: number; bundle_total: number }[]>>({})
   const emailRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then(r => r.json())
+      .then((products: { id: string; quantity_options?: { label: string; qty: number; bundle_total: number }[] | null }[]) => {
+        const map: Record<string, { label: string; qty: number; bundle_total: number }[]> = {}
+        for (const p of products) {
+          if (p.quantity_options?.length) map[p.id] = p.quantity_options
+        }
+        setProductOptions(map)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (user?.email) {
@@ -162,21 +176,24 @@ export default function CheckoutPage() {
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 14, color: '#111', marginBottom: 3, lineHeight: 1.35 }}>{item.name}</div>
-                  {item.bundle_label && item.quantity_options?.length ? (
-                    <select
-                      value={item.bundle_label}
-                      onChange={e => {
-                        const opt = item.quantity_options!.find(o => o.label === e.target.value)
-                        if (opt) changeBundleTier(item.id, opt.label, opt.qty, opt.bundle_total)
-                      }}
-                      style={{ fontSize: 12, color: '#111', border: '1px solid #ddd', borderRadius: 4, padding: '4px 8px', marginBottom: 6, background: 'white', cursor: 'pointer', maxWidth: '100%' }}>
-                      {item.quantity_options.map(opt => (
-                        <option key={opt.label} value={opt.label}>{opt.label}</option>
-                      ))}
-                    </select>
-                  ) : item.bundle_label ? (
-                    <div style={{ fontSize: 12, color: '#666', marginBottom: 5 }}>{item.bundle_label}</div>
-                  ) : null}
+                  {(() => {
+                    const opts = productOptions[item.id] ?? item.quantity_options ?? []
+                    return item.bundle_label && opts.length > 0 ? (
+                      <select
+                        value={item.bundle_label}
+                        onChange={e => {
+                          const opt = opts.find(o => o.label === e.target.value)
+                          if (opt) changeBundleTier(item.id, opt.label, opt.qty, opt.bundle_total)
+                        }}
+                        style={{ fontSize: 12, color: '#111', border: '1px solid #ddd', borderRadius: 4, padding: '4px 8px', marginBottom: 6, background: 'white', cursor: 'pointer', maxWidth: '100%' }}>
+                        {opts.map(opt => (
+                          <option key={opt.label} value={opt.label}>{opt.label}</option>
+                        ))}
+                      </select>
+                    ) : item.bundle_label ? (
+                      <div style={{ fontSize: 12, color: '#666', marginBottom: 5 }}>{item.bundle_label}</div>
+                    ) : null
+                  })()}
                   {/* Qty controls */}
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 1, border: '1px solid #ddd', borderRadius: 4, overflow: 'hidden', marginTop: 4 }}>
                     <button onClick={() => updateQty(item.id, -1)}
