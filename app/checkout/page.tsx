@@ -178,21 +178,21 @@ export default function CheckoutPage() {
                   <div style={{ fontWeight: 700, fontSize: 14, color: '#111', marginBottom: 3, lineHeight: 1.35 }}>{item.name}</div>
                   {(() => {
                     const opts = productOptions[item.id] ?? item.quantity_options ?? []
-                    return item.bundle_label && opts.length > 0 ? (
+                    if (opts.length === 0) return null
+                    return (
                       <select
-                        value={item.bundle_label}
+                        value={item.bundle_label ?? ''}
                         onChange={e => {
                           const opt = opts.find(o => o.label === e.target.value)
                           if (opt) changeBundleTier(item.id, opt.label, opt.qty, opt.bundle_total)
                         }}
                         style={{ fontSize: 12, color: '#111', border: '1px solid #ddd', borderRadius: 4, padding: '4px 8px', marginBottom: 6, background: 'white', cursor: 'pointer', maxWidth: '100%' }}>
+                        {!item.bundle_label && <option value="">— Choose bundle —</option>}
                         {opts.map(opt => (
                           <option key={opt.label} value={opt.label}>{opt.label}</option>
                         ))}
                       </select>
-                    ) : item.bundle_label ? (
-                      <div style={{ fontSize: 12, color: '#666', marginBottom: 5 }}>{item.bundle_label}</div>
-                    ) : null
+                    )
                   })()}
                   {/* Qty controls */}
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 1, border: '1px solid #ddd', borderRadius: 4, overflow: 'hidden', marginTop: 4 }}>
