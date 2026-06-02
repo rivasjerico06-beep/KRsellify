@@ -10,7 +10,7 @@ import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 
 export default function CheckoutPage() {
-  const { cart, cartTotal, clearCart, updateQty, removeFromCart, showToast } = useCart()
+  const { cart, cartTotal, clearCart, updateQty, removeFromCart, changeBundleTier, showToast } = useCart()
   const { user, session } = useAuth()
   const router = useRouter()
   const [{ isPending: paypalLoading, isRejected: paypalFailed }] = usePayPalScriptReducer()
@@ -162,9 +162,21 @@ export default function CheckoutPage() {
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 14, color: '#111', marginBottom: 3, lineHeight: 1.35 }}>{item.name}</div>
-                  {item.bundle_label && (
-                    <div style={{ fontSize: 12, color: '#666', marginBottom: 5 }}>Quantity: {item.bundle_label}</div>
-                  )}
+                  {item.bundle_label && item.quantity_options?.length ? (
+                    <select
+                      value={item.bundle_label}
+                      onChange={e => {
+                        const opt = item.quantity_options!.find(o => o.label === e.target.value)
+                        if (opt) changeBundleTier(item.id, opt.label, opt.qty, opt.bundle_total)
+                      }}
+                      style={{ fontSize: 12, color: '#111', border: '1px solid #ddd', borderRadius: 4, padding: '4px 8px', marginBottom: 6, background: 'white', cursor: 'pointer', maxWidth: '100%' }}>
+                      {item.quantity_options.map(opt => (
+                        <option key={opt.label} value={opt.label}>{opt.label}</option>
+                      ))}
+                    </select>
+                  ) : item.bundle_label ? (
+                    <div style={{ fontSize: 12, color: '#666', marginBottom: 5 }}>{item.bundle_label}</div>
+                  ) : null}
                   {/* Qty controls */}
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 1, border: '1px solid #ddd', borderRadius: 4, overflow: 'hidden', marginTop: 4 }}>
                     <button onClick={() => updateQty(item.id, -1)}
@@ -204,25 +216,41 @@ export default function CheckoutPage() {
           </div>
 
           {/* Total row */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderTop: '2px solid #222', marginBottom: 20 }}>
-            <span style={{ fontSize: 15, fontWeight: 800, color: '#111', letterSpacing: '0.06em', textTransform: 'uppercase' }}>TOTAL</span>
-            <div style={{ textAlign: 'right' }}>
-              {discountAmount > 0 && (
-                <div style={{ fontSize: 12, color: '#059669', fontWeight: 600, marginBottom: 2 }}>
-                  −${discountAmount.toFixed(2)} discount applied
-                </div>
-              )}
-              <span style={{ fontSize: 22, fontWeight: 900, color: '#111' }}>
-                ${finalTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              </span>
-              {cart.some(i => i.bundle_label) && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(5,150,105,0.1)', border: '1px solid rgba(5,150,105,0.25)', borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700, color: '#059669', marginTop: 6 }}>
-                  <i className="fa-solid fa-box-open" style={{ fontSize: 10 }} />
-                  You receive: {cart.reduce((s, i) => s + (i.bundle_qty ?? 1) * i.qty, 0)} pcs total
-                </div>
-              )}
-              <div style={{ fontSize: 12, color: '#888', fontWeight: 600, marginTop: 4 }}>
-                Qty: {cart.reduce((s, i) => s + i.qty, 0)}
+          <div style={{ padding: '14px 0', borderTop: '2px solid #222', marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 15, fontWeight: 800, color: '#111', letterSpacing: '0.06em', textTransform: 'uppercase' }}>TOTAL</span>
+              <div style={{ textAlign: 'right' }}>
+                {discountAmount > 0 && (
+                  <div style={{ fontSize: 12, color: '#059669', fontWeight: 600, marginBottom: 2 }}>
+                    −${discountAmount.toFixed(2)} discount applied
+                  </div>
+                )}
+                <span style={{ fontSize: 22, fontWeight: 900, color: '#111' }}>
+                  ${finalTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                </span>
+              </div>
+            </div>
+            {/* Per-product quantity breakdown */}
+            <div style={{ marginTop: 10, borderTop: '1px solid #eee', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {cart.map(item => {
+                const pcs = (item.bundle_qty ?? 1) * item.qty
+                return (
+                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
+                    <span style={{ color: '#555', fontWeight: 500 }}>{item.name}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {item.bundle_label && (
+                        <span style={{ color: '#059669', fontWeight: 700 }}>
+                          {pcs} pcs
+                        </span>
+                      )}
+                      <span style={{ color: '#888' }}>×{item.qty} {item.bundle_label ? 'set' : 'pc'}{item.qty > 1 ? 's' : ''}</span>
+                    </div>
+                  </div>
+                )
+              })}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, borderTop: '1px dashed #eee', paddingTop: 6, marginTop: 2 }}>
+                <span style={{ color: '#111', fontWeight: 700 }}>Total pieces</span>
+                <span style={{ color: '#059669', fontWeight: 800 }}>{cart.reduce((s, i) => s + (i.bundle_qty ?? 1) * i.qty, 0)} pcs</span>
               </div>
             </div>
           </div>

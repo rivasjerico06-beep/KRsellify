@@ -20,6 +20,7 @@ interface CartContextType {
   cart: CartItem[]
   addToCart: (product: Product, via: 'heart' | 'btn') => void
   addBundle: (product: Product, label: string, qty: number, total: number) => void
+  changeBundleTier: (id: string, label: string, bundleQty: number, bundleTotal: number) => void
   heartToggle: (product: Product) => void
   removeFromCart: (id: string) => void
   updateQty: (id: string, delta: number) => void
@@ -82,6 +83,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })
   }, [setCart])
 
+  const changeBundleTier = useCallback((id: string, label: string, bundleQty: number, bundleTotal: number) => {
+    setCart(prev => prev.map(i => i.id === id ? { ...i, bundle_label: label, bundle_qty: bundleQty, bundle_price: bundleTotal } : i))
+  }, [setCart])
+
   const heartToggle = useCallback((product: Product) => {
     setCart(prev => {
       const wishlistItem = prev.find(i => i.id === product.id && i.via === 'heart')
@@ -128,7 +133,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   if (!hydrated) {
     return (
       <CartContext.Provider value={{
-        cart: [], addToCart, addBundle, heartToggle, removeFromCart, updateQty, clearCart,
+        cart: [], addToCart, addBundle, changeBundleTier, heartToggle, removeFromCart, updateQty, clearCart,
         isInCart: () => false, cartCount: 0, cartTotal: 0, cartOpen, setCartOpen, toast, showToast,
       }}>
         {children}
@@ -138,7 +143,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider value={{
-      cart, addToCart, addBundle, heartToggle, removeFromCart, updateQty, clearCart,
+      cart, addToCart, addBundle, changeBundleTier, heartToggle, removeFromCart, updateQty, clearCart,
       isInCart, cartCount, cartTotal, cartOpen, setCartOpen, toast, showToast,
     }}>
       {children}
