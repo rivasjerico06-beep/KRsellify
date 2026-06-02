@@ -326,12 +326,12 @@ export default function CheckoutPage() {
 
           <h2 style={{ fontSize: 26, fontWeight: 800, color: '#111', marginBottom: 6 }}>Checkout</h2>
           <p style={{ fontSize: 15, color: '#666', lineHeight: 1.7, marginBottom: 20 }}>
-            Your order confirmation will be sent to your email address.
+            We'll send your order updates and shipping info to this email. No account needed.
           </p>
 
           {/* Email section */}
           <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#444', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Email Address
+            Email for Order Updates
           </label>
 
           {user && !editingEmail ? (
@@ -446,7 +446,7 @@ export default function CheckoutPage() {
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#0070ba', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>1</div>
               <div>
                 <p style={{ fontWeight: 700, fontSize: 16, color: '#111', marginBottom: 3 }}>Enter your email</p>
-                <p style={{ fontSize: 14, color: '#888', lineHeight: 1.6 }}>We'll send your order confirmation here.</p>
+                <p style={{ fontSize: 14, color: '#888', lineHeight: 1.6 }}>Order status updates and shipping info will be sent here.</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
@@ -460,7 +460,7 @@ export default function CheckoutPage() {
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#059669', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>✓</div>
               <div>
                 <p style={{ fontWeight: 700, fontSize: 16, color: '#111', marginBottom: 3 }}>Order confirmed!</p>
-                <p style={{ fontSize: 14, color: '#888', lineHeight: 1.6 }}>You'll receive a confirmation email right away.</p>
+                <p style={{ fontSize: 14, color: '#888', lineHeight: 1.6 }}>Order status updates will be sent to your email.</p>
               </div>
             </div>
           </div>
