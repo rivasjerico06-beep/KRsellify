@@ -215,6 +215,15 @@ export default function CheckoutPage() {
               <span style={{ fontSize: 22, fontWeight: 900, color: '#111' }}>
                 ${finalTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
               </span>
+              {cart.some(i => i.bundle_label) && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(5,150,105,0.1)', border: '1px solid rgba(5,150,105,0.25)', borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700, color: '#059669', marginTop: 6 }}>
+                  <i className="fa-solid fa-box-open" style={{ fontSize: 10 }} />
+                  You receive: {cart.reduce((s, i) => s + (i.bundle_qty ?? 1) * i.qty, 0)} pcs total
+                </div>
+              )}
+              <div style={{ fontSize: 12, color: '#888', fontWeight: 600, marginTop: 4 }}>
+                Qty: {cart.reduce((s, i) => s + i.qty, 0)}
+              </div>
             </div>
           </div>
 
