@@ -115,6 +115,7 @@ function AccountContent() {
   }
 
   const statusColors: Record<string, { bg: string; text: string }> = {
+    paid:      { bg: '#dcfce7', text: '#15803d' },
     pending:   { bg: '#fef9c3', text: '#854d0e' },
     confirmed: { bg: '#dbeafe', text: '#1e40af' },
     packed:    { bg: '#ede9fe', text: '#5b21b6' },

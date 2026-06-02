@@ -33,6 +33,7 @@ export interface CartItem extends Product {
 export interface Order {
   id?: string
   user_id?: string | null
+  guest_email?: string | null
   items: CartItem[]
   total: number
   status?: string

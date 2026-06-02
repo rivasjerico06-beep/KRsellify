@@ -109,7 +109,7 @@ export default function Categories({ products }: { products: Product[] }) {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>
+       style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 200px)', gap: 16, justifyContent: 'center' }}>
         {catsWithCounts.map(c => <CategoryCard key={c.cat} c={c} />)}
       </motion.div>
     </div>

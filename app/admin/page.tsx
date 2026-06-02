@@ -919,7 +919,13 @@ function AdminContent() {
                   <p style={SECTION_LABEL}>Customer</p>
                   <div style={{ background: 'var(--off-white)', borderRadius: 12, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <p style={{ fontWeight: 700, fontSize: 15 }}>{selectedOrder.customer_name ?? 'Guest Order'}</p>
-                    {selectedOrder.customer_email && <p style={{ fontSize: 13, color: 'var(--text-mid)' }}><i className="fa-solid fa-envelope" style={{ marginRight: 6, opacity: 0.5 }} />{selectedOrder.customer_email}</p>}
+                    {(selectedOrder.customer_email || selectedOrder.guest_email) && (
+                      <p style={{ fontSize: 13, color: 'var(--text-mid)' }}>
+                        <i className="fa-solid fa-envelope" style={{ marginRight: 6, opacity: 0.5 }} />
+                        {selectedOrder.customer_email ?? selectedOrder.guest_email}
+                        {!selectedOrder.customer_email && <span style={{ fontSize: 11, color: 'var(--text-light)', marginLeft: 6 }}>(guest)</span>}
+                      </p>
+                    )}
                     {selectedOrder.customer_phone && <p style={{ fontSize: 13, color: 'var(--text-mid)' }}><i className="fa-solid fa-phone" style={{ marginRight: 6, opacity: 0.5 }} />{selectedOrder.customer_phone}</p>}
                     {selectedOrder.customer_city  && <p style={{ fontSize: 13, color: 'var(--text-mid)' }}><i className="fa-solid fa-location-dot" style={{ marginRight: 6, opacity: 0.5 }} />{selectedOrder.customer_city}</p>}
                     {selectedOrder.customer_address && <p style={{ fontSize: 13, color: 'var(--text-mid)' }}>{selectedOrder.customer_address}</p>}

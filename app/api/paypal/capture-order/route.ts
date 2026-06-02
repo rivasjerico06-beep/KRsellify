@@ -93,22 +93,47 @@ export async function POST(request: Request) {
 
   const admin = getAdminSupabase()
 
-  // Validate and apply coupon (only for logged-in users who have coupons)
+  // Validate and mark coupon as used
   let appliedDiscount = discount_amount ?? 0
-  if (coupon_code && userId) {
-    const { data: coupon } = await admin
-      .from('coupons')
-      .select('id, discount_pct, min_spend, is_used')
-      .eq('code', coupon_code)
-      .eq('user_id', userId)
-      .single()
+  let couponMarked = false
 
-    if (coupon && !coupon.is_used && Number(coupon.min_spend) <= total + appliedDiscount) {
-      appliedDiscount = (total + appliedDiscount) * (coupon.discount_pct / 100)
-      await admin
+  if (coupon_code) {
+    // User-specific coupon (logged-in users only)
+    if (userId) {
+      const { data: userCoupon } = await admin
         .from('coupons')
-        .update({ is_used: true, used_at: new Date().toISOString() })
-        .eq('id', coupon.id)
+        .select('id, discount_pct, min_spend, is_used')
+        .eq('code', coupon_code)
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      if (userCoupon && !userCoupon.is_used && Number(userCoupon.min_spend ?? 0) <= total + appliedDiscount) {
+        appliedDiscount = (total + appliedDiscount) * (userCoupon.discount_pct / 100)
+        couponMarked = true
+        await admin
+          .from('coupons')
+          .update({ is_used: true, used_at: new Date().toISOString() })
+          .eq('id', userCoupon.id)
+      }
+    }
+
+    // Global coupon (no user_id) — works for guests and logged-in users who had no personal coupon
+    if (!couponMarked) {
+      const { data: globalCoupon } = await admin
+        .from('coupons')
+        .select('id, discount_pct, min_spend, is_used')
+        .eq('code', coupon_code.toUpperCase().trim())
+        .is('user_id', null)
+        .eq('is_used', false)
+        .maybeSingle()
+
+      if (globalCoupon && !globalCoupon.is_used && Number(globalCoupon.min_spend ?? 0) <= total + appliedDiscount) {
+        appliedDiscount = (total + appliedDiscount) * (globalCoupon.discount_pct / 100)
+        await admin
+          .from('coupons')
+          .update({ is_used: true, used_at: new Date().toISOString() })
+          .eq('id', globalCoupon.id)
+      }
     }
   }
 
@@ -117,6 +142,7 @@ export async function POST(request: Request) {
     .from('orders')
     .insert({
       user_id: userId,
+      guest_email: !userId ? (guest_email?.toLowerCase().trim() ?? null) : null,
       items: items.map(i => ({
         id: i.id, name: i.name, price: i.price, qty: i.qty,
         img: i.img, via: i.via, category: i.category,

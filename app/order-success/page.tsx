@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
+import { getBrowserSupabase } from '@/lib/supabase-browser'
 
 const COLORS = ['#58948F', '#093459', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981', '#f97316', '#06b6d4']
 
@@ -56,6 +57,7 @@ export default function OrderSuccessPage() {
   const router = useRouter()
   const [order, setOrder] = useState<OrderInfo | null>(null)
   const [showConfetti, setShowConfetti] = useState(true)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const redirectRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -67,6 +69,11 @@ export default function OrderSuccessPage() {
         localStorage.removeItem('krsellify_last_order')
       }
     } catch {}
+
+    // Check if user is logged in to show appropriate CTAs
+    getBrowserSupabase().auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session)
+    })
 
     // Stop confetti after 4 s
     const t = setTimeout(() => setShowConfetti(false), 4000)
@@ -165,10 +172,17 @@ export default function OrderSuccessPage() {
         {/* next steps */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
           style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <Link href="/account"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'var(--navy)', color: 'white', padding: '14px', borderRadius: 50, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>
-            <i className="fa-solid fa-box" /> Track My Order
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/account"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'var(--navy)', color: 'white', padding: '14px', borderRadius: 50, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>
+              <i className="fa-solid fa-box" /> Track My Order
+            </Link>
+          ) : (
+            <Link href="/track-order"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'var(--navy)', color: 'white', padding: '14px', borderRadius: 50, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>
+              <i className="fa-solid fa-box" /> Track My Order
+            </Link>
+          )}
           <Link href="/"
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'var(--off-white)', color: 'var(--heading)', padding: '13px', borderRadius: 50, fontSize: 14, fontWeight: 700, textDecoration: 'none', border: '2px solid var(--gray)' }}>
             <i className="fa-solid fa-store" /> Continue Shopping
@@ -177,7 +191,7 @@ export default function OrderSuccessPage() {
 
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
           style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 20 }}>
-          A confirmation will be sent to your account. You can view order status in <Link href="/account" style={{ color: 'var(--teal)', fontWeight: 700 }}>My Account</Link>.
+          A confirmation has been sent to your email.{isLoggedIn && <> You can view order status in <Link href="/account" style={{ color: 'var(--teal)', fontWeight: 700 }}>My Account</Link>.</>}
         </motion.p>
       </motion.div>
     </div>

@@ -149,6 +149,13 @@ export default function LoginPage() {
       {/* Vignette */}
       <div style={{ position: 'absolute', inset: 0, background: isDark ? 'radial-gradient(ellipse at center, transparent 40%, rgba(6,31,55,0.6) 100%)' : 'radial-gradient(ellipse at center, transparent 40%, rgba(180,215,210,0.5) 100%)', pointerEvents: 'none' }} />
 
+      {/* Back button */}
+      <motion.button onClick={() => router.back()} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+        style={{ position: 'fixed', top: 20, left: 20, zIndex: 50, width: 44, height: 44, borderRadius: '50%', border: isDark ? '1.5px solid rgba(255,255,255,0.18)' : '1.5px solid rgba(9,52,89,0.18)', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(9,52,89,0.08)', backdropFilter: 'blur(12px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#CA8A04' : '#093459', fontSize: 16 }}
+        title="Go back">
+        <i className="fa-solid fa-arrow-left" />
+      </motion.button>
+
       {/* Theme toggle */}
       <motion.button onClick={toggleDark} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
         style={{ position: 'fixed', top: 20, right: 20, zIndex: 50, width: 44, height: 44, borderRadius: '50%', border: isDark ? '1.5px solid rgba(255,255,255,0.18)' : '1.5px solid rgba(9,52,89,0.18)', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(9,52,89,0.08)', backdropFilter: 'blur(12px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#CA8A04' : '#093459', fontSize: 16 }}

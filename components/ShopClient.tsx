@@ -11,8 +11,6 @@ const CATS = [
   { value: 'medallions',   label: 'Medallions' },
   { value: 'collectibles', label: 'Collectibles' },
   { value: 'crypto',       label: 'Crypto' },
-  { value: 'apparel',      label: 'Apparel' },
-  { value: 'accessories',  label: 'Accessories' },
 ]
 
 type Sort = 'featured' | 'price_asc' | 'price_desc' | 'newest' | 'rating'
