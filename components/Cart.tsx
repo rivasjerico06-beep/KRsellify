@@ -79,7 +79,7 @@ export default function Cart() {
                           {item.bundle_label && (
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(5,150,105,0.1)', border: '1px solid rgba(5,150,105,0.25)', borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700, color: '#059669', marginBottom: 4 }}>
                               <i className="fa-solid fa-box-open" style={{ fontSize: 10 }} />
-                              You receive: {item.qty} pcs total
+                              You receive: {(item.bundle_qty ?? 1) * item.qty} pcs total
                             </div>
                           )}
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>

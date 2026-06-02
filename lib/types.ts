@@ -28,6 +28,7 @@ export interface CartItem extends Product {
   via: 'heart' | 'btn'
   bundle_price?: number
   bundle_label?: string
+  bundle_qty?: number
 }
 
 export interface Order {

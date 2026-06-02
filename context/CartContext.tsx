@@ -76,7 +76,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addBundle = useCallback((product: Product, label: string, qty: number, total: number) => {
     setCart(prev => {
       const existingIdx = prev.findIndex(i => i.id === product.id)
-      const item: CartItem = { ...product, qty: 1, via: 'btn', bundle_price: total, bundle_label: label }
+      const item: CartItem = { ...product, qty: 1, via: 'btn', bundle_price: total, bundle_label: label, bundle_qty: qty }
       if (existingIdx >= 0) return prev.map((i, idx) => idx === existingIdx ? item : i)
       return [...prev, item]
     })
