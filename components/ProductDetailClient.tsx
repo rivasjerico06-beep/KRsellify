@@ -66,11 +66,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
     } else {
       for (let i = 0; i < qty; i++) addToCart(product, 'btn')
     }
-    if (!user) {
-      setShowBuyNowModal(true)
-    } else {
-      setCartOpen(true)
-    }
+    setCartOpen(true)
   }
 
   function handleHeart() {
