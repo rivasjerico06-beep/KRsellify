@@ -18,20 +18,14 @@ export default function ContactPage() {
     if (!name || !email || !message) { setError('Please fill in all required fields.'); return }
     setSending(true); setError('')
 
-    // Creates a lead in the admin system with the contact message as notes
-    const res = await fetch('/api/admin/leads', {
+    const res = await fetch('/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customer_name: name,
-        customer_phone: 'N/A — email contact',
-        product_interest: subject || null,
-        notes: `Email: ${email}\n\n${message}`,
-      }),
+      body: JSON.stringify({ name, email, subject, message }),
     })
 
     if (res.ok) { setSent(true) }
-    else { setError('Something went wrong. Please email us directly at support@krsellify.com') }
+    else { setError('Something went wrong. Please email us directly at support@themagaoffers.net') }
     setSending(false)
   }
 
@@ -46,7 +40,7 @@ export default function ContactPage() {
         {/* Contact info */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {[
-            { icon: 'fa-envelope',  title: 'Email',    value: 'support@krsellify.com' },
+            { icon: 'fa-envelope',  title: 'Email',    value: 'support@themagaoffers.net' },
             { icon: 'fa-clock',     title: 'Response time', value: 'Within 24 hours' },
             { icon: 'fa-headset',   title: 'Agent support', value: 'Click "Need an Agent?" on any page' },
           ].map(c => (
