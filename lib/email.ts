@@ -43,7 +43,7 @@ export async function sendOrderConfirmation({
     <!-- Header -->
     <div style="background:#093459;padding:28px 36px;text-align:center">
       <p style="font-size:26px;font-weight:900;color:#ffffff;margin:0;letter-spacing:-0.02em">
-        The <span style="color:#f59e0b">Maga</span>
+        Maga <span style="color:#f59e0b">Offers</span>
       </p>
       <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:6px 0 0;letter-spacing:0.15em;text-transform:uppercase">Premium Collectibles & Patriot Merchandise</p>
     </div>
