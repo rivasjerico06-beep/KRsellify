@@ -13,7 +13,7 @@ const SHOP = [
   { label: 'Accessories',     href: '/shop?cat=accessories' },
 ]
 const SUPPORT = [
-  { label: 'Track Your Order',    href: '/account' },
+  { label: 'Track Your Order',    href: '/track-order' },
   { label: 'FAQ',                 href: '/faq' },
   { label: 'Shipping Info',       href: '/shipping' },
   { label: 'Returns & Exchanges', href: '/returns' },

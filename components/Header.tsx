@@ -150,6 +150,7 @@ export default function Header() {
                       </div>
                       {[
                         { href: '/account', icon: 'fa-user', label: 'My Account' },
+                        { href: '/track-order', icon: 'fa-box', label: 'Track Order' },
                         { href: '/wishlist', icon: 'fa-heart', label: 'My Wishlist' },
                         ...(isAdmin ? [{ href: '/admin', icon: 'fa-shield-halved', label: 'Admin Dashboard' }] : []),
                         ...(isApprovedAgent ? [{ href: '/agent', icon: 'fa-headset', label: 'Agent Dashboard' }] : []),
@@ -336,14 +337,18 @@ export default function Header() {
                 <i className="fa-solid fa-shield-halved" style={{ marginRight: 8 }} /> Admin
               </a>
             )}
-            <div style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <a href="/track-order" onClick={() => setMobileMenuOpen(false)}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, textAlign: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.08)', color: 'white', borderRadius: 10, padding: '13px', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>
+                <i className="fa-solid fa-box" /> Track My Order
+              </a>
               {user ? (
                 <button onClick={() => { signOut(); setMobileMenuOpen(false) }}
                   style={{ width: '100%', background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 10, color: 'white', padding: '14px', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
                   <i className="fa-solid fa-arrow-right-from-bracket" /> Sign Out
                 </button>
               ) : (
-                <a href="/login" style={{ display: 'block', textAlign: 'center', background: 'var(--teal)', color: 'white', borderRadius: 10, padding: '14px', fontSize: 15, fontWeight: 700 }}>
+                <a href="/login" style={{ display: 'block', textAlign: 'center', background: 'var(--teal)', color: 'white', borderRadius: 10, padding: '14px', fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
                   Sign In / Sign Up
                 </a>
               )}
