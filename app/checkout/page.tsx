@@ -158,7 +158,7 @@ export default function CheckoutPage() {
         </span>
       </div>
 
-      <div className="kr-checkout-grid" style={{ maxWidth: 1160, margin: '0 auto', padding: '0 24px 100px', display: 'grid', gridTemplateColumns: '1fr 420px', gap: 28, alignItems: 'start' }}>
+      <div className="mo-checkout-grid" style={{ maxWidth: 1160, margin: '0 auto', padding: '0 24px 100px', display: 'grid', gridTemplateColumns: '1fr 420px', gap: 28, alignItems: 'start' }}>
 
         {/* ── LEFT: Cart items ── */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>

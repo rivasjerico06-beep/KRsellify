@@ -77,7 +77,7 @@ export default function Header() {
         </a>
 
         {/* desktop search */}
-        <div className="kr-header-search" style={{ flex: 1, display: 'flex', maxWidth: 560, border: '2px solid var(--gray)', borderRadius: 50, overflow: 'hidden' }}>
+        <div className="mo-header-search" style={{ flex: 1, display: 'flex', maxWidth: 560, border: '2px solid var(--gray)', borderRadius: 50, overflow: 'hidden' }}>
           <select
             value={searchCat}
             onChange={e => setSearchCat(e.target.value)}
@@ -105,7 +105,7 @@ export default function Header() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginLeft: 'auto', flexShrink: 0 }}>
 
           {/* mobile search toggle */}
-          <motion.button className="kr-mobile-menu-btn"
+          <motion.button className="mo-mobile-menu-btn"
             whileTap={{ scale: 0.9 }}
             onClick={() => setMobileSearchOpen(o => !o)}
             style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: 'var(--text-mid)', padding: 6, borderRadius: 8, alignItems: 'center', justifyContent: 'center' }}>
@@ -124,7 +124,7 @@ export default function Header() {
                   <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--teal)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
                     {(profile?.full_name?.[0] ?? user.email?.[0] ?? '?').toUpperCase()}
                   </span>
-                  <span className="kr-header-cart-label">{profile?.full_name?.split(' ')[0] ?? 'Account'}</span>
+                  <span className="mo-header-cart-label">{profile?.full_name?.split(' ')[0] ?? 'Account'}</span>
                   <i className="fa-solid fa-chevron-down" style={{ fontSize: 10, opacity: 0.7 }} />
                 </>
               ) : (
@@ -200,7 +200,7 @@ export default function Header() {
           </motion.button>
 
           {/* cart */}
-          <motion.button id="kr-cart-btn" whileTap={{ scale: 0.9 }} onClick={() => setCartOpen(true)}
+          <motion.button id="mo-cart-btn" whileTap={{ scale: 0.9 }} onClick={() => setCartOpen(true)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-mid)', padding: '6px 8px', borderRadius: 8, position: 'relative', display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ position: 'relative', fontSize: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20 }}>
               {cartBounce > 0 && (
@@ -257,11 +257,11 @@ export default function Header() {
                 </motion.span>
               )}
             </span>
-            <span className="kr-header-cart-label" style={{ fontWeight: 700, fontSize: 15, color: 'var(--heading)' }}>${cartTotal.toFixed(2)}</span>
+            <span className="mo-header-cart-label" style={{ fontWeight: 700, fontSize: 15, color: 'var(--heading)' }}>${cartTotal.toFixed(2)}</span>
           </motion.button>
 
           {/* hamburger */}
-          <motion.button className="kr-mobile-menu-btn" whileTap={{ scale: 0.9 }}
+          <motion.button className="mo-mobile-menu-btn" whileTap={{ scale: 0.9 }}
             onClick={() => setMobileMenuOpen(o => !o)}
             style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: 'var(--heading)', padding: 6, borderRadius: 8, alignItems: 'center', justifyContent: 'center' }}>
             <i className={`fa-solid ${mobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`} />
@@ -291,7 +291,7 @@ export default function Header() {
 
       {/* desktop nav — homepage only */}
       {pathname === '/' && (
-        <nav style={{ background: 'var(--navy)' }} className="kr-desktop-nav">
+        <nav style={{ background: 'var(--navy)' }} className="mo-desktop-nav">
           <div style={{ maxWidth: 1340, margin: '0 auto', padding: '0 20px', display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none' }}>
             {NAV_LINKS.map(link => (
               <button key={link.cat} onClick={() => handleCatClick(link.cat)}

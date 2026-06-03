@@ -34,9 +34,9 @@ const SOCIALS = [
 export default function Footer() {
   return (
     <footer style={{ background: 'var(--navy-dark)', color: 'rgba(255,255,255,0.75)', padding: '64px 28px 0' }}>
-      <div className="kr-footer-grid" style={{ maxWidth: 1340, margin: '0 auto' }}>
+      <div className="mo-footer-grid" style={{ maxWidth: 1340, margin: '0 auto' }}>
         {/* brand */}
-        <div className="kr-footer-brand">
+        <div className="mo-footer-brand">
           <Link href="/" style={{ display: 'inline-block', marginBottom: 14 }}>
             <Image src="/logo.png" alt="Maga Offers" width={64} height={64} style={{ objectFit: 'contain', borderRadius: 6 }} />
           </Link>

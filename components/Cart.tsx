@@ -28,7 +28,7 @@ export default function Cart() {
         {cartOpen && (
           <motion.div key="panel" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 32 }}
-            className="kr-cart-panel"
+            className="mo-cart-panel"
             style={{ position: 'fixed', top: 0, right: 0, width: 440, maxWidth: '100vw', height: '100%', background: 'var(--white)', zIndex: 2001, boxShadow: '-4px 0 40px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column' }}>
 
             {/* Header */}

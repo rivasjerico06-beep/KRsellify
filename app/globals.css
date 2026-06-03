@@ -212,74 +212,74 @@ html.theme-transition *::after {
 }
 
 /* ── Layout responsive ──────────────────────────────────── */
-.kr-header-search  { flex: 1; display: flex; max-width: 560px; }
-.kr-header-cart-label { display: inline; }
-.kr-mobile-menu-btn { display: none; }
+.mo-header-search  { flex: 1; display: flex; max-width: 560px; }
+.mo-header-cart-label { display: inline; }
+.mo-mobile-menu-btn { display: none; }
 
-.kr-footer-grid {
+.mo-footer-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 48px;
   padding-bottom: 48px;
 }
 
-.kr-banner-grid {
+.mo-banner-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 60px;
   align-items: center;
 }
 
-.kr-detail-trust {
+.mo-detail-trust {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
 
 @media (max-width: 768px) {
-  .kr-header-search    { display: none !important; }
-  .kr-header-cart-label { display: none; }
-  .kr-mobile-menu-btn  { display: flex !important; }
-  .kr-desktop-nav      { display: none; }
+  .mo-header-search    { display: none !important; }
+  .mo-header-cart-label { display: none; }
+  .mo-mobile-menu-btn  { display: flex !important; }
+  .mo-desktop-nav      { display: none; }
 
-  .kr-footer-grid {
+  .mo-footer-grid {
     grid-template-columns: 1fr 1fr !important;
     gap: 32px !important;
   }
-  .kr-footer-brand { grid-column: 1 / -1; }
+  .mo-footer-brand { grid-column: 1 / -1; }
 
-  .kr-banner-grid {
+  .mo-banner-grid {
     grid-template-columns: 1fr !important;
     gap: 32px !important;
   }
 
-  .kr-cart-panel    { width: 100vw !important; }
-  .kr-detail-trust  { grid-template-columns: 1fr !important; gap: 8px !important; }
-  .kr-section-pad   { padding-left: 16px !important; padding-right: 16px !important; }
+  .mo-cart-panel    { width: 100vw !important; }
+  .mo-detail-trust  { grid-template-columns: 1fr !important; gap: 8px !important; }
+  .mo-section-pad   { padding-left: 16px !important; padding-right: 16px !important; }
 
   /* Checkout page — stack right panel (checkout) above left (items) on mobile */
-  .kr-checkout-grid {
+  .mo-checkout-grid {
     grid-template-columns: 1fr !important;
     gap: 20px !important;
   }
-  .kr-checkout-grid > *:nth-child(2) {
+  .mo-checkout-grid > *:nth-child(2) {
     order: -1;
   }
 }
 
 @media (max-width: 480px) {
-  .kr-footer-grid { grid-template-columns: 1fr !important; }
+  .mo-footer-grid { grid-template-columns: 1fr !important; }
 }
 
 /* ── Announcement ticker ───────────────────────────────── */
-@keyframes kr-ticker {
+@keyframes mo-ticker {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-.kr-ticker-track {
+.mo-ticker-track {
   display: inline-flex;
-  animation: kr-ticker 32s linear infinite;
+  animation: mo-ticker 32s linear infinite;
   white-space: nowrap;
   will-change: transform;
 }
-.kr-ticker-track:hover { animation-play-state: paused; }
+.mo-ticker-track:hover { animation-play-state: paused; }

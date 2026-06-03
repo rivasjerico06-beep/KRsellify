@@ -78,7 +78,7 @@ export default function Banner({ config = DEFAULT }: { config?: SiteBanner }) {
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
         style={{ position: 'absolute', top: '-20%', right: '10%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(88,148,143,0.25) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-      <div className="kr-banner-grid" style={{ maxWidth: 1340, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+      <div className="mo-banner-grid" style={{ maxWidth: 1340, margin: '0 auto', position: 'relative', zIndex: 1 }}>
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           whileInView={{ opacity: 1, x: 0 }}

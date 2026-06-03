@@ -51,7 +51,6 @@ export default function LoginPage() {
   const { isDark, toggleDark } = useTheme()
   const router = useRouter()
 
-  const [mode] = useState<'login'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')

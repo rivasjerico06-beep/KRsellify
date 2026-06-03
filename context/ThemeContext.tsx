@@ -13,7 +13,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState(false)
 
   useEffect(() => {
-    const stored = localStorage.getItem('kr-theme')
+    const stored = localStorage.getItem('mo-theme')
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     const initial = stored === 'dark' || (!stored && prefersDark)
     setIsDark(initial)
@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setIsDark(prev => {
       const next = !prev
       html.setAttribute('data-theme', next ? 'dark' : 'light')
-      localStorage.setItem('kr-theme', next ? 'dark' : 'light')
+      localStorage.setItem('mo-theme', next ? 'dark' : 'light')
       return next
     })
     const timer = setTimeout(() => html.classList.remove('theme-transition'), 500)

@@ -67,7 +67,7 @@ export default function AgentLoginPage() {
         style={{ background: 'var(--white)', borderRadius: 24, padding: '48px 40px', width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
       >
         <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)', display: 'block', textAlign: 'center', marginBottom: 6 }}>
-          KR<span style={{ color: 'var(--teal)' }}>SELLIFY</span>
+          Maga <span style={{ color: 'var(--teal)' }}>Offers</span>
         </a>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <span style={{ background: 'var(--teal)', color: 'white', fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 20, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
@@ -104,7 +104,7 @@ export default function AgentLoginPage() {
         </form>
 
         <div style={{ textAlign: 'center', marginTop: 24, paddingTop: 24, borderTop: '1px solid var(--gray)' }}>
-          <a href="/login" style={{ color: 'var(--text-mid)', fontSize: 13 }}>← Back to Customer Login</a>
+          <a href="/" style={{ color: 'var(--text-mid)', fontSize: 13 }}>← Back to Store</a>
         </div>
       </motion.div>
     </div>

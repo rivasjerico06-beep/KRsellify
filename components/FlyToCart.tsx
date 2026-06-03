@@ -73,7 +73,7 @@ export function FlyToCartProvider({ children }: { children: ReactNode }) {
   useEffect(() => setMounted(true), [])
 
   const flyToCart = useCallback((el: HTMLElement, img?: string) => {
-    const cartEl = document.getElementById('kr-cart-btn')
+    const cartEl = document.getElementById('mo-cart-btn')
     if (!cartEl) return
     const from = el.getBoundingClientRect()
     const to = cartEl.getBoundingClientRect()

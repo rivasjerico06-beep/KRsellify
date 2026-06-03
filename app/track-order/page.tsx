@@ -193,7 +193,6 @@ export default function TrackOrderPage() {
       {/* footer links */}
       <div style={{ marginTop: 28, display: 'flex', gap: 20, fontSize: 13 }}>
         <Link href="/" style={{ color: 'var(--teal)', fontWeight: 600 }}>Back to Shop</Link>
-        <Link href="/login" style={{ color: 'var(--text-mid)' }}>Sign In</Link>
       </div>
     </div>
   )

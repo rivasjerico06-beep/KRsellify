@@ -266,7 +266,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           </div>
 
           {/* Trust mini-bar */}
-          <div className="kr-detail-trust">
+          <div className="mo-detail-trust">
             {[
               { icon: 'fa-truck-fast', label: 'Free Shipping', sub: 'Orders over $75' },
               { icon: 'fa-rotate-left', label: 'Easy Returns', sub: '30-day policy' },
