@@ -25,7 +25,7 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'The Maga — Premium Collectibles & Patriot Merchandise',
+  title: 'Maga Offers — Premium Collectibles & Patriot Merchandise',
   description: 'Authentic limited-edition patriot collectibles. Verified, premium quality, and ready to own.',
 }
 

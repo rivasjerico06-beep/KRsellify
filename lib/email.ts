@@ -6,7 +6,7 @@ function getResend() {
   if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY)
   return _resend
 }
-const FROM = process.env.EMAIL_FROM ?? 'The Maga <orders@themagaoffers.com>'
+const FROM = process.env.EMAIL_FROM ?? 'Maga Offers <orders@themagaoffers.com>'
 
 export async function sendOrderConfirmation({
   to,
@@ -92,13 +92,13 @@ export async function sendOrderConfirmation({
 
       <p style="font-size:13px;color:#8ba0aa;margin:24px 0 0;text-align:center;line-height:1.6">
         Questions? Reply to this email or contact us at<br>
-        <a href="mailto:support@themagaoffers.com" style="color:#f59e0b;font-weight:600">support@themagaoffers.com</a>
+        <a href="mailto:support@themagaoffers.net" style="color:#f59e0b;font-weight:600">support@themagaoffers.net</a>
       </p>
     </div>
 
     <!-- Footer -->
     <div style="background:#f4f8f8;padding:18px 36px;text-align:center;border-top:1px solid #e8eff0">
-      <p style="font-size:11px;color:#8ba0aa;margin:0">© 2025 The Maga. All rights reserved.</p>
+      <p style="font-size:11px;color:#8ba0aa;margin:0">© 2025 Maga Offers. All rights reserved.</p>
     </div>
   </div>
 </body>
@@ -107,8 +107,8 @@ export async function sendOrderConfirmation({
   await getResend().emails.send({
     from: FROM,
     to,
-    replyTo: 'rivasjerico06@gmail.com',
-    subject: `✓ Order Confirmed — The Maga (#${orderId.slice(0, 8).toUpperCase()})`,
+    replyTo: 'support@themagaoffers.net',
+    subject: `✓ Order Confirmed — Maga Offers (#${orderId.slice(0, 8).toUpperCase()})`,
     html,
   })
 

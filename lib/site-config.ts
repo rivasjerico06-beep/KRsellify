@@ -85,7 +85,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
     },
   ],
   banner: {
-    title: 'Why Choose The Maga?',
+    title: 'Why Choose Maga Offers?',
     description: "Every product is authenticated, quality-checked, and shipped with care. We partner with verified suppliers to bring you exclusive collectibles you won't find anywhere else.",
     stats: [
       { num: '2400', label: 'Orders Shipped' },

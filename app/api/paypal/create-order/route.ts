@@ -110,10 +110,10 @@ export async function POST(request: Request) {
           currency_code: 'USD',
           value: amount.toFixed(2),
         },
-        description: 'THE MAGA OFFERS Collectibles Order',
+        description: 'MAGA OFFERS OFFERS Collectibles Order',
       }],
       application_context: {
-        brand_name: 'THE MAGA OFFERS',
+        brand_name: 'MAGA OFFERS OFFERS',
         shipping_preference: 'NO_SHIPPING',
         user_action: 'PAY_NOW',
         landing_page: 'BILLING',

@@ -96,7 +96,7 @@ export default function OrderSuccessPage() {
 
       {/* logo */}
       <Link href="/" style={{ marginBottom: 32, display: 'block' }}>
-        <Image src="/logo.png" alt="The Maga" width={72} height={72} style={{ objectFit: 'contain' }} />
+        <Image src="/logo.png" alt="Maga Offers" width={72} height={72} style={{ objectFit: 'contain' }} />
       </Link>
 
       <motion.div

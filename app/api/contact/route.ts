@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-const FROM = process.env.EMAIL_FROM ?? 'The Maga <orders@themagaoffers.com>'
+const FROM = process.env.EMAIL_FROM ?? 'Maga Offers <orders@themagaoffers.com>'
 
 export async function POST(request: Request) {
   const { name, email, subject, message } = await request.json()

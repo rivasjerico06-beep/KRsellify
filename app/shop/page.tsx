@@ -10,7 +10,7 @@ import ShopClient from '@/components/ShopClient'
 export const revalidate = 60
 
 export const metadata = {
-  title: 'Shop All Products — The Maga',
+  title: 'Shop All Products — Maga Offers',
   description: 'Browse our full collection of premium collectibles, crypto memorabilia, medallions, and more.',
 }
 

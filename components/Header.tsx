@@ -68,7 +68,7 @@ export default function Header() {
         <a href="/" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}>
           <Image
             src="/logo.png"
-            alt="The Maga"
+            alt="Maga Offers"
             width={52}
             height={52}
             style={{ objectFit: 'contain', borderRadius: 6 }}

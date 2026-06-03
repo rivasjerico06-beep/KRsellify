@@ -80,7 +80,7 @@ export default function TrackOrderPage() {
 
       {/* logo */}
       <Link href="/" style={{ marginBottom: 32, display: 'block' }}>
-        <Image src="/logo.png" alt="The Maga" width={64} height={64} style={{ objectFit: 'contain' }} />
+        <Image src="/logo.png" alt="Maga Offers" width={64} height={64} style={{ objectFit: 'contain' }} />
       </Link>
 
       <motion.div
