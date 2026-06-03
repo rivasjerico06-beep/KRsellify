@@ -102,7 +102,7 @@ function AgentContent() {
       {/* header */}
       <div style={{ background: 'var(--navy)', padding: '16px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 900, color: 'white' }}>
-          KR<span style={{ color: 'var(--teal-light)' }}>SELLIFY</span>
+          Maga <span style={{ color: 'var(--teal-light)' }}>Offers</span>
           <span style={{ fontSize: 11, fontWeight: 600, background: 'var(--teal)', padding: '2px 10px', borderRadius: 20, marginLeft: 10, verticalAlign: 'middle' }}>Agent</span>
         </a>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>

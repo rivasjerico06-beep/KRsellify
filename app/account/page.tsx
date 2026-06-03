@@ -129,7 +129,7 @@ function AccountContent() {
       {/* top bar */}
       <div style={{ background: 'var(--navy)', padding: '20px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 900, color: 'white' }}>
-          KR<span style={{ color: 'var(--teal-light)' }}>SELLIFY</span>
+          Maga <span style={{ color: 'var(--teal-light)' }}>Offers</span>
         </a>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           {isAdmin && <a href="/admin" style={{ color: 'var(--teal-light)', fontSize: 13, fontWeight: 700 }}>Admin Dashboard →</a>}
