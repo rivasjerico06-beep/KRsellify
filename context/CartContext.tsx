@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useCallback, useRef, useEffect, Re
 import { CartItem, Product } from '@/lib/types'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 
-const LS_KEY = 'krsellify_cart'
+const LS_KEY = 'themaga_cart'
 
 function loadFromStorage(): CartItem[] {
   if (typeof window === 'undefined') return []
@@ -122,8 +122,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     function handleOpenCart() { setCartOpen(true) }
-    window.addEventListener('krsellify:opencart', handleOpenCart)
-    return () => window.removeEventListener('krsellify:opencart', handleOpenCart)
+    window.addEventListener('themaga:opencart', handleOpenCart)
+    return () => window.removeEventListener('themaga:opencart', handleOpenCart)
   }, [])
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0)

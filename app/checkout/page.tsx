@@ -122,7 +122,7 @@ export default function CheckoutPage() {
     }
 
     try {
-      localStorage.setItem('krsellify_last_order', JSON.stringify({
+      localStorage.setItem('themaga_last_order', JSON.stringify({
         id: order.id ?? '',
         total: finalTotal,
         discount: discountAmount,

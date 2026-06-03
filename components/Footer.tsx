@@ -25,10 +25,10 @@ const COMPANY = [
   { label: 'Terms of Service',href: '/terms' },
 ]
 const SOCIALS = [
-  { icon: 'fa-facebook-f', href: 'https://facebook.com/krsellify' },
-  { icon: 'fa-x-twitter',  href: 'https://x.com/krsellify' },
-  { icon: 'fa-instagram',  href: 'https://instagram.com/krsellify' },
-  { icon: 'fa-youtube',    href: 'https://youtube.com/@krsellify' },
+  { icon: 'fa-facebook-f', href: 'https://facebook.com/themagaoffers' },
+  { icon: 'fa-x-twitter',  href: 'https://x.com/themagaoffers' },
+  { icon: 'fa-instagram',  href: 'https://instagram.com/themagaoffers' },
+  { icon: 'fa-youtube',    href: 'https://youtube.com/@themagaoffers' },
 ]
 
 export default function Footer() {

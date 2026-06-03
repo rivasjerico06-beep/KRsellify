@@ -15,8 +15,8 @@ export default function ProductGrid({ initialProducts }: { initialProducts: Prod
       setFilter((e as CustomEvent).detail)
       setVisible(8)
     }
-    window.addEventListener('krsellify:filter', onFilter)
-    return () => window.removeEventListener('krsellify:filter', onFilter)
+    window.addEventListener('themaga:filter', onFilter)
+    return () => window.removeEventListener('themaga:filter', onFilter)
   }, [])
 
   const filtered = initialProducts.filter(p => filter === 'all' || p.category === filter)

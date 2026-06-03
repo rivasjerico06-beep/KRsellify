@@ -9,7 +9,7 @@ const REVIEWS = [
   { text: "The gold bar arrived beautifully packaged. As a coin collector, this is one of the most beautiful commemorative pieces I've ever seen. Passing it down to my grandkids for sure.", name: 'William C.', role: 'Investor', avatar: 'https://i.pravatar.cc/100?img=33', stars: 5 },
   { text: 'Shipping was fast and the D.O.G.E Coin is absolutely breathtaking. The detail work is incredible. Customer support was also super helpful when I had questions.', name: 'James P.', role: 'Crypto Enthusiast', avatar: 'https://i.pravatar.cc/100?img=12', stars: 5 },
   { text: "Got the Trump gold bar as a gift for my father and he absolutely loves it. The quality is unmatched. Will be buying more as gifts for sure.", name: 'Sarah M.', role: 'Gift Buyer', avatar: 'https://i.pravatar.cc/100?img=25', stars: 5 },
-  { text: "The Bitcoin Crypto Passport is a masterpiece. Every detail is perfect. I've bought from many collectibles sites but KRSELLIFY is by far the best quality.", name: 'Michael T.', role: 'Premium Buyer', avatar: 'https://i.pravatar.cc/100?img=68', stars: 5 },
+  { text: "The Bitcoin Crypto Passport is a masterpiece. Every detail is perfect. I've bought from many collectibles sites but The Maga is by far the best quality.", name: 'Michael T.', role: 'Premium Buyer', avatar: 'https://i.pravatar.cc/100?img=68', stars: 5 },
   { text: "Received the Nesara Gesara Gold Coin and couldn't be happier. The craftsmanship is exceptional — it's the centerpiece of my whole collection now.", name: 'Amanda L.', role: 'Collector', avatar: 'https://i.pravatar.cc/100?img=44', stars: 5 },
 ]
 

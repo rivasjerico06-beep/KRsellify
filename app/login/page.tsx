@@ -68,7 +68,7 @@ export default function LoginPage() {
       else if (isApprovedAgent) router.replace('/agent')
       else if (next === 'checkout') {
         router.replace('/')
-        setTimeout(() => window.dispatchEvent(new CustomEvent('krsellify:opencart')), 300)
+        setTimeout(() => window.dispatchEvent(new CustomEvent('themaga:opencart')), 300)
       } else {
         router.replace('/')
       }

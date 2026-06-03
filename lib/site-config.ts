@@ -49,7 +49,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
     visible: true,
     bg_color: 'navy',
     text: 'Free shipping on orders $399+',
-    highlight: 'Use code KRSELLIFY10 for 10% off',
+    highlight: 'Use code MAGA10 for 10% off',
     suffix: 'Limited time only',
   },
   hero_slides: [
@@ -85,7 +85,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
     },
   ],
   banner: {
-    title: 'Why Choose KRSELLIFY?',
+    title: 'Why Choose The Maga?',
     description: "Every product is authenticated, quality-checked, and shipped with care. We partner with verified suppliers to bring you exclusive collectibles you won't find anywhere else.",
     stats: [
       { num: '2400', label: 'Orders Shipped' },

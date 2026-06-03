@@ -1,7 +1,7 @@
 ﻿import InfoPageLayout from '@/components/InfoPageLayout'
 import Link from 'next/link'
 
-export const metadata = { title: 'Returns & Exchanges — KRSELLIFY' }
+export const metadata = { title: 'Returns & Exchanges — The Maga' }
 
 export default function ReturnsPage() {
   return (
@@ -29,7 +29,7 @@ export default function ReturnsPage() {
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 800, color: 'var(--heading)', marginBottom: 16 }}>How to Return</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[
-              { step: '1', title: 'Contact us',       body: 'Email support@krsellify.com with your order number and reason for return.' },
+              { step: '1', title: 'Contact us',       body: 'Email support@themagaoffers.net with your order number and reason for return.' },
               { step: '2', title: 'Get approval',     body: 'We\'ll review and send a return confirmation within 1–2 business days.' },
               { step: '3', title: 'Ship the item',    body: 'Pack securely in original packaging and ship to the address we provide.' },
               { step: '4', title: 'Receive refund',   body: 'Once received and inspected, your refund or exchange is processed immediately.' },

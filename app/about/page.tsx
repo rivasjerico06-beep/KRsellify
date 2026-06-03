@@ -65,7 +65,7 @@ function Reveal({
 const STATS = [
   { icon: 'fa-shield-check', title: '100% Authentic', body: 'Every product is verified and authenticated before listing.', count: null },
   { icon: 'fa-truck-fast',   title: '1–2 Day Dispatch', body: 'Orders processed and shipped within 1–2 business days worldwide.', count: null },
-  { icon: 'fa-users',        title: '2,400+ Collectors', body: 'Happy customers across the globe trust KRSELLIFY for rare finds.', count: 2400 },
+  { icon: 'fa-users',        title: '2,400+ Collectors', body: 'Happy customers across the globe trust The Maga for rare finds.', count: 2400 },
   { icon: 'fa-star',         title: '4.9 Star Rating', body: 'Consistently rated 5 stars for quality and customer care.', count: null },
 ]
 
@@ -103,7 +103,7 @@ function StatCard({ icon, title, body, count, delay }: typeof STATS[number] & { 
 
 /* ── Timeline step ───────────────────────────────────────── */
 const TIMELINE = [
-  { year: '2021', label: 'Founded', body: 'KRSELLIFY was born out of a passion for rare, authenticated collectibles.' },
+  { year: '2021', label: 'Founded', body: 'The Maga was born out of a passion for rare, authenticated collectibles.' },
   { year: '2022', label: 'First 500 Customers', body: 'Word spread fast — our hand-picked inventory drew collectors worldwide.' },
   { year: '2023', label: 'Agent Network Launched', body: 'We built a dedicated agent programme to provide personal buying assistance.' },
   { year: '2024', label: '2,400+ Happy Collectors', body: 'Trusted by thousands, still growing. Every order hand-packed with care.' },
@@ -112,7 +112,7 @@ const TIMELINE = [
 /* ── Page ─────────────────────────────────────────────────── */
 export default function AboutPage() {
   return (
-    <InfoPageLayout title="About KRSELLIFY" subtitle="Premium collectibles, verified and shipped with care." breadcrumb="About">
+    <InfoPageLayout title="About The Maga" subtitle="Premium collectibles, verified and shipped with care." breadcrumb="About">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
 
         {/* Our Story */}
@@ -126,7 +126,7 @@ export default function AboutPage() {
                 Started by collectors,<br />built for collectors.
               </h2>
               <p style={{ fontSize: 15, lineHeight: 1.85, color: 'var(--text-mid)', marginBottom: 14 }}>
-                KRSELLIFY was founded with one mission: to make premium collectibles and limited-edition memorabilia accessible to enthusiasts everywhere. What started as a passion for rare finds grew into a trusted marketplace for collectors, investors, and gift buyers worldwide.
+                The Maga was founded with one mission: to make premium collectibles and limited-edition memorabilia accessible to enthusiasts everywhere. What started as a passion for rare finds grew into a trusted marketplace for collectors, investors, and gift buyers worldwide.
               </p>
               <p style={{ fontSize: 15, lineHeight: 1.85, color: 'var(--text-mid)' }}>
                 Every item we carry is hand-picked, authenticated, and quality-checked before it reaches your door. We partner exclusively with verified suppliers to ensure you receive exactly what you pay for — no counterfeits, no surprises.

@@ -151,7 +151,7 @@ export default function LandingEditor({ initialConfig }: { initialConfig: SiteCo
             </div>
             <div>
               <label style={labelStyle}>Highlight Text (teal)</label>
-              <input style={inputStyle} value={config.announce_bar.highlight} onChange={e => updateAnnounce('highlight', e.target.value)} placeholder="Use code KRSELLIFY10 for 10% off" />
+              <input style={inputStyle} value={config.announce_bar.highlight} onChange={e => updateAnnounce('highlight', e.target.value)} placeholder="Use code MAGA10 for 10% off" />
             </div>
             <div>
               <label style={labelStyle}>Suffix Text</label>

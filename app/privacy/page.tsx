@@ -1,6 +1,6 @@
 ﻿import InfoPageLayout from '@/components/InfoPageLayout'
 
-export const metadata = { title: 'Privacy Policy — KRSELLIFY' }
+export const metadata = { title: 'Privacy Policy — The Maga' }
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section style={{ background: 'var(--white)', borderRadius: 16, padding: '28px 32px', boxShadow: '0 2px 10px rgba(9,52,89,0.06)' }}>
@@ -14,7 +14,7 @@ export default function PrivacyPage() {
     <InfoPageLayout title="Privacy Policy" subtitle="Last updated: January 2025" breadcrumb="Privacy Policy">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <Section title="Information We Collect">
-          <p>When you use KRSELLIFY, we collect information you provide directly: your name, email address, phone number, and shipping address when you place an order or create an account. We also collect usage data such as pages visited, products viewed, and search queries to improve your experience.</p>
+          <p>When you use The Maga, we collect information you provide directly: your name, email address, phone number, and shipping address when you place an order or create an account. We also collect usage data such as pages visited, products viewed, and search queries to improve your experience.</p>
         </Section>
 
         <Section title="How We Use Your Information">
@@ -54,11 +54,11 @@ export default function PrivacyPage() {
             <li>Request deletion of your account and data</li>
             <li>Opt out of marketing communications at any time</li>
           </ul>
-          <p style={{ marginTop: 10 }}>To exercise these rights, email us at <strong>support@krsellify.com</strong>.</p>
+          <p style={{ marginTop: 10 }}>To exercise these rights, email us at <strong>support@themagaoffers.net</strong>.</p>
         </Section>
 
         <Section title="Contact">
-          <p>Questions about this policy? Email us at <strong>support@krsellify.com</strong>. We aim to respond within 2 business days.</p>
+          <p>Questions about this policy? Email us at <strong>support@themagaoffers.net</strong>. We aim to respond within 2 business days.</p>
         </Section>
       </div>
     </InfoPageLayout>

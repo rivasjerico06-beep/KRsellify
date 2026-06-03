@@ -50,7 +50,7 @@ export default function Header() {
     setMobileMenuOpen(false)
     if (pathname === '/') {
       document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })
-      window.dispatchEvent(new CustomEvent('krsellify:filter', { detail: cat }))
+      window.dispatchEvent(new CustomEvent('themaga:filter', { detail: cat }))
     } else {
       router.push(cat === 'all' ? '/shop' : `/shop?cat=${cat}`)
     }

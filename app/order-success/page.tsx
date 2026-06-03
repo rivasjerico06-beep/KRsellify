@@ -63,10 +63,10 @@ export default function OrderSuccessPage() {
   useEffect(() => {
     // Load from localStorage (set by Cart on successful checkout)
     try {
-      const raw = localStorage.getItem('krsellify_last_order')
+      const raw = localStorage.getItem('themaga_last_order')
       if (raw) {
         setOrder(JSON.parse(raw))
-        localStorage.removeItem('krsellify_last_order')
+        localStorage.removeItem('themaga_last_order')
       }
     } catch {}
 
