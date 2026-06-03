@@ -170,20 +170,12 @@ export default function Header() {
                       </button>
                     </>
                   ) : (
-                    <>
-                      <a href="/login" onClick={() => setUserMenuOpen(false)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '15px 18px', fontSize: 15, color: 'var(--heading)', fontWeight: 700 }}
-                        onMouseEnter={e => (e.currentTarget.style.background = 'var(--off-white)')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                        <i className="fa-solid fa-user" style={{ color: 'var(--teal)', width: 16 }} /> Sign In / Sign Up
-                      </a>
-                      <a href="/agent-login" onClick={() => setUserMenuOpen(false)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '15px 18px', fontSize: 15, color: 'var(--text-mid)', fontWeight: 500, borderTop: '1px solid var(--gray)' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = 'var(--off-white)')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                        <i className="fa-solid fa-headset" style={{ color: 'var(--teal)', width: 16 }} /> Agent Login
-                      </a>
-                    </>
+                    <a href="/track-order" onClick={() => setUserMenuOpen(false)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '15px 18px', fontSize: 15, color: 'var(--heading)', fontWeight: 700 }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--off-white)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                      <i className="fa-solid fa-box" style={{ color: 'var(--teal)', width: 16 }} /> Track My Order
+                    </a>
                   )}
                 </motion.div>
               )}
@@ -342,15 +334,11 @@ export default function Header() {
                 style={{ display: 'flex', alignItems: 'center', gap: 8, textAlign: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.08)', color: 'white', borderRadius: 10, padding: '13px', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>
                 <i className="fa-solid fa-box" /> Track My Order
               </a>
-              {user ? (
+              {user && (
                 <button onClick={() => { signOut(); setMobileMenuOpen(false) }}
                   style={{ width: '100%', background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 10, color: 'white', padding: '14px', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
                   <i className="fa-solid fa-arrow-right-from-bracket" /> Sign Out
                 </button>
-              ) : (
-                <a href="/login" style={{ display: 'block', textAlign: 'center', background: 'var(--teal)', color: 'white', borderRadius: 10, padding: '14px', fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
-                  Sign In / Sign Up
-                </a>
               )}
             </div>
           </motion.div>

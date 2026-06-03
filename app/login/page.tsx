@@ -47,17 +47,15 @@ function TrustBadge({ icon, text, isDark }: { icon: string; text: string; isDark
 }
 
 export default function LoginPage() {
-  const { user, signIn, signUp, isAdmin, isApprovedAgent } = useAuth()
+  const { user, signIn, isAdmin, isApprovedAgent } = useAuth()
   const { isDark, toggleDark } = useTheme()
   const router = useRouter()
 
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
+  const [mode] = useState<'login'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [fullName, setFullName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState('')
   const [focused, setFocused] = useState<string | null>(null)
 
   useEffect(() => {
@@ -79,15 +77,8 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    if (mode === 'login') {
-      const { error } = await signIn(email, password)
-      if (error) setError(error)
-    } else {
-      if (!fullName.trim()) { setError('Full name is required'); setLoading(false); return }
-      const { error } = await signUp(email, password, fullName)
-      if (error) setError(error)
-      else setSuccess('Account created! You can now sign in.')
-    }
+    const { error } = await signIn(email, password)
+    if (error) setError(error)
     setLoading(false)
   }
 
@@ -175,50 +166,15 @@ export default function LoginPage() {
         <motion.div variants={stagger} initial="hidden" animate="visible" style={{ textAlign: 'center', marginBottom: 30 }}>
           <motion.a href="/" variants={fadeUp}
             style={{ fontFamily: 'var(--font-playfair)', fontSize: 34, fontWeight: 900, color: isDark ? '#e2f0ef' : '#093459', display: 'block', marginBottom: 6, letterSpacing: '-0.02em', textDecoration: 'none' }}>
-            KR<span style={{ color: '#58948f', textShadow: '0 0 28px rgba(88,148,143,0.5)' }}>SELLIFY</span>
+            Maga <span style={{ color: '#58948f', textShadow: '0 0 28px rgba(88,148,143,0.5)' }}>Offers</span>
           </motion.a>
           <motion.p variants={fadeUp} style={{ color: isDark ? '#7ab5b0' : '#8ba0aa', fontSize: 16 }}>
-            {mode === 'login' ? 'Welcome back, Patriot' : 'Join the movement today'}
+            Staff & Admin Access
           </motion.p>
-        </motion.div>
-
-        {/* Tab switcher */}
-        <motion.div variants={fadeUp} initial="hidden" animate="visible" transition={{ delay: 0.35 }}
-          style={{ display: 'flex', background: isDark ? 'rgba(255,255,255,0.06)' : '#f4f8f8', borderRadius: 50, padding: 4, marginBottom: 28, border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e8eff0'}` }}>
-          {(['login', 'signup'] as const).map(m => (
-            <motion.button key={m}
-              onClick={() => { setMode(m); setError(''); setSuccess('') }}
-              animate={{
-                background: mode === m ? (isDark ? 'rgba(88,148,143,0.25)' : '#093459') : 'transparent',
-                color: mode === m ? (isDark ? '#7ab5b0' : 'white') : (isDark ? '#7ab5b0' : '#4a6170'),
-                boxShadow: mode === m ? (isDark ? '0 4px 14px rgba(88,148,143,0.2)' : '0 4px 14px rgba(9,52,89,0.28)') : 'none',
-              }}
-              transition={{ duration: 0.25 }}
-              style={{ flex: 1, border: 'none', borderRadius: 50, padding: '13px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.03em' }}>
-              {m === 'login' ? 'Sign In' : 'Sign Up'}
-            </motion.button>
-          ))}
         </motion.div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <AnimatePresence initial={false}>
-            {mode === 'signup' && (
-              <motion.div key="name-field"
-                initial={{ opacity: 0, maxHeight: 0 }}
-                animate={{ opacity: 1, maxHeight: 150 }}
-                exit={{ opacity: 0, maxHeight: 0 }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                style={{ overflow: 'hidden' }}>
-                <FieldWrapper icon="fa-user" label="Full Name" isDark={isDark}>
-                  <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-                    placeholder="Your full name"
-                    onFocus={() => setFocused('name')} onBlur={() => setFocused(null)}
-                    style={inputStyle('name')} />
-                </FieldWrapper>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           <FieldWrapper icon="fa-envelope" label="Email" isDark={isDark}>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)}
@@ -241,12 +197,6 @@ export default function LoginPage() {
                 <i className="fa-solid fa-circle-exclamation" />{error}
               </motion.div>
             )}
-            {success && (
-              <motion.div key="ok" initial={{ opacity: 0, y: -8, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }}
-                style={{ background: isDark ? 'rgba(88,148,143,0.15)' : '#f0fff8', border: `1px solid ${isDark ? 'rgba(88,148,143,0.3)' : '#9de'}`, borderRadius: 12, padding: '11px 14px', fontSize: 13, color: isDark ? '#7ab5b0' : '#3d6f6a', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <i className="fa-solid fa-circle-check" />{success}
-              </motion.div>
-            )}
           </AnimatePresence>
 
           <motion.button type="submit" disabled={loading}
@@ -255,9 +205,7 @@ export default function LoginPage() {
             style={{ background: loading ? (isDark ? 'rgba(255,255,255,0.15)' : '#8ba0aa') : isDark ? 'linear-gradient(135deg, #0e4a80 0%, #58948f 100%)' : 'linear-gradient(135deg, #093459 0%, #0e4a80 100%)', color: 'white', border: 'none', padding: '18px', borderRadius: 50, fontSize: 17, fontWeight: 700, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', marginTop: 4, boxShadow: isDark ? '0 4px 18px rgba(88,148,143,0.2)' : '0 4px 18px rgba(9,52,89,0.28)', transition: 'background 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             {loading
               ? <><i className="fa-solid fa-spinner fa-spin" />Processing…</>
-              : mode === 'login'
-                ? <><i className="fa-solid fa-arrow-right-to-bracket" />Sign In</>
-                : <><i className="fa-solid fa-user-plus" />Create Account</>
+              : <><i className="fa-solid fa-arrow-right-to-bracket" />Sign In</>
             }
           </motion.button>
         </form>
@@ -271,9 +219,8 @@ export default function LoginPage() {
 
         {/* Agent link */}
         <div style={{ textAlign: 'center', marginTop: 18 }}>
-          <p style={{ fontSize: 14, color: isDark ? '#7ab5b0' : '#8ba0aa', marginBottom: 6 }}>Are you an approved agent?</p>
-          <a href="/agent-login" style={{ color: '#58948f', fontWeight: 700, fontSize: 15, letterSpacing: '0.02em' }}>
-            Agent Sign In <i className="fa-solid fa-arrow-right" />
+          <a href="/agent-login" style={{ color: '#58948f', fontWeight: 600, fontSize: 13, letterSpacing: '0.02em', textDecoration: 'none', opacity: 0.7 }}>
+            Agent portal <i className="fa-solid fa-arrow-right" />
           </a>
         </div>
       </motion.div>
