@@ -93,8 +93,8 @@ export async function POST(request: Request) {
 
   const admin = getAdminSupabase()
 
-  // Validate and mark coupon as used
-  let appliedDiscount = discount_amount ?? 0
+  // Validate and mark coupon as used — always recalculate from scratch, never trust client's discount_amount
+  let appliedDiscount = 0
   let couponMarked = false
 
   if (coupon_code) {
@@ -103,12 +103,12 @@ export async function POST(request: Request) {
       const { data: userCoupon } = await admin
         .from('coupons')
         .select('id, discount_pct, min_spend, is_used')
-        .eq('code', coupon_code)
+        .eq('code', coupon_code.toUpperCase().trim())
         .eq('user_id', userId)
         .maybeSingle()
 
-      if (userCoupon && !userCoupon.is_used && Number(userCoupon.min_spend ?? 0) <= total + appliedDiscount) {
-        appliedDiscount = (total + appliedDiscount) * (userCoupon.discount_pct / 100)
+      if (userCoupon && !userCoupon.is_used && Number(userCoupon.min_spend ?? 0) <= total) {
+        appliedDiscount = total * (userCoupon.discount_pct / 100)
         couponMarked = true
         await admin
           .from('coupons')
@@ -127,8 +127,8 @@ export async function POST(request: Request) {
         .eq('is_used', false)
         .maybeSingle()
 
-      if (globalCoupon && !globalCoupon.is_used && Number(globalCoupon.min_spend ?? 0) <= total + appliedDiscount) {
-        appliedDiscount = (total + appliedDiscount) * (globalCoupon.discount_pct / 100)
+      if (globalCoupon && !globalCoupon.is_used && Number(globalCoupon.min_spend ?? 0) <= total) {
+        appliedDiscount = total * (globalCoupon.discount_pct / 100)
         await admin
           .from('coupons')
           .update({ is_used: true, used_at: new Date().toISOString() })

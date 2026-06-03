@@ -7,6 +7,7 @@ function getResend() {
   return _resend
 }
 const FROM = process.env.EMAIL_FROM ?? 'Maga Offers <orders@themagaoffers.com>'
+const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL ?? 'rivasjerico06@gmail.com'
 
 export async function sendOrderConfirmation({
   to,
@@ -115,7 +116,7 @@ export async function sendOrderConfirmation({
   // Notify store owner of every new order
   await getResend().emails.send({
     from: FROM,
-    to: 'rivasjerico06@gmail.com',
+    to: ADMIN_EMAIL,
     subject: `🛒 New Order — $${total.toFixed(2)} from ${name}`,
     html: `<p style="font-family:Arial,sans-serif;font-size:15px;color:#093459">
       <strong>New order received!</strong><br><br>

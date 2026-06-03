@@ -32,7 +32,7 @@ export async function GET(request: Request) {
   const enriched = (orders ?? []).map(o => ({
     ...o,
     customer_name:    o.user_id ? (profileMap[o.user_id]?.full_name ?? null)  : null,
-    customer_email:   o.user_id ? (emailMap[o.user_id] ?? null)               : null,
+    customer_email:   o.user_id ? (emailMap[o.user_id] ?? null)               : (o.guest_email ?? null),
     customer_phone:   o.user_id ? (profileMap[o.user_id]?.phone ?? null)      : null,
     customer_city:    o.user_id ? (profileMap[o.user_id]?.city ?? null)       : null,
     customer_address: o.user_id ? (profileMap[o.user_id]?.address ?? null)    : null,
