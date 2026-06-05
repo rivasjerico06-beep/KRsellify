@@ -129,7 +129,7 @@ export async function sendOrderConfirmation({
 }
 
 const STATUS_META: Record<string, { label: string; icon: string; color: string; bg: string; message: string }> = {
-  processing: { label: 'Processing',  icon: '⚙️',  color: '#92400e', bg: '#fef3c7', message: "We're getting your order ready." },
+  confirmed:  { label: 'Confirmed',   icon: '✓',   color: '#92400e', bg: '#fef3c7', message: "We've confirmed your order and are getting it ready." },
   packed:     { label: 'Packed',      icon: '📦',  color: '#1e40af', bg: '#dbeafe', message: "Your order has been packed and is ready to ship." },
   shipped:    { label: 'Shipped',     icon: '🚚',  color: '#065f46', bg: '#d1fae5', message: "Your order is on its way! It should arrive in 3–7 business days." },
   delivered:  { label: 'Delivered',   icon: '✅',  color: '#4c1d95', bg: '#ede9fe', message: "Your order has been delivered. We hope you love it!" },
