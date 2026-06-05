@@ -102,18 +102,14 @@ export async function POST(request: Request) {
     if (userId) {
       const { data: userCoupon } = await admin
         .from('coupons')
-        .select('id, discount_pct, min_spend, is_used')
+        .select('id, discount_pct, min_spend')
         .eq('code', coupon_code.toUpperCase().trim())
         .eq('user_id', userId)
         .maybeSingle()
 
-      if (userCoupon && !userCoupon.is_used && Number(userCoupon.min_spend ?? 0) <= total) {
+      if (userCoupon && Number(userCoupon.min_spend ?? 0) <= total) {
         appliedDiscount = total * (userCoupon.discount_pct / 100)
         couponMarked = true
-        await admin
-          .from('coupons')
-          .update({ is_used: true, used_at: new Date().toISOString() })
-          .eq('id', userCoupon.id)
       }
     }
 
@@ -121,18 +117,13 @@ export async function POST(request: Request) {
     if (!couponMarked) {
       const { data: globalCoupon } = await admin
         .from('coupons')
-        .select('id, discount_pct, min_spend, is_used')
+        .select('id, discount_pct, min_spend')
         .eq('code', coupon_code.toUpperCase().trim())
         .is('user_id', null)
-        .eq('is_used', false)
         .maybeSingle()
 
-      if (globalCoupon && !globalCoupon.is_used && Number(globalCoupon.min_spend ?? 0) <= total) {
+      if (globalCoupon && Number(globalCoupon.min_spend ?? 0) <= total) {
         appliedDiscount = total * (globalCoupon.discount_pct / 100)
-        await admin
-          .from('coupons')
-          .update({ is_used: true, used_at: new Date().toISOString() })
-          .eq('id', globalCoupon.id)
       }
     }
   }

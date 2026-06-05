@@ -16,7 +16,6 @@ export async function GET(request: Request) {
     .from('coupons')
     .select('*')
     .eq('user_id', user.id)
-    .eq('is_used', false)
     .order('created_at', { ascending: false })
 
   if (error) return NextResponse.json({ error: 'Failed to fetch coupons' }, { status: 500 })
@@ -38,15 +37,15 @@ export async function POST(request: Request) {
   }
 
   const admin = getAdminSupabase()
-  const { data: coupons } = await admin.from('coupons').select('*').eq('code', code.toUpperCase().trim()).eq('is_used', false)
+  const { data: coupons } = await admin.from('coupons').select('*').eq('code', code.toUpperCase().trim())
 
   // Match user-specific coupon (only for the authenticated user) or a global coupon (no user_id)
   const coupon = coupons?.find(c =>
     (userId && c.user_id === userId) || !c.user_id
   )
 
-  if (!coupon || (coupon.expires_at && new Date(coupon.expires_at) < new Date())) {
-    return NextResponse.json({ valid: false, message: 'Invalid or already used coupon' })
+  if (!coupon) {
+    return NextResponse.json({ valid: false, message: 'Invalid coupon code' })
   }
   if (cart_total !== undefined && Number(coupon.min_spend) > cart_total) {
     return NextResponse.json({
