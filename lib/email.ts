@@ -127,3 +127,81 @@ export async function sendOrderConfirmation({
     </p>`,
   })
 }
+
+const STATUS_META: Record<string, { label: string; icon: string; color: string; bg: string; message: string }> = {
+  processing: { label: 'Processing',  icon: '⚙️',  color: '#92400e', bg: '#fef3c7', message: "We're getting your order ready." },
+  packed:     { label: 'Packed',      icon: '📦',  color: '#1e40af', bg: '#dbeafe', message: "Your order has been packed and is ready to ship." },
+  shipped:    { label: 'Shipped',     icon: '🚚',  color: '#065f46', bg: '#d1fae5', message: "Your order is on its way! It should arrive in 3–7 business days." },
+  delivered:  { label: 'Delivered',   icon: '✅',  color: '#4c1d95', bg: '#ede9fe', message: "Your order has been delivered. We hope you love it!" },
+  cancelled:  { label: 'Cancelled',   icon: '✕',   color: '#7f1d1d', bg: '#fee2e2', message: "Your order has been cancelled. Contact us if you have questions." },
+}
+
+export async function sendOrderStatusUpdate({
+  to,
+  name,
+  orderId,
+  status,
+}: {
+  to: string
+  name: string
+  orderId: string
+  status: string
+}) {
+  if (!process.env.RESEND_API_KEY) return
+
+  const meta = STATUS_META[status]
+  if (!meta) return // don't email on internal-only statuses like 'paid' or 'pending'
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f8f8;font-family:'DM Sans',Arial,sans-serif">
+  <div style="max-width:560px;margin:32px auto;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(9,52,89,0.10)">
+
+    <div style="background:#093459;padding:28px 36px;text-align:center">
+      <p style="font-size:26px;font-weight:900;color:#ffffff;margin:0;letter-spacing:-0.02em">
+        Maga <span style="color:#f59e0b">Offers</span>
+      </p>
+      <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:6px 0 0;letter-spacing:0.15em;text-transform:uppercase">Order Update</p>
+    </div>
+
+    <div style="padding:36px">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="width:64px;height:64px;background:${meta.bg};border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:28px">
+          ${meta.icon}
+        </div>
+        <h1 style="font-size:22px;font-weight:900;color:#093459;margin:0 0 8px">Order ${meta.label}</h1>
+        <p style="font-size:14px;color:#4a6170;margin:0">Hi <strong>${name}</strong>, ${meta.message}</p>
+      </div>
+
+      <div style="background:#f4f8f8;border-radius:12px;padding:16px 20px;margin-bottom:24px">
+        <p style="font-size:11px;font-weight:700;color:#8ba0aa;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 4px">Order ID</p>
+        <p style="font-size:14px;font-weight:700;color:#093459;margin:0;font-family:monospace">${orderId}</p>
+      </div>
+
+      <div style="background:${meta.bg};border-radius:12px;padding:16px 20px;text-align:center;margin-bottom:24px">
+        <span style="font-size:14px;font-weight:800;color:${meta.color};text-transform:uppercase;letter-spacing:0.08em">${meta.label}</span>
+      </div>
+
+      <p style="font-size:13px;color:#8ba0aa;margin:0;text-align:center;line-height:1.6">
+        Questions? Contact us at<br>
+        <a href="mailto:support@themagaoffers.net" style="color:#f59e0b;font-weight:600">support@themagaoffers.net</a>
+      </p>
+    </div>
+
+    <div style="background:#f4f8f8;padding:18px 36px;text-align:center;border-top:1px solid #e8eff0">
+      <p style="font-size:11px;color:#8ba0aa;margin:0">© 2025 Maga Offers. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`
+
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    replyTo: 'support@themagaoffers.net',
+    subject: `Order ${meta.label} — Maga Offers (#${orderId.slice(0, 8).toUpperCase()})`,
+    html,
+  })
+}

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAdminSupabase } from '@/lib/supabase-admin'
 import { requireAdmin, isNextResponse } from '@/lib/require-admin'
+import { sendOrderStatusUpdate } from '@/lib/email'
 
 const VALID_STATUSES = ['paid', 'pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled']
 
@@ -66,5 +67,31 @@ export async function PATCH(request: Request) {
 
   const { data, error } = await admin.from('orders').update({ status }).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Email the customer about their updated status (non-blocking)
+  try {
+    let customerEmail: string | undefined
+    let customerName: string | undefined
+
+    if (data.user_id) {
+      const { data: userRecord } = await admin.auth.admin.getUserById(data.user_id)
+      customerEmail = userRecord?.user?.email
+      const { data: profile } = await admin.from('profiles').select('full_name').eq('id', data.user_id).single()
+      customerName = profile?.full_name ?? customerEmail?.split('@')[0]
+    } else if (data.guest_email) {
+      customerEmail = data.guest_email
+      customerName = data.guest_email.split('@')[0]
+    }
+
+    if (customerEmail) {
+      sendOrderStatusUpdate({
+        to: customerEmail,
+        name: customerName ?? customerEmail.split('@')[0],
+        orderId: data.id,
+        status,
+      }).catch(() => {})
+    }
+  } catch {}
+
   return NextResponse.json(data)
 }
