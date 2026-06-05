@@ -128,12 +128,32 @@ export async function sendOrderConfirmation({
   })
 }
 
-const STATUS_META: Record<string, { label: string; icon: string; color: string; bg: string; message: string }> = {
-  confirmed:  { label: 'Confirmed',   icon: '✓',   color: '#92400e', bg: '#fef3c7', message: "We've confirmed your order and are getting it ready." },
-  packed:     { label: 'Packed',      icon: '📦',  color: '#1e40af', bg: '#dbeafe', message: "Your order has been packed and is ready to ship." },
-  shipped:    { label: 'Shipped',     icon: '🚚',  color: '#065f46', bg: '#d1fae5', message: "Your order is on its way! It should arrive in 3–7 business days." },
-  delivered:  { label: 'Delivered',   icon: '✅',  color: '#4c1d95', bg: '#ede9fe', message: "Your order has been delivered. We hope you love it!" },
-  cancelled:  { label: 'Cancelled',   icon: '✕',   color: '#7f1d1d', bg: '#fee2e2', message: "Your order has been cancelled. Contact us if you have questions." },
+const STATUS_META: Record<string, { label: string; color: string; bg: string; body: string }> = {
+  confirmed: {
+    label: 'Order Confirmed',
+    color: '#92400e', bg: '#fef3c7',
+    body: `We are pleased to inform you that your order has been confirmed and is now being prepared. Our team will ensure that your items are handled with the utmost care before dispatch.`,
+  },
+  packed: {
+    label: 'Order Packed',
+    color: '#1e40af', bg: '#dbeafe',
+    body: `Your order has been carefully packed and is awaiting collection by our shipping carrier. You will receive a further update once your order is on its way.`,
+  },
+  shipped: {
+    label: 'Order Shipped',
+    color: '#065f46', bg: '#d1fae5',
+    body: `Your order has been dispatched and is currently on its way to you. Please allow 3 to 7 business days for delivery. If you have any concerns regarding delivery, do not hesitate to contact our support team.`,
+  },
+  delivered: {
+    label: 'Order Delivered',
+    color: '#4c1d95', bg: '#ede9fe',
+    body: `We are delighted to confirm that your order has been delivered. We sincerely hope you are satisfied with your purchase. Should you have any questions or require assistance, our team is always available to help.`,
+  },
+  cancelled: {
+    label: 'Order Cancelled',
+    color: '#7f1d1d', bg: '#fee2e2',
+    body: `We regret to inform you that your order has been cancelled. If you believe this was made in error or require further clarification, please do not hesitate to reach out to our support team and we will be happy to assist you.`,
+  },
 }
 
 export async function sendOrderStatusUpdate({
@@ -150,7 +170,7 @@ export async function sendOrderStatusUpdate({
   if (!process.env.RESEND_API_KEY) return
 
   const meta = STATUS_META[status]
-  if (!meta) return // don't email on internal-only statuses like 'paid' or 'pending'
+  if (!meta) return
 
   const html = `
 <!DOCTYPE html>
@@ -163,36 +183,46 @@ export async function sendOrderStatusUpdate({
       <p style="font-size:26px;font-weight:900;color:#ffffff;margin:0;letter-spacing:-0.02em">
         Maga <span style="color:#f59e0b">Offers</span>
       </p>
-      <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:6px 0 0;letter-spacing:0.15em;text-transform:uppercase">Order Update</p>
+      <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:6px 0 0;letter-spacing:0.15em;text-transform:uppercase">Order Status Update</p>
     </div>
 
-    <div style="padding:36px">
-      <div style="text-align:center;margin-bottom:28px">
-        <div style="width:64px;height:64px;background:${meta.bg};border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:28px">
-          ${meta.icon}
+    <div style="padding:36px 40px">
+
+      <p style="font-size:15px;color:#0d1f2d;margin:0 0 20px;line-height:1.6">Dear <strong>${name}</strong>,</p>
+
+      <p style="font-size:15px;color:#0d1f2d;margin:0 0 24px;line-height:1.7">${meta.body}</p>
+
+      <div style="border:1px solid #e8eff0;border-radius:12px;overflow:hidden;margin-bottom:28px">
+        <div style="background:#f4f8f8;padding:12px 20px;border-bottom:1px solid #e8eff0">
+          <p style="font-size:11px;font-weight:700;color:#8ba0aa;text-transform:uppercase;letter-spacing:0.12em;margin:0">Order Reference</p>
         </div>
-        <h1 style="font-size:22px;font-weight:900;color:#093459;margin:0 0 8px">Order ${meta.label}</h1>
-        <p style="font-size:14px;color:#4a6170;margin:0">Hi <strong>${name}</strong>, ${meta.message}</p>
+        <div style="padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <p style="font-size:14px;font-weight:700;color:#093459;margin:0;font-family:monospace">${orderId.slice(0, 8).toUpperCase()}</p>
+          <span style="font-size:12px;font-weight:800;padding:5px 14px;border-radius:20px;background:${meta.bg};color:${meta.color};text-transform:uppercase;letter-spacing:0.07em">${meta.label}</span>
+        </div>
       </div>
 
-      <div style="background:#f4f8f8;border-radius:12px;padding:16px 20px;margin-bottom:24px">
-        <p style="font-size:11px;font-weight:700;color:#8ba0aa;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 4px">Order ID</p>
-        <p style="font-size:14px;font-weight:700;color:#093459;margin:0;font-family:monospace">${orderId}</p>
-      </div>
+      <p style="font-size:14px;color:#4a6170;margin:0 0 6px;line-height:1.7">
+        Should you have any questions regarding your order, please do not hesitate to contact us.
+      </p>
+      <p style="font-size:14px;color:#4a6170;margin:0 0 28px;line-height:1.7">
+        Email: <a href="mailto:support@themagaoffers.net" style="color:#093459;font-weight:600;text-decoration:none">support@themagaoffers.net</a>
+      </p>
 
-      <div style="background:${meta.bg};border-radius:12px;padding:16px 20px;text-align:center;margin-bottom:24px">
-        <span style="font-size:14px;font-weight:800;color:${meta.color};text-transform:uppercase;letter-spacing:0.08em">${meta.label}</span>
-      </div>
+      <p style="font-size:14px;color:#0d1f2d;margin:0;line-height:1.7">
+        Warm regards,<br>
+        <strong>The Maga Offers Team</strong>
+      </p>
 
-      <p style="font-size:13px;color:#8ba0aa;margin:0;text-align:center;line-height:1.6">
-        Questions? Contact us at<br>
-        <a href="mailto:support@themagaoffers.net" style="color:#f59e0b;font-weight:600">support@themagaoffers.net</a>
+    </div>
+
+    <div style="background:#f4f8f8;padding:18px 40px;border-top:1px solid #e8eff0">
+      <p style="font-size:11px;color:#8ba0aa;margin:0;line-height:1.6">
+        This is an automated notification from Maga Offers. Please do not reply directly to this email.<br>
+        &copy; 2025 Maga Offers. All rights reserved.
       </p>
     </div>
 
-    <div style="background:#f4f8f8;padding:18px 36px;text-align:center;border-top:1px solid #e8eff0">
-      <p style="font-size:11px;color:#8ba0aa;margin:0">© 2025 Maga Offers. All rights reserved.</p>
-    </div>
   </div>
 </body>
 </html>`
@@ -201,7 +231,7 @@ export async function sendOrderStatusUpdate({
     from: FROM,
     to,
     replyTo: 'support@themagaoffers.net',
-    subject: `Order ${meta.label} — Maga Offers (#${orderId.slice(0, 8).toUpperCase()})`,
+    subject: `${meta.label} — Maga Offers (Ref: #${orderId.slice(0, 8).toUpperCase()})`,
     html,
   })
 }
