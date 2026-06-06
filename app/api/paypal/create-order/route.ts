@@ -101,6 +101,9 @@ export async function POST(request: Request) {
     body: JSON.stringify({
       intent: 'CAPTURE',
       purchase_units: [{
+        payee: {
+          merchant_id: process.env.PAYPAL_MERCHANT_ID,
+        },
         amount: {
           currency_code: 'USD',
           value: amount.toFixed(2),
