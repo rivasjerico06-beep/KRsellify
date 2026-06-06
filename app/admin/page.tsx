@@ -20,7 +20,7 @@ export default function AdminPage() {
   )
 }
 
-type Tab = 'overview' | 'products' | 'orders' | 'customers' | 'agents' | 'sales' | 'agent-performance' | 'landing' | 'leads'
+type Tab = 'overview' | 'products' | 'orders' | 'customers' | 'agents' | 'sales' | 'agent-performance' | 'landing' | 'leads' | 'coupons'
 
 const TIER_STYLE: Record<string, { bg: string; text: string }> = {
   bronze:   { bg: '#fef3c7', text: '#92400e' },
@@ -85,6 +85,13 @@ function AdminContent() {
   const [newLeadNotes, setNewLeadNotes]     = useState('')
   const [creatingLead, setCreatingLead]     = useState(false)
 
+  // Coupons
+  const [coupons, setCoupons]             = useState<{ id: string; code: string; discount_pct: number; min_spend: number }[]>([])
+  const [newCouponCode, setNewCouponCode] = useState('')
+  const [newCouponPct, setNewCouponPct]   = useState('')
+  const [newCouponMin, setNewCouponMin]   = useState('')
+  const [couponSaving, setCouponSaving]   = useState(false)
+
   // Order detail drawer
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
 
@@ -126,6 +133,9 @@ function AdminContent() {
       ])
       setLeads(Array.isArray(lr) ? lr : [])
       setApprovedAgents((Array.isArray(ar) ? ar as AgentProfile[] : []).filter(a => a.status === 'approved'))
+    } else if (t === 'coupons') {
+      const r = await fetch('/api/admin/coupons', { headers: authHeaders() })
+      const d = await r.json(); setCoupons(Array.isArray(d) ? d : [])
     } else if (t === 'landing') {
       const r = await fetch('/api/admin/site-config', { headers: authHeaders() })
       const rows: { key: string; value: unknown }[] = await r.json()
@@ -251,6 +261,7 @@ function AdminContent() {
     { id: 'sales',             icon: 'fa-chart-pie',    label: 'Sales' },
     { id: 'agent-performance', icon: 'fa-ranking-star', label: 'Agent Performance' },
     { id: 'leads',             icon: 'fa-phone',        label: 'Leads' },
+    { id: 'coupons',           icon: 'fa-tag',          label: 'Coupons' },
     { id: 'landing',           icon: 'fa-paintbrush',   label: 'Landing Page' },
   ]
 
@@ -877,6 +888,103 @@ function AdminContent() {
                       </>
                     )}
                   </AnimatePresence>
+                </div>
+              )}
+
+              {/* ── COUPONS ─────────────────────────── */}
+              {tab === 'coupons' && (
+                <div>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--heading)', marginBottom: 24 }}>Coupon Codes</h2>
+
+                  {/* Create form */}
+                  <div style={{ background: 'var(--white)', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(9,52,89,0.06)', marginBottom: 24 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--heading)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Create New Coupon</p>
+                    <form onSubmit={async e => {
+                      e.preventDefault()
+                      if (!newCouponCode.trim() || !newCouponPct) return
+                      setCouponSaving(true)
+                      const r = await fetch('/api/admin/coupons', {
+                        method: 'POST', headers: authHeaders(),
+                        body: JSON.stringify({ code: newCouponCode.trim(), discount_pct: Number(newCouponPct), min_spend: Number(newCouponMin || 0) }),
+                      })
+                      if (r.ok) {
+                        setNewCouponCode(''); setNewCouponPct(''); setNewCouponMin('')
+                        const d = await fetch('/api/admin/coupons', { headers: authHeaders() }).then(r => r.json())
+                        setCoupons(Array.isArray(d) ? d : [])
+                        flash('Coupon saved')
+                      } else {
+                        const err = await r.json(); flash(err.error ?? 'Failed to save')
+                      }
+                      setCouponSaving(false)
+                    }} style={{ display: 'grid', gridTemplateColumns: '1fr 120px 140px auto', gap: 12, alignItems: 'end' }}>
+                      <div>
+                        <p style={SECTION_LABEL}>Code</p>
+                        <input value={newCouponCode} onChange={e => setNewCouponCode(e.target.value.toUpperCase())}
+                          placeholder="e.g. THEMAGA10"
+                          style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', fontWeight: 700, letterSpacing: '0.05em' }} />
+                      </div>
+                      <div>
+                        <p style={SECTION_LABEL}>Discount %</p>
+                        <input type="number" min={1} max={100} value={newCouponPct} onChange={e => setNewCouponPct(e.target.value)}
+                          placeholder="10"
+                          style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
+                      </div>
+                      <div>
+                        <p style={SECTION_LABEL}>Min. Spend ($)</p>
+                        <input type="number" min={0} value={newCouponMin} onChange={e => setNewCouponMin(e.target.value)}
+                          placeholder="0 (no minimum)"
+                          style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
+                      </div>
+                      <button type="submit" disabled={couponSaving || !newCouponCode.trim() || !newCouponPct}
+                        style={{ background: 'var(--teal)', color: 'white', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: (couponSaving || !newCouponCode.trim() || !newCouponPct) ? 0.5 : 1, whiteSpace: 'nowrap' }}>
+                        {couponSaving ? 'Saving…' : '+ Add'}
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Coupon list */}
+                  <div style={{ background: 'var(--white)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: 'var(--gray)' }}>
+                          {['Code', 'Discount', 'Min. Spend', 'Usage', ''].map(h => (
+                            <th key={h} style={{ padding: '12px 20px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-mid)', textAlign: 'left' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {coupons.length === 0 && (
+                          <tr><td colSpan={5} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)', fontSize: 14 }}>No global coupons yet. Create one above.</td></tr>
+                        )}
+                        {coupons.map(c => (
+                          <tr key={c.id} style={{ borderBottom: '1px solid var(--gray)' }}>
+                            <td style={{ padding: '14px 20px' }}>
+                              <span style={{ fontFamily: 'monospace', fontSize: 15, fontWeight: 800, color: 'var(--heading)', background: 'var(--off-white)', padding: '4px 10px', borderRadius: 6 }}>{c.code}</span>
+                            </td>
+                            <td style={{ padding: '14px 20px' }}>
+                              <span style={{ fontSize: 15, fontWeight: 700, color: '#059669' }}>{c.discount_pct}% off</span>
+                            </td>
+                            <td style={{ padding: '14px 20px', fontSize: 14, color: 'var(--text-mid)' }}>
+                              {Number(c.min_spend) > 0 ? `$${Number(c.min_spend).toFixed(2)} minimum` : 'No minimum'}
+                            </td>
+                            <td style={{ padding: '14px 20px' }}>
+                              <span style={{ fontSize: 12, fontWeight: 700, background: '#d1fae5', color: '#065f46', padding: '3px 10px', borderRadius: 20 }}>Unlimited</span>
+                            </td>
+                            <td style={{ padding: '14px 20px', textAlign: 'right' }}>
+                              <button onClick={async () => {
+                                if (!confirm(`Delete coupon ${c.code}?`)) return
+                                await fetch(`/api/admin/coupons?id=${c.id}`, { method: 'DELETE', headers: authHeaders() })
+                                setCoupons(prev => prev.filter(x => x.id !== c.id))
+                                flash(`Coupon ${c.code} deleted`)
+                              }} style={{ background: '#fee2e2', border: 'none', color: '#991b1b', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
 
