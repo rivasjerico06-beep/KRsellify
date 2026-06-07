@@ -65,7 +65,7 @@ function AdminContent() {
   const [tab, setTab]                 = useState<Tab>('overview')
   const [products, setProducts]       = useState<Product[]>([])
   const [orders, setOrders]           = useState<Order[]>([])
-  const [customers, setCustomers]     = useState<{ email: string; name: string; order_count: number; total_spent: number; first_order: string; last_order: string }[]>([])
+  const [customers, setCustomers]     = useState<{ email: string; order_count: number; total_spent: number; first_order: string; last_order: string }[]>([])
   const [agents, setAgents]           = useState<AgentProfile[]>([])
   const [analytics, setAnalytics]     = useState<AnalyticsData | null>(null)
   const [siteConfig, setSiteConfig]   = useState<SiteConfig>(DEFAULT_CONFIG)
@@ -270,7 +270,6 @@ function AdminContent() {
   const platinumCustomers: CustomerTierRow[] = analytics?.customerTiers.filter(c => c.tier === 'platinum') ?? []
   const filteredCustomers  = customers.filter(c =>
     !customerSearch ||
-    c.name?.toLowerCase().includes(customerSearch.toLowerCase()) ||
     c.email.toLowerCase().includes(customerSearch.toLowerCase())
   )
 
@@ -515,26 +514,25 @@ function AdminContent() {
                     <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
                       <thead>
                         <tr style={{ background: 'var(--gray)' }}>
-                          {['Name', 'Email', 'Orders', 'Total Spent', 'First Order', 'Last Order'].map(h => (
+                          {['Email', 'Orders', 'Total Spent', 'First Order', 'Last Order'].map(h => (
                             <th key={h} style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-mid)', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
                         {filteredCustomers.length === 0 && (
-                          <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No checkout customers yet.</td></tr>
+                          <tr><td colSpan={5} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No checkout customers yet.</td></tr>
                         )}
                         {filteredCustomers.map(c => (
                           <tr key={c.email} style={{ borderBottom: '1px solid var(--gray)' }}>
                             <td style={{ padding: '12px 14px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--teal)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
-                                  {(c.name?.[0] ?? c.email[0]).toUpperCase()}
+                                  {c.email[0].toUpperCase()}
                                 </div>
-                                <span style={{ fontWeight: 600, fontSize: 14 }}>{c.name || '—'}</span>
+                                <span style={{ fontSize: 13, color: 'var(--text-mid)', fontFamily: 'monospace' }}>{c.email}</span>
                               </div>
                             </td>
-                            <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-mid)', fontFamily: 'monospace' }}>{c.email}</td>
                             <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 700, color: 'var(--heading)' }}>{c.order_count}</td>
                             <td style={{ padding: '12px 14px', fontWeight: 700, color: '#059669', fontSize: 13 }}>${c.total_spent.toFixed(2)}</td>
                             <td style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-light)', whiteSpace: 'nowrap' }}>{new Date(c.first_order).toLocaleDateString()}</td>
