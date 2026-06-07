@@ -66,15 +66,29 @@ export async function POST(request: Request) {
     }
   }
 
+  // Resolve the authenticated user once — used for both VIP and coupon checks
+  const authToken = request.headers.get('authorization')?.replace('Bearer ', '').trim()
+  let userId: string | null = null
+  if (authToken) {
+    const { data: { user } } = await getBrowserSupabase().auth.getUser(authToken)
+    if (user) userId = user.id
+  }
+
+  // Apply VIP 30% discount if user is an active VIP subscriber
+  if (userId) {
+    const { data: vipSub } = await admin
+      .from('vip_subscriptions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .single()
+    if (vipSub) {
+      amount = amount * 0.7
+    }
+  }
+
   // Apply coupon discount if provided — does NOT mark the coupon as used yet
   if (coupon_code) {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '').trim()
-    let userId: string | null = null
-    if (token) {
-      const { data: { user } } = await getBrowserSupabase().auth.getUser(token)
-      if (user) userId = user.id
-    }
-
     const { data: coupons } = await admin
       .from('coupons')
       .select('*')

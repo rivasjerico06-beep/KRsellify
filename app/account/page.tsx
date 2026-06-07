@@ -46,6 +46,7 @@ function AccountContent() {
   const [orders, setOrders]   = useState<Order[]>([])
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [loadingOrders, setLoadingOrders] = useState(true)
+  const [isVip, setIsVip] = useState(false)
 
   useEffect(() => {
     if (profile) {
@@ -64,13 +65,15 @@ function AccountContent() {
       const token = session?.access_token
       const headers: HeadersInit = { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }
 
-      const [ordersRes, couponsRes] = await Promise.all([
+      const [ordersRes, couponsRes, vipRes] = await Promise.all([
         fetch('/api/orders', { headers }),
         fetch('/api/coupons', { headers }),
+        fetch('/api/vip/status', { headers }),
       ])
 
       if (ordersRes.ok) setOrders(await ordersRes.json())
       if (couponsRes.ok) setCoupons(await couponsRes.json())
+      if (vipRes.ok) { const v = await vipRes.json(); setIsVip(v.is_vip) }
       setLoadingOrders(false)
     }
     fetchData()
@@ -153,9 +156,16 @@ function AccountContent() {
                 <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: 'var(--heading)' }}>
                   {profile?.full_name || 'Your Account'}
                 </h2>
-                <span style={{ fontSize: 12, fontWeight: 700, background: profile?.role === 'admin' ? 'var(--navy)' : profile?.role === 'agent' ? 'var(--teal)' : 'var(--gray)', color: profile?.role === 'customer' ? 'var(--text-mid)' : 'white', padding: '2px 10px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  {profile?.role ?? 'customer'}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, background: profile?.role === 'admin' ? 'var(--navy)' : profile?.role === 'agent' ? 'var(--teal)' : 'var(--gray)', color: profile?.role === 'customer' ? 'var(--text-mid)' : 'white', padding: '2px 10px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    {profile?.role ?? 'customer'}
+                  </span>
+                  {isVip && (
+                    <span style={{ fontSize: 12, fontWeight: 700, background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: 'white', padding: '2px 10px', borderRadius: 20, letterSpacing: '0.06em', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      <i className="fa-solid fa-crown" style={{ fontSize: 10 }} /> VIP
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
