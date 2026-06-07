@@ -65,7 +65,7 @@ function AdminContent() {
   const [tab, setTab]                 = useState<Tab>('overview')
   const [products, setProducts]       = useState<Product[]>([])
   const [orders, setOrders]           = useState<Order[]>([])
-  const [customers, setCustomers]     = useState<Profile[]>([])
+  const [customers, setCustomers]     = useState<{ email: string; name: string; order_count: number; total_spent: number; first_order: string; last_order: string }[]>([])
   const [agents, setAgents]           = useState<AgentProfile[]>([])
   const [analytics, setAnalytics]     = useState<AnalyticsData | null>(null)
   const [siteConfig, setSiteConfig]   = useState<SiteConfig>(DEFAULT_CONFIG)
@@ -118,7 +118,7 @@ function AdminContent() {
       const r = await fetch('/api/admin/orders', { headers: authHeaders() })
       const d = await r.json(); setOrders(Array.isArray(d) ? d : [])
     } else if (t === 'customers') {
-      const r = await fetch('/api/admin/users', { headers: authHeaders() })
+      const r = await fetch('/api/admin/checkout-customers', { headers: authHeaders() })
       const d = await r.json(); setCustomers(Array.isArray(d) ? d : [])
     } else if (t === 'agents') {
       const r = await fetch('/api/admin/agents', { headers: authHeaders() })
@@ -148,7 +148,7 @@ function AdminContent() {
       const [p, o, c, a, an] = await Promise.all([
         fetch('/api/admin/products',  { headers: authHeaders() }).then(r => r.json()),
         fetch('/api/admin/orders',    { headers: authHeaders() }).then(r => r.json()),
-        fetch('/api/admin/users',     { headers: authHeaders() }).then(r => r.json()),
+        fetch('/api/admin/checkout-customers', { headers: authHeaders() }).then(r => r.json()),
         fetch('/api/admin/agents',    { headers: authHeaders() }).then(r => r.json()),
         fetch('/api/admin/analytics', { headers: authHeaders() }).then(r => r.json()),
       ])
@@ -270,9 +270,8 @@ function AdminContent() {
   const platinumCustomers: CustomerTierRow[] = analytics?.customerTiers.filter(c => c.tier === 'platinum') ?? []
   const filteredCustomers  = customers.filter(c =>
     !customerSearch ||
-    c.full_name?.toLowerCase().includes(customerSearch.toLowerCase()) ||
-    (c.email ?? '').toLowerCase().includes(customerSearch.toLowerCase()) ||
-    (c.city ?? '').toLowerCase().includes(customerSearch.toLowerCase())
+    c.name?.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.email.toLowerCase().includes(customerSearch.toLowerCase())
   )
 
   const ORDER_STATUS_COLOR: Record<string, { bg: string; text: string }> = {
@@ -506,51 +505,42 @@ function AdminContent() {
               {tab === 'customers' && (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, gap: 16, flexWrap: 'wrap' }}>
-                    <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)' }}>Customers ({filteredCustomers.length})</h2>
+                    <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)' }}>Checkout Customers ({filteredCustomers.length})</h2>
                     <input
                       value={customerSearch} onChange={e => setCustomerSearch(e.target.value)}
-                      placeholder="Search by name, email or city…"
+                      placeholder="Search by name or email…"
                       style={{ border: '2px solid var(--gray)', borderRadius: 50, padding: '9px 18px', fontSize: 13, fontFamily: 'inherit', outline: 'none', minWidth: 260 }} />
                   </div>
                   <div style={{ background: 'var(--white)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(9,52,89,0.06)', overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
                       <thead>
                         <tr style={{ background: 'var(--gray)' }}>
-                          {['Name', 'Email', 'Role', 'Tier', 'Orders', 'Spent', 'City', 'Joined'].map(h => (
+                          {['Name', 'Email', 'Orders', 'Total Spent', 'First Order', 'Last Order'].map(h => (
                             <th key={h} style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-mid)', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
                         {filteredCustomers.length === 0 && (
-                          <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No customers found.</td></tr>
+                          <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No checkout customers yet.</td></tr>
                         )}
-                        {filteredCustomers.map(c => {
-                          const tier = (c.tier ?? 'bronze') as keyof typeof TIER_STYLE
-                          return (
-                            <tr key={c.id} style={{ borderBottom: '1px solid var(--gray)' }}>
-                              <td style={{ padding: '12px 14px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--teal)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
-                                    {(c.full_name?.[0] ?? '?').toUpperCase()}
-                                  </div>
-                                  <span style={{ fontWeight: 600, fontSize: 14 }}>{c.full_name || '(no name)'}</span>
+                        {filteredCustomers.map(c => (
+                          <tr key={c.email} style={{ borderBottom: '1px solid var(--gray)' }}>
+                            <td style={{ padding: '12px 14px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--teal)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+                                  {(c.name?.[0] ?? c.email[0]).toUpperCase()}
                                 </div>
-                              </td>
-                              <td style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-mid)' }}>{c.email || '—'}</td>
-                              <td style={{ padding: '12px 14px' }}>
-                                <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: c.role === 'admin' ? 'var(--navy)' : c.role === 'agent' ? 'var(--teal)' : 'var(--gray)', color: c.role === 'customer' ? 'var(--text-mid)' : 'white', textTransform: 'capitalize' }}>{c.role}</span>
-                              </td>
-                              <td style={{ padding: '12px 14px' }}>
-                                <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: TIER_STYLE[tier].bg, color: TIER_STYLE[tier].text, textTransform: 'capitalize' }}>{tier}</span>
-                              </td>
-                              <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 600, color: 'var(--heading)' }}>{c.order_count ?? 0}</td>
-                              <td style={{ padding: '12px 14px', fontWeight: 700, color: '#059669', fontSize: 13 }}>${(c.total_spent ?? 0).toFixed(2)}</td>
-                              <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-mid)' }}>{c.city || '—'}</td>
-                              <td style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-light)', whiteSpace: 'nowrap' }}>{c.created_at ? new Date(c.created_at).toLocaleDateString() : '—'}</td>
-                            </tr>
-                          )
-                        })}
+                                <span style={{ fontWeight: 600, fontSize: 14 }}>{c.name || '—'}</span>
+                              </div>
+                            </td>
+                            <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-mid)', fontFamily: 'monospace' }}>{c.email}</td>
+                            <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 700, color: 'var(--heading)' }}>{c.order_count}</td>
+                            <td style={{ padding: '12px 14px', fontWeight: 700, color: '#059669', fontSize: 13 }}>${c.total_spent.toFixed(2)}</td>
+                            <td style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-light)', whiteSpace: 'nowrap' }}>{new Date(c.first_order).toLocaleDateString()}</td>
+                            <td style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-light)', whiteSpace: 'nowrap' }}>{new Date(c.last_order).toLocaleDateString()}</td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
