@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAdminSupabase } from '@/lib/supabase-admin'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 
-const PAYPAL_BASE = process.env.PAYPAL_API_URL ?? 'https://api-m.sandbox.paypal.com'
+const PAYPAL_BASE = process.env.PAYPAL_API_URL ?? 'https://api-m.paypal.com'
 
 async function getAccessToken() {
   const credentials = Buffer.from(

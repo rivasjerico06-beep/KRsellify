@@ -4,7 +4,7 @@ import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { CartItem } from '@/lib/types'
 import { sendOrderConfirmation } from '@/lib/email'
 
-const PAYPAL_BASE = process.env.PAYPAL_API_URL ?? 'https://api-m.sandbox.paypal.com'
+const PAYPAL_BASE = process.env.PAYPAL_API_URL ?? 'https://api-m.paypal.com'
 
 async function getAccessToken() {
   const credentials = Buffer.from(
