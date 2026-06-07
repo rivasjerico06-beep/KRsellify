@@ -391,6 +391,25 @@ export default function CheckoutPage() {
           ) : (
             <>
               <PayPalButtons
+                fundingSource={FUNDING.PAYPAL}
+                style={{ layout: 'vertical', shape: 'rect', height: 55 }}
+                disabled={placing}
+                forceReRender={[finalTotal, cart.length, email]}
+                onClick={(_, actions) => {
+                  if (!email.trim()) {
+                    setEmailShake(true)
+                    emailRef.current?.focus()
+                    emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                    return actions.reject()
+                  }
+                  return actions.resolve()
+                }}
+                createOrder={createPayPalOrder}
+                onApprove={async (data) => { await onPayPalApprove(data.orderID) }}
+                onError={handlePayPalError}
+                onCancel={() => showToast('Payment cancelled.')}
+              />
+              <PayPalButtons
                 fundingSource={FUNDING.CARD}
                 style={{ layout: 'vertical', shape: 'rect', height: 55 }}
                 disabled={placing}
@@ -433,7 +452,7 @@ export default function CheckoutPage() {
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#0070ba', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>2</div>
               <div>
                 <p style={{ fontWeight: 700, fontSize: 16, color: '#111', marginBottom: 3 }}>Choose payment</p>
-                <p style={{ fontSize: 14, color: '#888', lineHeight: 1.6 }}>Pay securely with your debit or credit card.</p>
+                <p style={{ fontSize: 14, color: '#888', lineHeight: 1.6 }}>Pay securely with PayPal or your debit/credit card.</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
