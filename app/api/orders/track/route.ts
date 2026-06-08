@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     .from('orders')
     .select('id, status, total, discount_amount, items, created_at')
     .eq('guest_email', normalised)
+    .neq('status', 'pending_payment')
     .order('created_at', { ascending: false })
     .limit(20)
 

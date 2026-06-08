@@ -15,6 +15,7 @@ export async function GET(request: Request) {
     .from('orders')
     .select('*')
     .eq('user_id', user.id)
+    .neq('status', 'pending_payment')
     .order('created_at', { ascending: false })
 
   if (error) return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 })

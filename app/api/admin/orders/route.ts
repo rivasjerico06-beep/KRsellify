@@ -13,6 +13,7 @@ export async function GET(request: Request) {
   const { data: orders, error } = await admin
     .from('orders')
     .select('*')
+    .neq('status', 'pending_payment')
     .order('created_at', { ascending: false })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
