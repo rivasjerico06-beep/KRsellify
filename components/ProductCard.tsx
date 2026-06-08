@@ -152,6 +152,10 @@ export default function ProductCard({ product, index }: { product: Product; inde
                 ${product.old_price.toFixed(2)}
               </span>
             )}
+            <div style={{ fontSize: 11, color: '#4dd9b8', fontWeight: 700, marginTop: 3 }}>
+              <i className="fa-solid fa-crown" style={{ fontSize: 9, color: '#fbbf24', marginRight: 3 }} />
+              VIP: ${(product.price * 0.7).toFixed(2)}
+            </div>
           </div>
 
           <AnimatePresence mode="wait">

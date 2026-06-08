@@ -104,6 +104,11 @@ export default function Header() {
         {/* right actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginLeft: 'auto', flexShrink: 0 }}>
 
+          {/* VIP link — desktop */}
+          <a href="/vip" className="mo-header-cart-label" style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'linear-gradient(135deg, #0f2441 0%, #1a3a5c 100%)', color: '#fbbf24', padding: '8px 16px', borderRadius: 50, fontSize: 13, fontWeight: 800, textDecoration: 'none', border: '1px solid rgba(77,217,184,0.25)', letterSpacing: '0.04em', flexShrink: 0 }}>
+            <i className="fa-solid fa-crown" style={{ fontSize: 11 }} /> VIP
+          </a>
+
           {/* mobile search toggle */}
           <motion.button className="mo-mobile-menu-btn"
             whileTap={{ scale: 0.9 }}
@@ -330,6 +335,10 @@ export default function Header() {
               </a>
             )}
             <div style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <a href="/vip" onClick={() => setMobileMenuOpen(false)}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, textAlign: 'center', justifyContent: 'center', background: 'linear-gradient(90deg, rgba(251,191,36,0.15), rgba(77,217,184,0.1))', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 10, padding: '13px', fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
+                <i className="fa-solid fa-crown" /> Join VIP — 30% Off Every Order
+              </a>
               <a href="/track-order" onClick={() => setMobileMenuOpen(false)}
                 style={{ display: 'flex', alignItems: 'center', gap: 8, textAlign: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.08)', color: 'white', borderRadius: 10, padding: '13px', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>
                 <i className="fa-solid fa-box" /> Track My Order

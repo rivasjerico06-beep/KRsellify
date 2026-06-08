@@ -165,7 +165,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           </div>
 
           {/* Price */}
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 24, padding: '20px 24px', background: 'var(--white)', borderRadius: 16, boxShadow: '0 2px 12px rgba(9,52,89,0.07)' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 16, padding: '20px 24px', background: 'var(--white)', borderRadius: 16, boxShadow: '0 2px 12px rgba(9,52,89,0.07)' }}>
             <span style={{ fontFamily: 'var(--font-cormorant)', fontSize: 46, fontWeight: 700, color: 'var(--heading)', lineHeight: 1 }}>
               ${product.price.toFixed(2)}
             </span>
@@ -178,6 +178,21 @@ export default function ProductDetailClient({ product, related }: { product: Pro
               </>
             )}
           </div>
+
+          {/* VIP savings callout */}
+          <Link href="/vip" style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'linear-gradient(90deg, #0f2441 0%, #1a3a5c 100%)', borderRadius: 14, padding: '14px 20px', textDecoration: 'none', marginBottom: 24, border: '1px solid rgba(77,217,184,0.2)' }}>
+            <i className="fa-solid fa-crown" style={{ color: '#fbbf24', fontSize: 20, flexShrink: 0 }} />
+            <div>
+              <p style={{ color: 'white', fontWeight: 700, fontSize: 14, margin: 0 }}>
+                VIP Members pay <strong style={{ color: '#4dd9b8' }}>${(product.price * 0.7).toFixed(2)}</strong>
+                <span style={{ color: 'rgba(255,255,255,0.5)', fontWeight: 400, marginLeft: 6 }}>— save ${(product.price * 0.3).toFixed(2)}</span>
+              </p>
+              <p style={{ color: '#4dd9b8', fontSize: 12, fontWeight: 600, margin: '3px 0 0' }}>
+                Join VIP for $20/month → 30% off every order, always
+              </p>
+            </div>
+            <i className="fa-solid fa-chevron-right" style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, marginLeft: 'auto', flexShrink: 0 }} />
+          </Link>
 
           {/* Stock */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>

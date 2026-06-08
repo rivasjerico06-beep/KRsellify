@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
 
@@ -107,6 +108,20 @@ export default function Cart() {
                       ${cartTotal.toFixed(2)}
                     </span>
                   </div>
+
+                  {/* VIP upsell */}
+                  <Link href="/vip" onClick={() => setCartOpen(false)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'linear-gradient(90deg, #0f2441 0%, #1a3a5c 100%)', borderRadius: 14, padding: '13px 16px', textDecoration: 'none', marginBottom: 14, border: '1px solid rgba(77,217,184,0.2)' }}>
+                    <i className="fa-solid fa-crown" style={{ color: '#fbbf24', fontSize: 18, flexShrink: 0 }} />
+                    <div style={{ flex: 1 }}>
+                      <p style={{ color: 'white', fontWeight: 700, fontSize: 13, margin: 0 }}>
+                        VIP saves you <strong style={{ color: '#4dd9b8' }}>${(cartTotal * 0.3).toFixed(2)}</strong> on this order
+                      </p>
+                      <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: 600, margin: '2px 0 0' }}>
+                        Join VIP — $20/month, cancel anytime →
+                      </p>
+                    </div>
+                  </Link>
 
                   {/* Proceed to Checkout */}
                   <motion.button
