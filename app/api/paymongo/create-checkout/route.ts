@@ -98,7 +98,7 @@ export async function POST(request: Request) {
               quantity: 1,
             },
           ],
-          payment_method_types: ['gcash', 'paymaya', 'card', 'dob'],
+          payment_method_types: ['gcash', 'paymaya', 'card'],
           success_url: `${origin}/order-success`,
           cancel_url: `${origin}/checkout`,
           metadata: { order_id: order.id },
