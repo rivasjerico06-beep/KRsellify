@@ -29,7 +29,7 @@ export async function GET(request: Request) {
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
 
   const [ordersRes, agentsRes, profilesRes, leadsRes] = await Promise.all([
-    admin.from('orders').select('id,total,discount_amount,status,items,referral_code,user_id,created_at').order('created_at', { ascending: false }),
+    admin.from('orders').select('id,total,discount_amount,status,items,referral_code,user_id,created_at').neq('status', 'pending_payment').order('created_at', { ascending: false }),
     admin.from('agent_profiles').select('user_id,display_name,referral_code,status').eq('status', 'approved'),
     admin.from('profiles').select('id,full_name,role').eq('role', 'customer'),
     admin.from('leads').select('agent_id,status'),

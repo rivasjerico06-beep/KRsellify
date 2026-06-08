@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const admin = getAdminSupabase()
 
   const [ordersRes, authRes] = await Promise.all([
-    admin.from('orders').select('user_id, guest_email, total, status, created_at').order('created_at', { ascending: false }),
+    admin.from('orders').select('user_id, guest_email, total, status, created_at').neq('status', 'pending_payment').order('created_at', { ascending: false }),
     admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ])
 
