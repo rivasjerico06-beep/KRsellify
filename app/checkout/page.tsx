@@ -25,6 +25,7 @@ export default function CheckoutPage() {
   const [validating, setValidating] = useState(false)
   const [placing, setPlacing] = useState(false)
   const [emailShake, setEmailShake] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'paymongo'>('paypal')
   const [productOptions, setProductOptions] = useState<Record<string, { label: string; qty: number; bundle_total: number }[]>>({})
   const emailRef = useRef<HTMLInputElement>(null)
 
@@ -161,6 +162,53 @@ export default function CheckoutPage() {
       ? (err as { message: string }).message : String(err)
     showToast(`Payment error: ${msg || 'Please try again.'}`)
     setPlacing(false)
+  }
+
+  async function handlePayMongoCheckout() {
+    if (!email.trim()) {
+      setEmailShake(true)
+      emailRef.current?.focus()
+      emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
+    setPlacing(true)
+    try {
+      const res = await fetch('/api/paymongo/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          items: cart,
+          total: finalTotal,
+          discount_amount: discountAmount,
+          coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
+          guest_email: !user ? email.trim() : undefined,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.checkout_url) {
+        showToast(data.error ?? 'Failed to create payment. Please try again.')
+        setPlacing(false)
+        return
+      }
+      // Save order data for success page before leaving
+      try {
+        localStorage.setItem('themaga_last_order', JSON.stringify({
+          id: data.order_id ?? '',
+          total: finalTotal,
+          discount: discountAmount,
+          itemCount: cart.reduce((s, i) => s + i.qty, 0),
+          items: cart.map(i => ({ name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img })),
+        }))
+      } catch {}
+      clearCart()
+      window.location.href = data.checkout_url
+    } catch {
+      showToast('Network error. Please try again.')
+      setPlacing(false)
+    }
   }
 
   const emailMissing = !email.trim()
@@ -399,12 +447,38 @@ export default function CheckoutPage() {
             </>
           )}
 
+          {/* Payment method selector */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
+            <button
+              onClick={() => setPaymentMethod('paypal')}
+              style={{ flex: 1, padding: '12px 8px', borderRadius: 8, cursor: 'pointer', border: `2px solid ${paymentMethod === 'paypal' ? '#0070ba' : '#ddd'}`, background: paymentMethod === 'paypal' ? '#e8f4fd' : 'white', fontWeight: 700, fontSize: 14, color: paymentMethod === 'paypal' ? '#0070ba' : '#888', transition: 'all 0.15s' }}>
+              <i className="fa-brands fa-paypal" style={{ marginRight: 6 }} />
+              PayPal
+            </button>
+            <button
+              onClick={() => setPaymentMethod('paymongo')}
+              style={{ flex: 1, padding: '12px 8px', borderRadius: 8, cursor: 'pointer', border: `2px solid ${paymentMethod === 'paymongo' ? '#136ef6' : '#ddd'}`, background: paymentMethod === 'paymongo' ? '#eef3ff' : 'white', fontWeight: 700, fontSize: 13, color: paymentMethod === 'paymongo' ? '#136ef6' : '#888', transition: 'all 0.15s', lineHeight: 1.35 }}>
+              GCash / Maya<br />
+              <span style={{ fontSize: 11, fontWeight: 600 }}>via PayMongo</span>
+            </button>
+          </div>
+
           {/* Payment buttons */}
           {placing ? (
             <div style={{ textAlign: 'center', padding: '32px 0', color: '#555', fontSize: 17, fontWeight: 700 }}>
               <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 10, color: '#0070ba', fontSize: 20 }} />
               Processing your payment…
             </div>
+          ) : paymentMethod === 'paymongo' ? (
+            <motion.button
+              onClick={handlePayMongoCheckout}
+              disabled={placing}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              style={{ width: '100%', background: 'linear-gradient(135deg, #0ea5e9 0%, #136ef6 100%)', color: 'white', border: 'none', borderRadius: 8, padding: '17px', fontSize: 16, fontWeight: 800, cursor: 'pointer', letterSpacing: '0.03em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontFamily: 'inherit' }}>
+              <i className="fa-solid fa-mobile-screen" />
+              Pay with GCash / Maya / Card
+            </motion.button>
           ) : paypalLoading ? (
             <div style={{ textAlign: 'center', padding: '24px 0', color: '#888', fontSize: 15 }}>
               <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 8 }} />
