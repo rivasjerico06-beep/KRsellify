@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { getAdminSupabase } from '@/lib/supabase-admin'
-import { getBrowserSupabase } from '@/lib/supabase-browser'
 
 const PAYPAL_BASE = process.env.PAYPAL_API_URL ?? 'https://api-m.paypal.com'
 
@@ -18,15 +17,13 @@ async function getAccessToken() {
 }
 
 export async function POST(request: Request) {
-  const token = request.headers.get('authorization')?.replace('Bearer ', '').trim()
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { subscription_id, email } = await request.json()
 
-  const auth = getBrowserSupabase()
-  const { data: { user } } = await auth.auth.getUser(token)
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!subscription_id || !email?.trim()) {
+    return NextResponse.json({ error: 'Missing subscription_id or email' }, { status: 400 })
+  }
 
-  const { subscription_id } = await request.json()
-  if (!subscription_id) return NextResponse.json({ error: 'Missing subscription_id' }, { status: 400 })
+  const normalizedEmail = email.toLowerCase().trim()
 
   // Verify the subscription is real and active with PayPal
   const accessToken = await getAccessToken()
@@ -41,12 +38,11 @@ export async function POST(request: Request) {
 
   const admin = getAdminSupabase()
 
-  // Upsert VIP subscription record
   const { error } = await admin.from('vip_subscriptions').upsert({
-    user_id: user.id,
+    email: normalizedEmail,
     paypal_subscription_id: subscription_id,
     status: 'active',
-  }, { onConflict: 'user_id' })
+  }, { onConflict: 'paypal_subscription_id' })
 
   if (error) return NextResponse.json({ error: 'Failed to save subscription' }, { status: 500 })
 

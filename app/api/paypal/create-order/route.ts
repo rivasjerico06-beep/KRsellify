@@ -29,7 +29,7 @@ interface OrderItem {
 
 export async function POST(request: Request) {
   const body = await request.json()
-  const { items, coupon_code }: { items: OrderItem[]; coupon_code?: string } = body
+  const { items, coupon_code, email: checkoutEmail }: { items: OrderItem[]; coupon_code?: string; email?: string } = body
 
   if (!Array.isArray(items) || items.length === 0) {
     return NextResponse.json({ error: 'No items provided' }, { status: 400 })
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     }
   }
 
-  // Resolve the authenticated user once — used for both VIP and coupon checks
+  // Resolve auth token for coupon matching (optional)
   const authToken = request.headers.get('authorization')?.replace('Bearer ', '').trim()
   let userId: string | null = null
   if (authToken) {
@@ -74,17 +74,16 @@ export async function POST(request: Request) {
     if (user) userId = user.id
   }
 
-  // Apply VIP 30% discount if user is an active VIP subscriber
-  if (userId) {
+  // Apply VIP 30% discount — check by email (email-based VIP, no login required)
+  const emailToCheck = checkoutEmail?.toLowerCase().trim() ?? null
+  if (emailToCheck) {
     const { data: vipSub } = await admin
       .from('vip_subscriptions')
       .select('id')
-      .eq('user_id', userId)
+      .eq('email', emailToCheck)
       .eq('status', 'active')
-      .single()
-    if (vipSub) {
-      amount = amount * 0.7
-    }
+      .maybeSingle()
+    if (vipSub) amount = amount * 0.7
   }
 
   // Apply coupon discount if provided — does NOT mark the coupon as used yet

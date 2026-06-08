@@ -3,6 +3,7 @@ import { Playfair_Display, DM_Sans, Cormorant_Garamond } from 'next/font/google'
 import Providers from '@/components/Providers'
 import ScrollProgress from '@/components/ScrollProgress'
 import AgentAssistButton from '@/components/AgentAssistButton'
+import VipBanner from '@/components/VipBanner'
 import './globals.css'
 
 const playfair = Playfair_Display({
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="bg-blob-2" />
           <div className="bg-blob-3" />
         </div>
+        <VipBanner />
         <ScrollProgress />
         <Providers>
           {children}

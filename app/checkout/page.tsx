@@ -17,6 +17,8 @@ export default function CheckoutPage() {
 
   const [email, setEmail] = useState('')
   const [editingEmail, setEditingEmail] = useState(false)
+  const [isVip, setIsVip] = useState(false)
+  const vipCheckRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [couponCode, setCouponCode] = useState('')
   const [couponDiscount, setCouponDiscount] = useState(0)
   const [couponMsg, setCouponMsg] = useState('')
@@ -47,12 +49,29 @@ export default function CheckoutPage() {
   }, [user])
 
   useEffect(() => {
+    if (vipCheckRef.current) clearTimeout(vipCheckRef.current)
+    const trimmed = email.trim().toLowerCase()
+    if (!trimmed || !trimmed.includes('@')) { setIsVip(false); return }
+    vipCheckRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/vip/check?email=${encodeURIComponent(trimmed)}`)
+        const data = await res.json()
+        setIsVip(data.is_vip ?? false)
+      } catch { setIsVip(false) }
+    }, 600)
+    return () => { if (vipCheckRef.current) clearTimeout(vipCheckRef.current) }
+  }, [email])
+
+  useEffect(() => {
     if (cart.length === 0 && !placing) {
       router.push('/')
     }
   }, [cart.length, placing, router])
 
-  const discountAmount = couponDiscount > 0 ? cartTotal * (couponDiscount / 100) : 0
+  const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
+  const afterVipTotal = cartTotal - vipDiscountAmount
+  const couponDiscountAmount = couponDiscount > 0 ? afterVipTotal * (couponDiscount / 100) : 0
+  const discountAmount = vipDiscountAmount + couponDiscountAmount
   const finalTotal = cartTotal - discountAmount
 
   async function validateCoupon() {
@@ -89,6 +108,7 @@ export default function CheckoutPage() {
       body: JSON.stringify({
         items: cart.map(i => ({ id: i.id, qty: i.qty, bundle_label: i.bundle_label })),
         coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
+        email: email.trim(),
       }),
     })
     const data = await res.json()
@@ -248,9 +268,16 @@ export default function CheckoutPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <span style={{ fontSize: 20, fontWeight: 800, color: '#111', letterSpacing: '0.04em' }}>ORDER TOTAL</span>
               <div style={{ textAlign: 'right' }}>
-                {discountAmount > 0 && (
+                {isVip && (
+                  <div style={{ fontSize: 14, color: '#d97706', fontWeight: 700, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <i className="fa-solid fa-crown" style={{ fontSize: 12 }} />
+                    VIP 30% off — −${vipDiscountAmount.toFixed(2)}
+                  </div>
+                )}
+                {couponDiscountAmount > 0 && (
                   <div style={{ fontSize: 14, color: '#059669', fontWeight: 700, marginBottom: 4 }}>
-                    −${discountAmount.toFixed(2)} discount applied
+                    <i className="fa-solid fa-tag" style={{ marginRight: 5, fontSize: 12 }} />
+                    Coupon −${couponDiscountAmount.toFixed(2)}
                   </div>
                 )}
                 <span style={{ fontSize: 32, fontWeight: 900, color: '#111' }}>
@@ -394,7 +421,7 @@ export default function CheckoutPage() {
                 fundingSource={FUNDING.PAYPAL}
                 style={{ layout: 'vertical', shape: 'rect', height: 55 }}
                 disabled={placing}
-                forceReRender={[finalTotal, cart.length, email]}
+                forceReRender={[finalTotal, cart.length, email, isVip]}
                 onClick={(_, actions) => {
                   if (!email.trim()) {
                     setEmailShake(true)
@@ -413,7 +440,7 @@ export default function CheckoutPage() {
                 fundingSource={FUNDING.CARD}
                 style={{ layout: 'vertical', shape: 'rect', height: 55 }}
                 disabled={placing}
-                forceReRender={[finalTotal, cart.length, email]}
+                forceReRender={[finalTotal, cart.length, email, isVip]}
                 onClick={(_, actions) => {
                   if (!email.trim()) {
                     setEmailShake(true)
