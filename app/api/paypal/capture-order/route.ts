@@ -110,6 +110,9 @@ export async function POST(request: Request) {
       if (userCoupon && Number(userCoupon.min_spend ?? 0) <= total) {
         appliedDiscount = total * (userCoupon.discount_pct / 100)
         couponMarked = true
+        await admin.from('coupons')
+          .update({ is_used: true, used_at: new Date().toISOString() })
+          .eq('id', userCoupon.id)
       }
     }
 
@@ -124,6 +127,9 @@ export async function POST(request: Request) {
 
       if (globalCoupon && Number(globalCoupon.min_spend ?? 0) <= total) {
         appliedDiscount = total * (globalCoupon.discount_pct / 100)
+        await admin.from('coupons')
+          .update({ is_used: true, used_at: new Date().toISOString() })
+          .eq('id', globalCoupon.id)
       }
     }
   }

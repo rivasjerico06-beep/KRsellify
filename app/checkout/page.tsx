@@ -147,7 +147,7 @@ export default function CheckoutPage() {
         total: finalTotal,
         discount: discountAmount,
         itemCount: cart.reduce((s, i) => s + i.qty, 0),
-        items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, img: i.img })),
+        items: cart.map(i => ({ name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img })),
       }))
     } catch {}
 
