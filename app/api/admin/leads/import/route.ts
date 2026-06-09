@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
   for (let i = 1; i < lines.length; i++) {
     const values = lines[i].split(delimiter)
-    const row: Record<string, string | number | null> = { status: 'new', call_count: 0 }
+    const row: Record<string, string | number | null> = { status: 'new', call_count: 0, customer_name: '' }
 
     headers.forEach((header, idx) => {
       const field = COL_MAP[header]
