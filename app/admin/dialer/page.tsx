@@ -302,12 +302,16 @@ function DialerContent() {
   const [showDisposition, setShowDisposition] = useState(false)
   const [showImport, setShowImport] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [callStatus, setCallStatus] = useState<'idle' | 'calling' | 'ended'>('idle')
+  const [popupBlocked, setPopupBlocked] = useState(false)
   const [agentName, setAgentName] = useState(() =>
     typeof window !== 'undefined' ? localStorage.getItem('dialer_agent_name') ?? '' : ''
   )
   const [copied, setCopied] = useState(false)
   const [toast, setToast] = useState('')
   const toastRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const dialerWindowRef = useRef<Window | null>(null)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const authHeaders = useCallback((): HeadersInit => ({
     'Authorization': `Bearer ${session?.access_token ?? ''}`,
@@ -340,6 +344,41 @@ function DialerContent() {
     setTimeout(() => setCopied(false), 1800)
   }
 
+  function stopPolling() {
+    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null }
+  }
+
+  function openDialer() {
+    stopPolling()
+    const popup = window.open(
+      'https://www.helloairdial.com/',
+      'helloairdial',
+      'width=500,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
+    )
+    if (!popup || popup.closed) {
+      setPopupBlocked(true)
+      setCallStatus('calling') // fallback to manual mode
+      return
+    }
+    setPopupBlocked(false)
+    dialerWindowRef.current = popup
+    setCallStatus('calling')
+
+    // Poll every second — when popup closes, trigger disposition
+    pollRef.current = setInterval(() => {
+      if (dialerWindowRef.current?.closed) {
+        stopPolling()
+        setCallStatus('ended')
+        setShowDisposition(true)
+      }
+    }, 1000)
+  }
+
+  // Clean up polling on lead change or unmount
+  useEffect(() => {
+    return () => stopPolling()
+  }, [currentIdx])
+
   async function handleDisposition(disposition: string, notes: string) {
     if (!currentLead) return
     setSubmitting(true)
@@ -355,6 +394,8 @@ function DialerContent() {
         }),
       })
       setShowDisposition(false)
+      setCallStatus('idle')
+      setPopupBlocked(false)
       setCurrentIdx(i => i + 1)
       showToast('Disposition saved — next lead loaded')
     } finally {
@@ -381,6 +422,7 @@ function DialerContent() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f0f4f8', padding: '0' }}>
+      <style>{`@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.4)} }`}</style>
 
       {/* Header */}
       <div style={{
@@ -560,7 +602,7 @@ function DialerContent() {
                         {currentLead.customer_phone}
                       </p>
                     </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       <button
                         onClick={() => handleCopyPhone(currentLead.customer_phone)}
                         style={{
@@ -572,19 +614,36 @@ function DialerContent() {
                         <i className={`fa-solid ${copied ? 'fa-check' : 'fa-copy'}`} />
                         {copied ? 'Copied!' : 'Copy'}
                       </button>
-                      <a
-                        href="https://www.helloairdial.com/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          padding: '10px 18px', borderRadius: 10, border: 'none',
-                          background: 'var(--teal)', color: 'white',
-                          fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
-                          display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none',
-                        }}>
-                        <i className="fa-solid fa-phone" />
-                        Open HelloAirDial
-                      </a>
+                      {callStatus === 'idle' && (
+                        <button
+                          onClick={openDialer}
+                          style={{
+                            padding: '10px 18px', borderRadius: 10, border: 'none',
+                            background: 'var(--teal)', color: 'white',
+                            fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
+                            display: 'flex', alignItems: 'center', gap: 6,
+                          }}>
+                          <i className="fa-solid fa-phone" />
+                          Open HelloAirDial
+                        </button>
+                      )}
+                      {callStatus === 'calling' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{
+                            padding: '10px 16px', borderRadius: 10,
+                            background: '#dcfce7', color: '#166534',
+                            fontWeight: 700, fontSize: 13,
+                            display: 'flex', alignItems: 'center', gap: 6,
+                          }}>
+                            <span style={{
+                              width: 8, height: 8, borderRadius: '50%', background: '#16a34a',
+                              animation: 'pulse 1.2s ease-in-out infinite',
+                              display: 'inline-block',
+                            }} />
+                            Calling…
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -627,30 +686,63 @@ function DialerContent() {
                     )}
                   </div>
 
+                  {/* Popup blocked warning */}
+                  {popupBlocked && (
+                    <div style={{
+                      marginBottom: 16, padding: '10px 14px', borderRadius: 10,
+                      background: '#fffbeb', border: '1.5px solid #fde68a',
+                      fontSize: 13, color: '#78350f', display: 'flex', alignItems: 'center', gap: 8,
+                    }}>
+                      <i className="fa-solid fa-triangle-exclamation" style={{ color: '#d97706' }} />
+                      Popup was blocked. Allow popups for this site, or use the manual buttons below.
+                    </div>
+                  )}
+
                   {/* Action buttons */}
                   <div style={{ display: 'flex', gap: 10 }}>
-                    <button
-                      onClick={() => setShowDisposition(true)}
-                      style={{
-                        flex: 1, padding: '16px', borderRadius: 50, border: 'none',
-                        background: 'var(--navy)', color: 'white',
-                        fontWeight: 800, fontSize: 16, cursor: 'pointer', fontFamily: 'inherit',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                      }}>
-                      <i className="fa-solid fa-clipboard-list" />
-                      Log This Call
-                    </button>
-                    <button
-                      onClick={() => setCurrentIdx(i => i + 1)}
-                      title="Skip to next lead"
-                      style={{
-                        padding: '16px 20px', borderRadius: 50, border: '2px solid var(--gray)',
-                        background: 'white', color: 'var(--text-mid)',
-                        fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit',
-                        display: 'flex', alignItems: 'center', gap: 6,
-                      }}>
-                      <i className="fa-solid fa-forward-step" /> Skip
-                    </button>
+                    {callStatus === 'idle' ? (
+                      // Before calling: primary action is to open dialer
+                      <>
+                        <button
+                          onClick={openDialer}
+                          style={{
+                            flex: 1, padding: '16px', borderRadius: 50, border: 'none',
+                            background: 'var(--teal)', color: 'white',
+                            fontWeight: 800, fontSize: 16, cursor: 'pointer', fontFamily: 'inherit',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                          }}>
+                          <i className="fa-solid fa-phone" />
+                          Start Call
+                        </button>
+                        <button
+                          onClick={() => setCurrentIdx(i => i + 1)}
+                          title="Skip to next lead"
+                          style={{
+                            padding: '16px 20px', borderRadius: 50, border: '2px solid var(--gray)',
+                            background: 'white', color: 'var(--text-mid)',
+                            fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit',
+                            display: 'flex', alignItems: 'center', gap: 6,
+                          }}>
+                          <i className="fa-solid fa-forward-step" /> Skip
+                        </button>
+                      </>
+                    ) : (
+                      // During / after call: must log disposition before next lead
+                      <>
+                        <button
+                          onClick={() => { setCallStatus('ended'); setShowDisposition(true) }}
+                          style={{
+                            flex: 1, padding: '16px', borderRadius: 50, border: 'none',
+                            background: 'var(--navy)', color: 'white',
+                            fontWeight: 800, fontSize: 16, cursor: 'pointer', fontFamily: 'inherit',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                            animation: callStatus === 'ended' ? 'none' : undefined,
+                          }}>
+                          <i className="fa-solid fa-clipboard-list" />
+                          {callStatus === 'ended' ? 'Log Disposition' : 'End Call & Log'}
+                        </button>
+                      </>
+                    )}
                   </div>
 
                 </div>
