@@ -25,7 +25,11 @@ export default function CheckoutPage() {
   const [validating, setValidating] = useState(false)
   const [placing, setPlacing] = useState(false)
   const [emailShake, setEmailShake] = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'paymongo'>('paypal')
+  const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'square'>('paypal')
+  const [squareLoaded, setSquareLoaded] = useState(false)
+  const [squareInitializing, setSquareInitializing] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const squareCardRef = useRef<any>(null)
   const [productOptions, setProductOptions] = useState<Record<string, { label: string; qty: number; bundle_total: number }[]>>({})
   const emailRef = useRef<HTMLInputElement>(null)
 
@@ -68,6 +72,57 @@ export default function CheckoutPage() {
       router.push('/')
     }
   }, [cart.length, placing, router])
+
+  // Load Square Web Payments SDK once on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (document.querySelector('script[src*="squarecdn.com"]')) {
+      setSquareLoaded(true)
+      return
+    }
+    const script = document.createElement('script')
+    script.src = 'https://web.squarecdn.com/v1/square.js'
+    script.onload = () => setSquareLoaded(true)
+    document.head.appendChild(script)
+  }, [])
+
+  // Init Square card element when the Square tab is active and SDK is ready
+  useEffect(() => {
+    if (paymentMethod !== 'square' || !squareLoaded) return
+    if (squareCardRef.current) return
+
+    let cancelled = false
+    async function initSquare() {
+      setSquareInitializing(true)
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sq = (window as any).Square
+        if (!sq || cancelled) return
+        const payments = sq.payments(
+          process.env.NEXT_PUBLIC_SQUARE_APP_ID,
+          process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID
+        )
+        const card = await payments.card()
+        if (cancelled) { card.destroy().catch(() => {}); return }
+        await card.attach('#square-card-container')
+        squareCardRef.current = card
+      } catch {
+        // card form init failed silently
+      } finally {
+        if (!cancelled) setSquareInitializing(false)
+      }
+    }
+
+    initSquare()
+
+    return () => {
+      cancelled = true
+      if (squareCardRef.current) {
+        squareCardRef.current.destroy().catch(() => {})
+        squareCardRef.current = null
+      }
+    }
+  }, [paymentMethod, squareLoaded])
 
   const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
   const afterVipTotal = cartTotal - vipDiscountAmount
@@ -206,6 +261,70 @@ export default function CheckoutPage() {
       } catch {}
       clearCart()
       window.location.href = data.checkout_url
+    } catch {
+      showToast('Network error. Please try again.')
+      setPlacing(false)
+    }
+  }
+
+  async function handleSquarePayment() {
+    if (!email.trim()) {
+      setEmailShake(true)
+      emailRef.current?.focus()
+      emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
+    if (!squareCardRef.current) {
+      showToast('Card form not ready. Please try again.')
+      return
+    }
+
+    setPlacing(true)
+    try {
+      const result = await squareCardRef.current.tokenize()
+      if (result.status !== 'OK') {
+        const errs = (result.errors as { message: string }[] | undefined)?.map(e => e.message).join(', ')
+        showToast(errs || 'Please check your card details.')
+        setPlacing(false)
+        return
+      }
+
+      const res = await fetch('/api/square/create-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          source_id: result.token,
+          items: cart.map(i => ({ id: i.id, qty: i.qty, bundle_label: i.bundle_label })),
+          coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
+          email: email.trim(),
+          guest_email: !user ? email.trim() : undefined,
+        }),
+      })
+
+      const order = await res.json()
+      if (!res.ok) {
+        showToast(order.error ?? 'Payment failed. Please try again.')
+        setPlacing(false)
+        return
+      }
+
+      try {
+        localStorage.setItem('themaga_last_order', JSON.stringify({
+          id: order.id ?? '',
+          order_number: order.order_number ?? null,
+          total: finalTotal,
+          discount: discountAmount,
+          itemCount: cart.reduce((s, i) => s + i.qty, 0),
+          items: cart.map(i => ({ name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img })),
+        }))
+      } catch {}
+
+      clearCart()
+      setPlacing(false)
+      router.push('/order-success')
     } catch {
       showToast('Network error. Please try again.')
       setPlacing(false)
@@ -448,11 +567,65 @@ export default function CheckoutPage() {
             </>
           )}
 
+          {/* Payment method tabs */}
+          <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+            <button
+              onClick={() => setPaymentMethod('paypal')}
+              style={{
+                flex: 1, padding: '13px 12px', cursor: 'pointer', fontSize: 15, fontWeight: 700,
+                border: `2px solid ${paymentMethod === 'paypal' ? '#0070ba' : '#ddd'}`,
+                borderRadius: 8, background: paymentMethod === 'paypal' ? '#f0f7ff' : 'white',
+                color: paymentMethod === 'paypal' ? '#0070ba' : '#666',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.15s',
+              }}>
+              <i className="fa-brands fa-paypal" style={{ fontSize: 18 }} />
+              PayPal
+            </button>
+            <button
+              onClick={() => setPaymentMethod('square')}
+              style={{
+                flex: 1, padding: '13px 12px', cursor: 'pointer', fontSize: 15, fontWeight: 700,
+                border: `2px solid ${paymentMethod === 'square' ? '#006aff' : '#ddd'}`,
+                borderRadius: 8, background: paymentMethod === 'square' ? '#f0f4ff' : 'white',
+                color: paymentMethod === 'square' ? '#006aff' : '#666',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.15s',
+              }}>
+              <i className="fa-solid fa-credit-card" style={{ fontSize: 16 }} />
+              Card
+            </button>
+          </div>
+
           {/* Payment buttons */}
           {placing ? (
             <div style={{ textAlign: 'center', padding: '32px 0', color: '#555', fontSize: 17, fontWeight: 700 }}>
               <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 10, color: '#0070ba', fontSize: 20 }} />
               Processing your payment…
+            </div>
+          ) : paymentMethod === 'square' ? (
+            <div>
+              {squareInitializing && (
+                <div style={{ textAlign: 'center', padding: '18px 0', color: '#888', fontSize: 15 }}>
+                  <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 8 }} />
+                  Loading card form…
+                </div>
+              )}
+              <div id="square-card-container" style={{ marginBottom: 16, minHeight: squareInitializing ? 0 : 89 }} />
+              <button
+                onClick={handleSquarePayment}
+                disabled={squareInitializing || !squareCardRef.current}
+                style={{
+                  width: '100%', background: squareInitializing ? '#c7d2fe' : 'linear-gradient(135deg, #006aff 0%, #0052cc 100%)',
+                  color: 'white', border: 'none', borderRadius: 8, padding: '17px 24px',
+                  fontSize: 17, fontWeight: 800, cursor: squareInitializing ? 'default' : 'pointer',
+                  letterSpacing: '0.01em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                  transition: 'background 0.2s',
+                }}>
+                <i className="fa-solid fa-lock" style={{ fontSize: 15 }} />
+                Pay ${finalTotal.toFixed(2)}
+              </button>
+              <p style={{ fontSize: 12, color: '#999', textAlign: 'center', marginTop: 10 }}>
+                Powered by Square · 256-bit SSL encryption
+              </p>
             </div>
           ) : paypalLoading ? (
             <div style={{ textAlign: 'center', padding: '24px 0', color: '#888', fontSize: 15 }}>
