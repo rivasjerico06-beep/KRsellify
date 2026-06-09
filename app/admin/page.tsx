@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
@@ -315,6 +316,12 @@ function AdminContent() {
             )}
           </button>
         ))}
+        <Link href="/admin/dialer"
+          style={{ color: 'rgba(255,255,255,0.6)', background: 'transparent', borderBottom: '3px solid transparent', padding: '13px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none', transition: 'color 0.2s' }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'white')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}>
+          <i className="fa-solid fa-phone-volume" style={{ fontSize: 12 }} /> Dialer
+        </Link>
       </div>
 
       {/* Realtime new-order alert */}
