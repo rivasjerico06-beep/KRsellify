@@ -124,6 +124,7 @@ export async function POST(request: Request) {
       to: confirmEmail,
       name: typeof name === 'string' ? name : confirmEmail.split('@')[0],
       orderId: order.id,
+      orderNumber: order.order_number,
       items: order.items as CartItem[],
       total: Number(order.total),
       discountAmount: Number(order.discount_amount) > 0 ? Number(order.discount_amount) : undefined,

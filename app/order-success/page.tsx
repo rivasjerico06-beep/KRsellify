@@ -47,6 +47,7 @@ function Confetti() {
 
 interface OrderInfo {
   id: string
+  order_number?: number | null
   total: number
   discount: number
   itemCount: number
@@ -161,9 +162,11 @@ export default function OrderSuccessPage() {
               <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 900, color: 'var(--heading)' }}>${order.total.toFixed(2)}</span>
             </div>
 
-            {order.id && (
+            {(order.order_number || order.id) && (
               <p style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 8 }}>
-                Order ID: <span style={{ fontFamily: 'monospace' }}>{order.id.slice(0, 8).toUpperCase()}</span>
+                Order #: <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>
+                  {order.order_number ?? order.id.slice(0, 8).toUpperCase()}
+                </span>
               </p>
             )}
           </motion.div>

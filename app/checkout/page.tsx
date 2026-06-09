@@ -145,6 +145,7 @@ export default function CheckoutPage() {
     try {
       localStorage.setItem('themaga_last_order', JSON.stringify({
         id: order.id ?? '',
+        order_number: order.order_number ?? null,
         total: finalTotal,
         discount: discountAmount,
         itemCount: cart.reduce((s, i) => s + i.qty, 0),

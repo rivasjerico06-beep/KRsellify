@@ -13,6 +13,7 @@ export async function sendOrderConfirmation({
   to,
   name,
   orderId,
+  orderNumber,
   items,
   total,
   discountAmount,
@@ -20,6 +21,7 @@ export async function sendOrderConfirmation({
   to: string
   name: string
   orderId: string
+  orderNumber?: number | null
   items: CartItem[]
   total: number
   discountAmount?: number
@@ -61,7 +63,7 @@ export async function sendOrderConfirmation({
 
       <div style="background:#f4f8f8;border-radius:12px;padding:16px 20px;margin-bottom:24px">
         <p style="font-size:11px;font-weight:700;color:#8ba0aa;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 4px">Order ID</p>
-        <p style="font-size:14px;font-weight:700;color:#093459;margin:0;font-family:monospace">${orderId}</p>
+        <p style="font-size:14px;font-weight:700;color:#093459;margin:0;font-family:monospace">#${orderNumber ?? orderId.slice(0, 8).toUpperCase()}</p>
       </div>
 
       <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
@@ -109,7 +111,7 @@ export async function sendOrderConfirmation({
     from: FROM,
     to,
     replyTo: 'support@themagaoffers.net',
-    subject: `✓ Order Confirmed — Maga Offers (#${orderId.slice(0, 8).toUpperCase()})`,
+    subject: `✓ Order Confirmed — Maga Offers (#${orderNumber ?? orderId.slice(0, 8).toUpperCase()})`,
     html,
   })
 
@@ -121,7 +123,7 @@ export async function sendOrderConfirmation({
     html: `<p style="font-family:Arial,sans-serif;font-size:15px;color:#093459">
       <strong>New order received!</strong><br><br>
       Customer: <strong>${name}</strong> (${to})<br>
-      Order ID: <code>${orderId}</code><br>
+      Order #: <code>${orderNumber ?? orderId.slice(0, 8).toUpperCase()}</code><br>
       Total: <strong>$${total.toFixed(2)}</strong><br>
       Items: ${items.map(i => `${i.name} ×${i.qty}`).join(', ')}
     </p>`,
@@ -160,11 +162,13 @@ export async function sendOrderStatusUpdate({
   to,
   name,
   orderId,
+  orderNumber,
   status,
 }: {
   to: string
   name: string
   orderId: string
+  orderNumber?: number | null
   status: string
 }) {
   if (!process.env.RESEND_API_KEY) return
@@ -197,7 +201,7 @@ export async function sendOrderStatusUpdate({
           <p style="font-size:11px;font-weight:700;color:#8ba0aa;text-transform:uppercase;letter-spacing:0.12em;margin:0">Order Reference</p>
         </div>
         <div style="padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-          <p style="font-size:14px;font-weight:700;color:#093459;margin:0;font-family:monospace">${orderId.slice(0, 8).toUpperCase()}</p>
+          <p style="font-size:14px;font-weight:700;color:#093459;margin:0;font-family:monospace">#${orderNumber ?? orderId.slice(0, 8).toUpperCase()}</p>
           <span style="font-size:12px;font-weight:800;padding:5px 14px;border-radius:20px;background:${meta.bg};color:${meta.color};text-transform:uppercase;letter-spacing:0.07em">${meta.label}</span>
         </div>
       </div>
@@ -231,7 +235,7 @@ export async function sendOrderStatusUpdate({
     from: FROM,
     to,
     replyTo: 'support@themagaoffers.net',
-    subject: `${meta.label} — Maga Offers (Ref: #${orderId.slice(0, 8).toUpperCase()})`,
+    subject: `${meta.label} — Maga Offers (Ref: #${orderNumber ?? orderId.slice(0, 8).toUpperCase()})`,
     html,
   })
 }

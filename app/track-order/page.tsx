@@ -15,6 +15,7 @@ interface OrderItem {
 
 interface Order {
   id: string
+  order_number?: number | null
   status: string
   total: number
   discount_amount: number
@@ -215,7 +216,7 @@ export default function TrackOrderPage() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
                         <div>
                           <p style={{ fontSize: 13, color: isDark ? '#7ab5b0' : 'var(--text-mid)', fontFamily: 'monospace', marginBottom: 4, fontWeight: 600 }}>
-                            Order #{order.id.slice(0, 8).toUpperCase()}
+                            Order #{order.order_number ?? order.id.slice(0, 8).toUpperCase()}
                           </p>
                           <p style={{ fontSize: 15, color: isDark ? '#7ab5b0' : 'var(--text-mid)', fontWeight: 500 }}>
                             {new Date(order.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}

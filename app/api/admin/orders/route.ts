@@ -89,6 +89,7 @@ export async function PATCH(request: Request) {
         to: customerEmail,
         name: customerName ?? customerEmail.split('@')[0],
         orderId: data.id,
+        orderNumber: data.order_number,
         status,
       }).catch(() => {})
     }
