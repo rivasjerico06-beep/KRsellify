@@ -146,19 +146,43 @@ function ImportModal({
   onClose: () => void
   onImported: (count: number) => void
 }) {
-  const [content, setContent] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const [preview, setPreview] = useState<{ rows: number; delimiter: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [dragging, setDragging] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  function detectDelimiter(text: string) {
+    const firstLine = text.split('\n')[0] ?? ''
+    return firstLine.includes('\t') ? '\t' : ','
+  }
+
+  function handleFileChange(selected: File | null) {
+    if (!selected) return
+    setFile(selected)
+    setError('')
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const text = e.target?.result as string
+      const delimiter = detectDelimiter(text)
+      const rows = text.trim().split('\n').filter(l => l.trim()).length - 1
+      setPreview({ rows: Math.max(0, rows), delimiter })
+    }
+    reader.readAsText(selected)
+  }
 
   async function handleImport() {
-    if (!content.trim()) return
+    if (!file) return
     setLoading(true)
     setError('')
     try {
+      const text = await file.text()
+      const delimiter = detectDelimiter(text)
       const res = await fetch('/api/admin/leads/import', {
         method: 'POST',
         headers: authHeaders,
-        body: JSON.stringify({ content, delimiter: '\t' }),
+        body: JSON.stringify({ content: text, delimiter }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Import failed')
@@ -182,7 +206,7 @@ function ImportModal({
         transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         style={{
           background: 'white', borderRadius: 20, padding: '32px 28px',
-          width: '100%', maxWidth: 580, boxShadow: '0 24px 60px rgba(0,0,0,0.25)',
+          width: '100%', maxWidth: 520, boxShadow: '0 24px 60px rgba(0,0,0,0.25)',
         }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -195,23 +219,54 @@ function ImportModal({
           </button>
         </div>
 
-        <p style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 16, lineHeight: 1.6 }}>
-          Copy your spreadsheet data (including the header row) and paste it below.
-          Expected columns: <strong>Agent Name, Tagging, Billing Phone, Shipping Name, Shipping Street, Lineitem name, Lineitem price, Billing Address1, Billing City, Billing Zip, Billing Province, Billing Country</strong>
+        <p style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 20, lineHeight: 1.6 }}>
+          Upload a <strong>.csv</strong> or <strong>.tsv</strong> file exported from your spreadsheet. The first row must be the header row.
         </p>
 
-        <textarea
-          placeholder="Paste tab-separated data here (copy directly from spreadsheet)..."
-          value={content}
-          onChange={e => setContent(e.target.value)}
-          rows={10}
-          style={{
-            width: '100%', padding: '12px 14px', borderRadius: 10, fontSize: 13,
-            border: '2px solid var(--gray)', outline: 'none', resize: 'vertical',
-            background: 'var(--off-white)', color: 'var(--text-dark)', fontFamily: 'monospace',
-            marginBottom: 16, boxSizing: 'border-box',
+        {/* Drop zone */}
+        <div
+          onDragOver={e => { e.preventDefault(); setDragging(true) }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={e => {
+            e.preventDefault()
+            setDragging(false)
+            handleFileChange(e.dataTransfer.files[0] ?? null)
           }}
-        />
+          onClick={() => inputRef.current?.click()}
+          style={{
+            border: `2px dashed ${dragging ? 'var(--teal)' : file ? '#059669' : 'var(--gray)'}`,
+            borderRadius: 14, padding: '32px 20px', textAlign: 'center', cursor: 'pointer',
+            background: dragging ? '#f0fdf4' : file ? '#f0fdf4' : 'var(--off-white)',
+            transition: 'all 0.2s', marginBottom: 16,
+          }}>
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".csv,.tsv,.txt"
+            style={{ display: 'none' }}
+            onChange={e => handleFileChange(e.target.files?.[0] ?? null)}
+          />
+          {file ? (
+            <>
+              <i className="fa-solid fa-file-csv" style={{ fontSize: 36, color: '#059669', marginBottom: 10, display: 'block' }} />
+              <p style={{ fontWeight: 700, fontSize: 15, color: '#065f46', marginBottom: 4 }}>{file.name}</p>
+              {preview && (
+                <p style={{ fontSize: 13, color: '#059669' }}>
+                  {preview.rows} lead{preview.rows !== 1 ? 's' : ''} detected · {preview.delimiter === '\t' ? 'Tab' : 'Comma'}-separated
+                </p>
+              )}
+              <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 8 }}>Click to choose a different file</p>
+            </>
+          ) : (
+            <>
+              <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: 36, color: '#94a3b8', marginBottom: 10, display: 'block' }} />
+              <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--heading)', marginBottom: 4 }}>
+                Drop your file here or click to browse
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--text-mid)' }}>Supports .csv and .tsv files</p>
+            </>
+          )}
+        </div>
 
         {error && (
           <div style={{ marginBottom: 14, padding: '10px 14px', background: '#fff0f0', border: '1.5px solid #fca5a5', borderRadius: 10, fontSize: 13, color: '#b91c1c', fontWeight: 600 }}>
@@ -220,18 +275,18 @@ function ImportModal({
         )}
 
         <button
-          disabled={!content.trim() || loading}
+          disabled={!file || loading}
           onClick={handleImport}
           style={{
             width: '100%', padding: '14px', borderRadius: 50, border: 'none',
-            background: content.trim() ? 'var(--navy)' : '#e2e8f0',
-            color: content.trim() ? 'white' : '#94a3b8',
-            fontWeight: 700, fontSize: 15, cursor: content.trim() ? 'pointer' : 'default',
+            background: file ? 'var(--navy)' : '#e2e8f0',
+            color: file ? 'white' : '#94a3b8',
+            fontWeight: 700, fontSize: 15, cursor: file ? 'pointer' : 'default',
             fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}>
           {loading
             ? <><i className="fa-solid fa-spinner fa-spin" /> Importing…</>
-            : <><i className="fa-solid fa-upload" /> Import Leads</>
+            : <><i className="fa-solid fa-upload" /> Import {preview && preview.rows > 0 ? `${preview.rows} Leads` : 'Leads'}</>
           }
         </button>
       </motion.div>
