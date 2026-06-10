@@ -102,6 +102,17 @@ function AdminContent() {
   const [leadFollowUpDate, setLeadFollowUpDate] = useState('')
   const [updatingLead, setUpdatingLead]       = useState(false)
 
+  // Clear all leads
+  const [clearingLeads, setClearingLeads] = useState(false)
+
+  // Create agent
+  const [showCreateAgent, setShowCreateAgent]     = useState(false)
+  const [newAgentEmail, setNewAgentEmail]         = useState('')
+  const [newAgentPassword, setNewAgentPassword]   = useState('')
+  const [newAgentName, setNewAgentName]           = useState('')
+  const [creatingAgent, setCreatingAgent]         = useState(false)
+  const [createAgentMsg, setCreateAgentMsg]       = useState('')
+
   // Customer search
   const [customerSearch, setCustomerSearch] = useState('')
 
@@ -231,6 +242,37 @@ function AdminContent() {
     flash('✓ Lead deleted')
     if (selectedLead?.id === id) setSelectedLead(null)
     load('leads', true)
+  }
+
+  async function clearAllLeads() {
+    if (!confirm('Delete ALL leads? This cannot be undone.')) return
+    setClearingLeads(true)
+    await fetch('/api/admin/leads', { method: 'DELETE', headers: authHeaders() })
+    setLeads([])
+    setSelectedLead(null)
+    setClearingLeads(false)
+    flash('✓ All leads cleared')
+  }
+
+  async function createAgent(e: React.FormEvent) {
+    e.preventDefault()
+    setCreatingAgent(true)
+    setCreateAgentMsg('')
+    const res = await fetch('/api/admin/agents/create', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ email: newAgentEmail, password: newAgentPassword, display_name: newAgentName }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setCreateAgentMsg(data.error ?? 'Failed to create agent')
+    } else {
+      setShowCreateAgent(false)
+      setNewAgentEmail(''); setNewAgentPassword(''); setNewAgentName('')
+      load('agents', true)
+      flash('✓ Agent created and approved')
+    }
+    setCreatingAgent(false)
   }
 
   function flash(m: string) { setMsg(m); setTimeout(() => setMsg(''), 3000) }
@@ -555,10 +597,16 @@ function AdminContent() {
               {/* ── AGENTS ───────────────────────────────── */}
               {tab === 'agents' && (
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)', marginBottom: 20 }}>
-                    Agent Applications ({agents.length})
-                    {pendingAgents > 0 && <span style={{ fontSize: 14, fontWeight: 600, background: '#fef3c7', color: '#92400e', padding: '4px 12px', borderRadius: 20, marginLeft: 12 }}>{pendingAgents} pending</span>}
-                  </h2>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+                    <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)' }}>
+                      Agent Applications ({agents.length})
+                      {pendingAgents > 0 && <span style={{ fontSize: 14, fontWeight: 600, background: '#fef3c7', color: '#92400e', padding: '4px 12px', borderRadius: 20, marginLeft: 12 }}>{pendingAgents} pending</span>}
+                    </h2>
+                    <motion.button onClick={() => { setShowCreateAgent(true); setCreateAgentMsg('') }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                      style={{ background: 'var(--navy)', color: 'white', border: 'none', padding: '11px 22px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <i className="fa-solid fa-user-plus" /> Create Agent
+                    </motion.button>
+                  </div>
                   <div style={{ background: 'var(--white)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(9,52,89,0.06)', overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 800 }}>
                       <thead>
@@ -769,12 +817,18 @@ function AdminContent() {
               {/* ── LEADS ───────────────────────────────── */}
               {tab === 'leads' && (
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 10 }}>
                     <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--heading)' }}>Lead Management</h2>
-                    <motion.button onClick={() => setShowNewLead(true)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                      style={{ background: 'var(--teal)', color: 'white', border: 'none', padding: '11px 22px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <i className="fa-solid fa-plus" /> New Lead
-                    </motion.button>
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <motion.button onClick={clearAllLeads} disabled={clearingLeads || leads.length === 0} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                        style={{ background: '#fee2e2', color: '#dc2626', border: '1.5px solid #fca5a5', padding: '11px 18px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: leads.length === 0 ? 'default' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8, opacity: leads.length === 0 ? 0.5 : 1 }}>
+                        <i className="fa-solid fa-trash" /> {clearingLeads ? 'Clearing…' : 'Clear All'}
+                      </motion.button>
+                      <motion.button onClick={() => setShowNewLead(true)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                        style={{ background: 'var(--teal)', color: 'white', border: 'none', padding: '11px 22px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <i className="fa-solid fa-plus" /> New Lead
+                      </motion.button>
+                    </div>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 16, marginBottom: 24 }}>
@@ -885,6 +939,52 @@ function AdminContent() {
                   </AnimatePresence>
                 </div>
               )}
+
+              {/* ── CREATE AGENT MODAL ───────────────── */}
+              <AnimatePresence>
+                {showCreateAgent && (
+                  <>
+                    <motion.div key="ca-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      onClick={() => setShowCreateAgent(false)}
+                      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200 }} />
+                    <motion.div key="ca-panel" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                      style={{ position: 'fixed', top: 0, right: 0, width: 420, maxWidth: '100vw', height: '100%', background: 'white', zIndex: 201, display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 40px rgba(0,0,0,0.15)' }}>
+                      <div style={{ background: 'var(--navy)', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: 'white' }}>Create Agent Account</h3>
+                        <button onClick={() => setShowCreateAgent(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: 20, cursor: 'pointer' }}><i className="fa-solid fa-xmark" /></button>
+                      </div>
+                      <form onSubmit={createAgent} style={{ flex: 1, padding: 24, display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
+                        <div>
+                          <label style={{ ...SECTION_LABEL, display: 'block' }}>Display Name</label>
+                          <input value={newAgentName} onChange={e => setNewAgentName(e.target.value)} placeholder="e.g. Aira"
+                            style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' as const }} />
+                        </div>
+                        <div>
+                          <label style={{ ...SECTION_LABEL, display: 'block' }}>Email *</label>
+                          <input required type="email" value={newAgentEmail} onChange={e => setNewAgentEmail(e.target.value)} placeholder="agent@example.com"
+                            style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' as const }} />
+                        </div>
+                        <div>
+                          <label style={{ ...SECTION_LABEL, display: 'block' }}>Password *</label>
+                          <input required type="password" value={newAgentPassword} onChange={e => setNewAgentPassword(e.target.value)} placeholder="Min 8 characters"
+                            style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' as const }} />
+                        </div>
+                        {createAgentMsg && (
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#dc2626', background: '#fef2f2', padding: '10px 14px', borderRadius: 8 }}>{createAgentMsg}</p>
+                        )}
+                        <motion.button type="submit" disabled={creatingAgent} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                          style={{ background: 'var(--navy)', color: 'white', border: 'none', padding: '13px', borderRadius: 50, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', marginTop: 4 }}>
+                          {creatingAgent ? 'Creating…' : 'Create & Approve Agent'}
+                        </motion.button>
+                        <p style={{ fontSize: 12, color: 'var(--text-light)', textAlign: 'center', lineHeight: 1.6 }}>
+                          Account will be created and immediately approved — no application needed.
+                        </p>
+                      </form>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
 
               {/* ── COUPONS ─────────────────────────── */}
               {tab === 'coupons' && (

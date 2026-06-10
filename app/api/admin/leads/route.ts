@@ -91,7 +91,13 @@ export async function DELETE(request: Request) {
   const admin = getAdminSupabase()
   const { searchParams } = new URL(request.url)
   const id = searchParams.get('id')
-  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+
+  if (!id) {
+    // No id = clear all leads
+    const { error } = await admin.from('leads').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
+  }
 
   const { error } = await admin.from('leads').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
