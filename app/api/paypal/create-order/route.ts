@@ -127,7 +127,7 @@ export async function POST(request: Request) {
         brand_name: 'MAGA OFFERS',
         shipping_preference: 'NO_SHIPPING',
         user_action: 'PAY_NOW',
-        landing_page: 'BILLING',
+        landing_page: 'NO_PREFERENCE',
       },
     }),
   })
