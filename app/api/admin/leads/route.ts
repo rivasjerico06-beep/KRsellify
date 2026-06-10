@@ -8,12 +8,29 @@ export async function GET(request: Request) {
 
   const admin = getAdminSupabase()
   // Join with agent_profiles for agent display name
-  const { data, error } = await admin
+  const { data: leadsData, error } = await admin
     .from('leads')
-    .select('*, agent_profiles(display_name, referral_code)')
+    .select('*')
     .order('created_at', { ascending: false })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data ?? [])
+
+  // Enrich with agent display name from agent_profiles if agent_id is set
+  const agentIds = [...new Set((leadsData ?? []).map(l => l.agent_id).filter(Boolean))]
+  let agentMap: Record<string, string> = {}
+  if (agentIds.length > 0) {
+    const { data: profiles } = await admin
+      .from('agent_profiles')
+      .select('user_id, display_name, referral_code')
+      .in('user_id', agentIds)
+    for (const p of profiles ?? []) agentMap[p.user_id] = p.display_name
+  }
+
+  const enriched = (leadsData ?? []).map(l => ({
+    ...l,
+    agent_profiles: l.agent_id ? { display_name: agentMap[l.agent_id] ?? null } : null,
+  }))
+
+  return NextResponse.json(enriched)
 }
 
 export async function POST(request: Request) {
