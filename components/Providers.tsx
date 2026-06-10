@@ -14,7 +14,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <FlyToCartProvider>
             <PayPalScriptProvider options={{
               clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
-              merchantId: process.env.NEXT_PUBLIC_PAYPAL_MERCHANT_ID,
               currency: 'USD',
               intent: 'capture',
               'enable-funding': 'card',

@@ -172,7 +172,6 @@ export default function VipPage() {
 
               <PayPalScriptProvider options={{
                 clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
-                merchantId: process.env.NEXT_PUBLIC_PAYPAL_MERCHANT_ID,
                 vault: 'true',
                 intent: 'subscription',
               }}>
