@@ -39,12 +39,12 @@ function AgentContent() {
   const [updating, setUpdating]   = useState(false)
 
   const fetchLeads = useCallback(async () => {
-    const { data } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('agent_id', user!.id)
-      .order('created_at', { ascending: false })
-    setLeads(data ?? [])
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/agent/leads', {
+      headers: { 'Authorization': `Bearer ${session?.access_token}` },
+    })
+    const data = await res.json()
+    setLeads(Array.isArray(data) ? data : [])
     setLoading(false)
   }, [supabase, user])
 

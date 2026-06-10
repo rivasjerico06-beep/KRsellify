@@ -59,8 +59,8 @@ export async function POST(request: Request) {
   if (agent_id) {
     const { data: agent } = await admin
       .from('agent_profiles')
-      .select('id')
-      .eq('id', agent_id)
+      .select('user_id')
+      .eq('user_id', agent_id)
       .eq('status', 'approved')
       .single()
     if (!agent) {

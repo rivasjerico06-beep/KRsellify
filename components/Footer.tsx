@@ -99,7 +99,7 @@ export default function Footer() {
 
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.10)', padding: '22px 0', maxWidth: 1340, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
         <p style={{ fontSize: 14, display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.75)' }}>
-          © 2025 Maga Offers. All rights reserved. Made with{' '}
+          © 2026 Maga Offers. All rights reserved. Made with{' '}
           <i className="fa-solid fa-heart" style={{ color: 'var(--teal-light)' }} />
         </p>
         <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>

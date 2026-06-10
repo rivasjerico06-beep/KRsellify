@@ -4,6 +4,20 @@ import { requireAgent, isNextResponse } from '@/lib/require-agent'
 
 const VALID_STATUSES = ['new', 'assigned', 'attempted', 'interested', 'follow_up', 'converted', 'not_interested', 'do_not_contact']
 
+export async function GET(request: Request) {
+  const auth = await requireAgent(request)
+  if (isNextResponse(auth)) return auth
+
+  const { data, error } = await getAdminSupabase()
+    .from('leads')
+    .select('*')
+    .eq('agent_id', auth.userId)
+    .order('created_at', { ascending: false })
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data ?? [])
+}
+
 export async function PATCH(request: Request) {
   const auth = await requireAgent(request)
   if (isNextResponse(auth)) return auth

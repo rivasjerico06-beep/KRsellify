@@ -75,7 +75,7 @@ export default function VipPage() {
           <Link href="/shop" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Shop</Link>
           {user
             ? <Link href="/account" style={{ color: '#4dd9b8', fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>My Account</Link>
-            : <Link href="/auth" style={{ background: '#4dd9b8', color: '#0f2441', padding: '8px 18px', borderRadius: 50, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>Sign In</Link>
+            : <Link href="/login" style={{ background: '#4dd9b8', color: '#0f2441', padding: '8px 18px', borderRadius: 50, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>Sign In</Link>
           }
         </div>
       </div>

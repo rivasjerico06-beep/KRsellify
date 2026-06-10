@@ -214,15 +214,15 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
   const emailMissing = !email.trim()
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f0f0' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--off-white)' }}>
       {/* Breadcrumb */}
       <div style={{ maxWidth: 1160, margin: '0 auto', padding: '16px 24px' }}>
-        <span style={{ fontSize: 15, color: '#666' }}>
-          <Link href="/" style={{ color: '#0070ba', textDecoration: 'none', fontWeight: 600 }}>Home</Link>
-          <span style={{ margin: '0 8px', color: '#aaa' }}>/</span>
-          <Link href="/shop" style={{ color: '#0070ba', textDecoration: 'none', fontWeight: 600 }}>Store</Link>
-          <span style={{ margin: '0 8px', color: '#aaa' }}>/</span>
-          <span style={{ color: '#444', fontWeight: 600 }}>Shopping cart</span>
+        <span style={{ fontSize: 15, color: 'var(--text-mid)' }}>
+          <Link href="/" style={{ color: 'var(--teal)', textDecoration: 'none', fontWeight: 600 }}>Home</Link>
+          <span style={{ margin: '0 8px', color: 'var(--text-light)' }}>/</span>
+          <Link href="/shop" style={{ color: 'var(--teal)', textDecoration: 'none', fontWeight: 600 }}>Store</Link>
+          <span style={{ margin: '0 8px', color: 'var(--text-light)' }}>/</span>
+          <span style={{ color: 'var(--text-mid)', fontWeight: 600 }}>Shopping cart</span>
         </span>
       </div>
 
@@ -230,21 +230,21 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
 
         {/* ── LEFT: Cart items ── */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <h1 style={{ fontSize: 30, fontWeight: 800, color: '#111', marginBottom: 20 }}>Your Cart</h1>
+          <h1 style={{ fontSize: 30, fontWeight: 800, color: 'var(--text-dark)', marginBottom: 20 }}>Your Cart</h1>
 
           {/* Items list */}
-          <div style={{ background: 'white', borderRadius: 12, border: '1px solid #ddd', overflow: 'hidden', marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+          <div style={{ background: 'var(--white)', borderRadius: 12, border: '1px solid var(--gray)', overflow: 'hidden', marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             {cart.map((item, idx) => (
-              <div key={item.id} style={{ display: 'flex', gap: 18, padding: '22px 24px', borderBottom: idx < cart.length - 1 ? '1px solid #eee' : 'none', alignItems: 'flex-start' }}>
+              <div key={item.id} style={{ display: 'flex', gap: 18, padding: '22px 24px', borderBottom: idx < cart.length - 1 ? '1px solid var(--gray)' : 'none', alignItems: 'flex-start' }}>
 
                 {/* Image */}
-                <div style={{ position: 'relative', width: 100, height: 100, borderRadius: 10, overflow: 'hidden', flexShrink: 0, border: '1px solid #eee', background: '#fafafa' }}>
+                <div style={{ position: 'relative', width: 100, height: 100, borderRadius: 10, overflow: 'hidden', flexShrink: 0, border: '1px solid var(--gray)', background: 'var(--off-white)' }}>
                   <Image src={item.img} alt={item.name} fill style={{ objectFit: 'cover' }} />
                 </div>
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 17, color: '#111', marginBottom: 8, lineHeight: 1.4 }}>{item.name}</div>
+                  <div style={{ fontWeight: 700, fontSize: 17, color: 'var(--text-dark)', marginBottom: 8, lineHeight: 1.4 }}>{item.name}</div>
 
                   {/* Bundle dropdown */}
                   {(() => {
@@ -252,7 +252,7 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
                     if (opts.length === 0) return null
                     return (
                       <div style={{ marginBottom: 12 }}>
-                        <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#555', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-mid)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                           Bundle / Quantity
                         </label>
                         <select
@@ -261,7 +261,7 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
                             const opt = opts.find(o => o.label === e.target.value)
                             if (opt) changeBundleTier(item.id, opt.label, opt.qty, opt.bundle_total)
                           }}
-                          style={{ fontSize: 15, color: '#111', border: '2px solid #ddd', borderRadius: 8, padding: '10px 14px', background: 'white', cursor: 'pointer', width: '100%', maxWidth: 340, height: 46 }}>
+                          style={{ fontSize: 15, color: 'var(--text-dark)', border: '2px solid var(--gray)', borderRadius: 8, padding: '10px 14px', background: 'var(--white)', cursor: 'pointer', width: '100%', maxWidth: 340, height: 46 }}>
                           {!item.bundle_label && <option value="">— Choose a bundle —</option>}
                           {opts.map(opt => (
                             <option key={opt.label} value={opt.label}>{opt.label}</option>
@@ -273,18 +273,18 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
 
                   {/* Sets counter */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#555', marginRight: 12 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-mid)', marginRight: 12 }}>
                       {item.bundle_label ? 'Sets:' : 'Qty:'}
                     </span>
                     <button onClick={() => updateQty(item.id, -1)}
-                      style={{ background: '#f0f0f0', border: '2px solid #ddd', width: 48, height: 48, borderRadius: '8px 0 0 8px', cursor: 'pointer', fontSize: 22, fontWeight: 700, color: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      style={{ background: 'var(--gray)', border: '2px solid var(--gray)', width: 48, height: 48, borderRadius: '8px 0 0 8px', cursor: 'pointer', fontSize: 22, fontWeight: 700, color: 'var(--text-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       −
                     </button>
-                    <span style={{ padding: '0 20px', fontSize: 18, fontWeight: 800, color: '#111', border: '2px solid #ddd', borderLeft: 'none', borderRight: 'none', height: 48, display: 'flex', alignItems: 'center', minWidth: 60, justifyContent: 'center', background: 'white' }}>
+                    <span style={{ padding: '0 20px', fontSize: 18, fontWeight: 800, color: 'var(--text-dark)', border: '2px solid var(--gray)', borderLeft: 'none', borderRight: 'none', height: 48, display: 'flex', alignItems: 'center', minWidth: 60, justifyContent: 'center', background: 'var(--white)' }}>
                       {item.qty}
                     </span>
                     <button onClick={() => updateQty(item.id, 1)}
-                      style={{ background: '#f0f0f0', border: '2px solid #ddd', width: 48, height: 48, borderRadius: '0 8px 8px 0', cursor: 'pointer', fontSize: 22, fontWeight: 700, color: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      style={{ background: 'var(--gray)', border: '2px solid var(--gray)', width: 48, height: 48, borderRadius: '0 8px 8px 0', cursor: 'pointer', fontSize: 22, fontWeight: 700, color: 'var(--text-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       +
                     </button>
                   </div>
@@ -297,7 +297,7 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
                     aria-label="Remove item">
                     <i className="fa-solid fa-trash-can" style={{ fontSize: 12 }} /> Remove
                   </button>
-                  <span style={{ fontWeight: 800, fontSize: 20, color: '#111' }}>
+                  <span style={{ fontWeight: 800, fontSize: 20, color: 'var(--text-dark)' }}>
                     ${((item.bundle_price ?? item.price) * item.qty).toFixed(2)}
                   </span>
                   {item.bundle_label && (
@@ -312,9 +312,9 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
           </div>
 
           {/* Total row */}
-          <div style={{ background: 'white', borderRadius: 12, border: '1px solid #ddd', padding: '20px 24px', marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+          <div style={{ background: 'var(--white)', borderRadius: 12, border: '1px solid var(--gray)', padding: '20px 24px', marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <span style={{ fontSize: 20, fontWeight: 800, color: '#111', letterSpacing: '0.04em' }}>ORDER TOTAL</span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-dark)', letterSpacing: '0.04em' }}>ORDER TOTAL</span>
               <div style={{ textAlign: 'right' }}>
                 {isVip && (
                   <div style={{ fontSize: 14, color: '#d97706', fontWeight: 700, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -328,41 +328,41 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
                     Coupon −${couponDiscountAmount.toFixed(2)}
                   </div>
                 )}
-                <span style={{ fontSize: 32, fontWeight: 900, color: '#111' }}>
+                <span style={{ fontSize: 32, fontWeight: 900, color: 'var(--text-dark)' }}>
                   ${finalTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                 </span>
               </div>
             </div>
 
             {/* Per-product breakdown */}
-            <div style={{ borderTop: '1px solid #eee', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ borderTop: '1px solid var(--gray)', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
               {cart.map(item => {
                 const pcs = (item.bundle_qty ?? 1) * item.qty
                 return (
                   <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 15, color: '#333', fontWeight: 600, paddingRight: 12 }}>{item.name}</span>
+                    <span style={{ fontSize: 15, color: 'var(--text-dark)', fontWeight: 600, paddingRight: 12 }}>{item.name}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                       {item.bundle_label && (
                         <span style={{ fontSize: 15, color: '#059669', fontWeight: 800 }}>{pcs} pcs</span>
                       )}
-                      <span style={{ fontSize: 14, color: '#888', fontWeight: 600 }}>
+                      <span style={{ fontSize: 14, color: 'var(--text-light)', fontWeight: 600 }}>
                         ×{item.qty} {item.bundle_label ? 'set' : 'pc'}{item.qty > 1 ? 's' : ''}
                       </span>
                     </div>
                   </div>
                 )
               })}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '2px solid #e5e7eb', paddingTop: 12, marginTop: 4 }}>
-                <span style={{ fontSize: 16, color: '#111', fontWeight: 800 }}>Total pieces you will receive</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '2px solid var(--gray)', paddingTop: 12, marginTop: 4 }}>
+                <span style={{ fontSize: 16, color: 'var(--text-dark)', fontWeight: 800 }}>Total pieces you will receive</span>
                 <span style={{ fontSize: 18, color: '#059669', fontWeight: 900 }}>{cart.reduce((s, i) => s + (i.bundle_qty ?? 1) * i.qty, 0)} pcs</span>
               </div>
             </div>
           </div>
 
           {/* Coupon code */}
-          <div style={{ background: 'white', borderRadius: 12, border: '1px solid #ddd', padding: '20px 24px', marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-            <p style={{ fontSize: 17, fontWeight: 700, color: '#111', marginBottom: 14 }}>
-              <i className="fa-solid fa-tag" style={{ marginRight: 8, color: '#0070ba' }} />
+          <div style={{ background: 'var(--white)', borderRadius: 12, border: '1px solid var(--gray)', padding: '20px 24px', marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <p style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-dark)', marginBottom: 14 }}>
+              <i className="fa-solid fa-tag" style={{ marginRight: 8, color: 'var(--teal)' }} />
               Have a promo code?
             </p>
             <div style={{ display: 'flex', gap: 10 }}>
@@ -371,12 +371,12 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
                 onChange={e => { setCouponCode(e.target.value); setCouponDiscount(0); setCouponMsg('') }}
                 placeholder="Enter promo code…"
                 onKeyDown={e => e.key === 'Enter' && validateCoupon()}
-                style={{ flex: 1, border: '2px solid #ddd', borderRadius: 8, padding: '13px 16px', fontSize: 16, outline: 'none', color: '#111' }}
+                style={{ flex: 1, border: '2px solid var(--gray)', borderRadius: 8, padding: '13px 16px', fontSize: 16, outline: 'none', color: 'var(--text-dark)', background: 'var(--white)' }}
               />
               <button
                 onClick={validateCoupon}
                 disabled={validating || !couponCode.trim()}
-                style={{ background: '#0070ba', border: 'none', borderRadius: 8, cursor: 'pointer', color: 'white', fontSize: 15, fontWeight: 700, padding: '13px 22px', opacity: (!couponCode.trim() || validating) ? 0.5 : 1, whiteSpace: 'nowrap' }}>
+                style={{ background: 'var(--navy)', border: 'none', borderRadius: 8, cursor: 'pointer', color: 'white', fontSize: 15, fontWeight: 700, padding: '13px 22px', opacity: (!couponCode.trim() || validating) ? 0.5 : 1, whiteSpace: 'nowrap' }}>
                 {validating ? '…' : 'Apply'}
               </button>
             </div>
@@ -388,35 +388,35 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
             )}
           </div>
 
-          <p style={{ fontSize: 15, color: '#888' }}>
+          <p style={{ fontSize: 15, color: 'var(--text-light)' }}>
             Want to add more items?{' '}
-            <Link href="/shop" style={{ color: '#0070ba', fontWeight: 700, fontSize: 15 }}>Continue shopping</Link>
+            <Link href="/shop" style={{ color: 'var(--teal)', fontWeight: 700, fontSize: 15 }}>Continue shopping</Link>
           </p>
         </motion.div>
 
         {/* ── RIGHT: Checkout panel ── */}
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}
-          style={{ background: 'white', borderRadius: 12, border: '1px solid #ddd', padding: 32, boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
+          style={{ background: 'var(--white)', borderRadius: 12, border: '1px solid var(--gray)', padding: 32, boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
 
-          <h2 style={{ fontSize: 26, fontWeight: 800, color: '#111', marginBottom: 6 }}>Checkout</h2>
-          <p style={{ fontSize: 15, color: '#666', lineHeight: 1.7, marginBottom: 20 }}>
-            We'll send your order updates and shipping info to this email. No account needed.
+          <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-dark)', marginBottom: 6 }}>Checkout</h2>
+          <p style={{ fontSize: 15, color: 'var(--text-mid)', lineHeight: 1.7, marginBottom: 20 }}>
+            We&apos;ll send your order updates and shipping info to this email. No account needed.
           </p>
 
           {/* Email section */}
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#444', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--text-mid)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Email for Order Updates
           </label>
 
           {user && !editingEmail ? (
             <>
-              <div style={{ width: '100%', border: '2px solid #ddd', borderRadius: 8, padding: '15px 18px', fontSize: 16, color: '#111', background: '#fafafa', marginBottom: 10, wordBreak: 'break-all', lineHeight: 1.4 }}>
+              <div style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 8, padding: '15px 18px', fontSize: 16, color: 'var(--text-dark)', background: 'var(--off-white)', marginBottom: 10, wordBreak: 'break-all', lineHeight: 1.4 }}>
                 {email}
               </div>
               <button
                 onClick={() => setEditingEmail(true)}
-                style={{ background: 'none', border: 'none', color: '#0070ba', cursor: 'pointer', fontSize: 15, fontWeight: 700, padding: 0, marginBottom: 24, display: 'block' }}>
+                style={{ background: 'none', border: 'none', color: 'var(--teal)', cursor: 'pointer', fontSize: 15, fontWeight: 700, padding: 0, marginBottom: 24, display: 'block' }}>
                 <i className="fa-solid fa-pen" style={{ marginRight: 6, fontSize: 13 }} />Change email
               </button>
             </>
@@ -425,7 +425,7 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
               {user && (
                 <button
                   onClick={() => { setEditingEmail(false); setEmail(user.email ?? '') }}
-                  style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 14, padding: 0, marginBottom: 10, display: 'block', fontWeight: 600 }}>
+                  style={{ background: 'none', border: 'none', color: 'var(--text-light)', cursor: 'pointer', fontSize: 14, padding: 0, marginBottom: 10, display: 'block', fontWeight: 600 }}>
                   ← Cancel
                 </button>
               )}
@@ -441,7 +441,7 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
                   onChange={e => setEmail(e.target.value)}
                   placeholder="yourname@email.com"
                   required
-                  style={{ width: '100%', border: `2px solid ${emailShake ? '#ef4444' : emailMissing ? '#f59e0b' : '#ddd'}`, borderRadius: 8, padding: '15px 18px', fontSize: 16, color: '#111', background: emailShake ? '#fff5f5' : 'white', marginBottom: 24, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s, background 0.2s' }}
+                  style={{ width: '100%', border: `2px solid ${emailShake ? '#ef4444' : emailMissing ? '#f59e0b' : 'var(--gray)'}`, borderRadius: 8, padding: '15px 18px', fontSize: 16, color: 'var(--text-dark)', background: emailShake ? '#fff5f5' : 'var(--white)', marginBottom: 24, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s, background 0.2s' }}
                 />
               </motion.div>
             </>
@@ -449,12 +449,12 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
 
           {/* Payment buttons */}
           {placing ? (
-            <div style={{ textAlign: 'center', padding: '32px 0', color: '#555', fontSize: 17, fontWeight: 700 }}>
-              <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 10, color: '#0070ba', fontSize: 20 }} />
+            <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-mid)', fontSize: 17, fontWeight: 700 }}>
+              <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 10, color: 'var(--teal)', fontSize: 20 }} />
               Processing your payment…
             </div>
           ) : paypalLoading ? (
-            <div style={{ textAlign: 'center', padding: '24px 0', color: '#888', fontSize: 15 }}>
+            <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-light)', fontSize: 15 }}>
               <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 8 }} />
               Loading payment options…
             </div>
@@ -507,34 +507,34 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
           )}
 
           {/* Security note */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 18, padding: '12px 16px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 18, padding: '12px 16px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)' }}>
             <i className="fa-solid fa-lock" style={{ color: '#059669', fontSize: 16, flexShrink: 0 }} />
-            <span style={{ fontSize: 13, color: '#555', lineHeight: 1.5, fontWeight: 600 }}>
+            <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 600 }}>
               Secure checkout — all data is encrypted via SSL
             </span>
           </div>
 
           {/* Steps */}
-          <div style={{ borderTop: '1px solid #eee', marginTop: 24, paddingTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ borderTop: '1px solid var(--gray)', marginTop: 24, paddingTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#0070ba', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>1</div>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--navy)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>1</div>
               <div>
-                <p style={{ fontWeight: 700, fontSize: 16, color: '#111', marginBottom: 3 }}>Enter your email</p>
-                <p style={{ fontSize: 14, color: '#888', lineHeight: 1.6 }}>Order status updates and shipping info will be sent here.</p>
+                <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Enter your email</p>
+                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Order status updates and shipping info will be sent here.</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#0070ba', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>2</div>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--navy)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>2</div>
               <div>
-                <p style={{ fontWeight: 700, fontSize: 16, color: '#111', marginBottom: 3 }}>Choose payment</p>
-                <p style={{ fontSize: 14, color: '#888', lineHeight: 1.6 }}>Pay securely with PayPal or your debit/credit card.</p>
+                <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Choose payment</p>
+                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Pay securely with PayPal or your debit/credit card.</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#059669', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>✓</div>
               <div>
-                <p style={{ fontWeight: 700, fontSize: 16, color: '#111', marginBottom: 3 }}>Order confirmed!</p>
-                <p style={{ fontSize: 14, color: '#888', lineHeight: 1.6 }}>Order status updates will be sent to your email.</p>
+                <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Order confirmed!</p>
+                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Order status updates will be sent to your email.</p>
               </div>
             </div>
           </div>

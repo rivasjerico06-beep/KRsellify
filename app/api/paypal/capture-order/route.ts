@@ -105,6 +105,7 @@ export async function POST(request: Request) {
         .select('id, discount_pct, min_spend')
         .eq('code', coupon_code.toUpperCase().trim())
         .eq('user_id', userId)
+        .eq('is_used', false)
         .maybeSingle()
 
       if (userCoupon && Number(userCoupon.min_spend ?? 0) <= total) {

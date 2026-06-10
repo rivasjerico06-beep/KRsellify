@@ -280,8 +280,8 @@ function AccountContent() {
                 <form onSubmit={applyAsAgent} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <input style={inputStyle} placeholder="Display Name" value={applyName} onChange={e => setApplyName(e.target.value)} required />
                   <p style={{ fontSize: 12, color: 'var(--text-light)', margin: '-4px 0 0', lineHeight: 1.5 }}>
-                    <i className="fa-brands fa-google" style={{ marginRight: 5, color: '#ea4335' }} />
-                    A Gmail account is required to become an agent.
+                    <i className="fa-solid fa-circle-info" style={{ marginRight: 5, color: 'var(--teal)' }} />
+                    Requires a Gmail or @thamagaoffers.net account.
                   </p>
                   <textarea style={{ ...inputStyle, resize: 'vertical', minHeight: 80 }} placeholder="Why do you want to become an agent? (optional)" value={applyNotes} onChange={e => setApplyNotes(e.target.value)} />
                   {applyMsg && <p style={{ fontSize: 13, color: applyMsg.startsWith('✓') ? 'var(--teal-dark)' : 'var(--sale-red)', fontWeight: 600 }}>{applyMsg}</p>}

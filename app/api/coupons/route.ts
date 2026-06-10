@@ -39,13 +39,13 @@ export async function POST(request: Request) {
   const admin = getAdminSupabase()
   const { data: coupons } = await admin.from('coupons').select('*').eq('code', code.toUpperCase().trim())
 
-  // Match user-specific coupon (only for the authenticated user) or a global coupon (no user_id)
+  // User-specific coupons must not already be used; global promo codes are always valid
   const coupon = coupons?.find(c =>
-    (userId && c.user_id === userId) || !c.user_id
+    (userId && c.user_id === userId && !c.is_used) || (!c.user_id)
   )
 
   if (!coupon) {
-    return NextResponse.json({ valid: false, message: 'Invalid coupon code' })
+    return NextResponse.json({ valid: false, message: 'Invalid or already used coupon code' })
   }
   if (cart_total !== undefined && Number(coupon.min_spend) > cart_total) {
     return NextResponse.json({

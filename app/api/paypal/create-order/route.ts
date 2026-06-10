@@ -93,7 +93,10 @@ export async function POST(request: Request) {
       .select('*')
       .eq('code', coupon_code.toUpperCase().trim())
 
-    const coupon = coupons?.find(c => (userId && c.user_id === userId) || !c.user_id)
+    // User-specific coupons must not be already used; global promo codes are always valid
+    const coupon = coupons?.find(c =>
+      (userId && c.user_id === userId && !c.is_used) || (!c.user_id)
+    )
     if (coupon && Number(coupon.min_spend ?? 0) <= amount) {
       amount = amount * (1 - coupon.discount_pct / 100)
     }

@@ -43,7 +43,7 @@ export default function TrustBar({ items = DEFAULT }: { items?: SiteTrustItem[] 
 
             <div>
               <h4 style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.9)', marginBottom: 2 }}>{item.title}</h4>
-              <p style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.38)' }}>{item.sub}</p>
+              <p style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.60)' }}>{item.sub}</p>
             </div>
           </motion.div>
         ))}

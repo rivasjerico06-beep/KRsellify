@@ -54,8 +54,8 @@ export default function Newsletter({ config = DEFAULT }: { config?: SiteNewslett
         <motion.div
           animate={{ rotate: [0, 10, -10, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ fontSize: 36, marginBottom: 16, display: 'inline-block' }}>
-          📩
+          style={{ fontSize: 36, marginBottom: 16, display: 'inline-block', color: 'rgba(255,255,255,0.9)' }}>
+          <i className="fa-solid fa-envelope-open-text" />
         </motion.div>
 
         <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,4vw,42px)', color: 'white', fontWeight: 900, marginBottom: 12, lineHeight: 1.1 }}>

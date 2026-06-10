@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       display_name: display_name?.trim() || email.split('@')[0],
       status: 'approved',
       referral_code,
+      phone: '',
     })
     .select()
     .single()
