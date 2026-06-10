@@ -205,7 +205,6 @@ function ProductEditor({ id }: { id: string }) {
       price: parseFloat(price),
       old_price: oldPrice ? parseFloat(oldPrice) : null,
       img: gallery[0],
-      images: gallery,
       description: description || null,
       is_sale: isSale, is_new: isNew_,
       in_stock: inStock, rating, reviews_count: reviews,

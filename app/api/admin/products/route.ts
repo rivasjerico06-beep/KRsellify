@@ -3,9 +3,10 @@ import { getAdminSupabase } from '@/lib/supabase-admin'
 import { requireAdmin, isNextResponse } from '@/lib/require-admin'
 
 const ALLOWED_FIELDS = [
-  'name', 'description', 'price', 'compare_at_price', 'images', 'category',
+  'name', 'description', 'price', 'compare_at_price', 'img', 'category',
   'tags', 'stock', 'sku', 'weight', 'dimensions', 'is_active', 'is_featured',
   'slug', 'quantity_options', 'badge', 'sort_order',
+  'old_price', 'cat_label', 'is_sale', 'is_new', 'in_stock', 'rating', 'reviews_count',
 ]
 
 function pickAllowed(body: Record<string, unknown>) {
