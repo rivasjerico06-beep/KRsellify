@@ -101,7 +101,7 @@ export async function sendOrderConfirmation({
 
     <!-- Footer -->
     <div style="background:#f4f8f8;padding:18px 36px;text-align:center;border-top:1px solid #e8eff0">
-      <p style="font-size:11px;color:#8ba0aa;margin:0">© 2025 Maga Offers. All rights reserved.</p>
+      <p style="font-size:11px;color:#8ba0aa;margin:0">© 2026 Maga Offers. All rights reserved.</p>
     </div>
   </div>
 </body>
@@ -223,7 +223,7 @@ export async function sendOrderStatusUpdate({
     <div style="background:#f4f8f8;padding:18px 40px;border-top:1px solid #e8eff0">
       <p style="font-size:11px;color:#8ba0aa;margin:0;line-height:1.6">
         This is an automated notification from Maga Offers. Please do not reply directly to this email.<br>
-        &copy; 2025 Maga Offers. All rights reserved.
+        &copy; 2026 Maga Offers. All rights reserved.
       </p>
     </div>
 
