@@ -90,8 +90,10 @@ function AccountContent() {
 
   async function applyAsAgent(e: React.FormEvent) {
     e.preventDefault()
-    if (!user?.email?.toLowerCase().endsWith('@gmail.com')) {
-      setApplyMsg('A Gmail address (@gmail.com) is required to apply as an agent.')
+    const emailLower = user?.email?.toLowerCase() ?? ''
+    const allowed = emailLower.endsWith('@gmail.com') || emailLower.endsWith('@thamagaoffers.net')
+    if (!allowed) {
+      setApplyMsg('A Gmail (@gmail.com) or company (@thamagaoffers.net) email is required to apply as an agent.')
       return
     }
     setApplying(true)
