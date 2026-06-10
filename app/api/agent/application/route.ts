@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
   const { data, error } = await admin
     .from('agent_profiles')
-    .insert({ user_id: userId, display_name, notes })
+    .insert({ user_id: userId, display_name, notes, phone: '' })
     .select()
     .single()
 
