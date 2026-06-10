@@ -7,10 +7,10 @@ export async function POST(request: Request) {
   const auth = getBrowserSupabase()
 
   const body = await request.json()
-  const { display_name, phone, notes } = body
+  const { display_name, notes } = body
 
-  if (!display_name || !phone) {
-    return NextResponse.json({ error: 'display_name and phone are required' }, { status: 400 })
+  if (!display_name) {
+    return NextResponse.json({ error: 'display_name is required' }, { status: 400 })
   }
 
   // Identify user from Authorization header
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
   const { data, error } = await admin
     .from('agent_profiles')
-    .insert({ user_id: userId, display_name, phone, notes })
+    .insert({ user_id: userId, display_name, notes })
     .select()
     .single()
 

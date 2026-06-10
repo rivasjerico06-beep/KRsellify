@@ -38,7 +38,6 @@ function AccountContent() {
   const [saveMsg, setSaveMsg]   = useState('')
 
   const [applyName, setApplyName]   = useState('')
-  const [applyPhone, setApplyPhone] = useState('')
   const [applyNotes, setApplyNotes] = useState('')
   const [applying, setApplying]     = useState(false)
   const [applyMsg, setApplyMsg]     = useState('')
@@ -91,12 +90,16 @@ function AccountContent() {
 
   async function applyAsAgent(e: React.FormEvent) {
     e.preventDefault()
+    if (!user?.email?.toLowerCase().endsWith('@gmail.com')) {
+      setApplyMsg('A Gmail address (@gmail.com) is required to apply as an agent.')
+      return
+    }
     setApplying(true)
     const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch('/api/agent/application', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-      body: JSON.stringify({ display_name: applyName, phone: applyPhone, notes: applyNotes }),
+      body: JSON.stringify({ display_name: applyName, notes: applyNotes }),
     })
     const data = await res.json()
     setApplyMsg(res.ok ? "✓ Application submitted! We'll review it shortly." : data.error ?? 'Something went wrong.')
@@ -274,7 +277,10 @@ function AccountContent() {
                 </p>
                 <form onSubmit={applyAsAgent} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <input style={inputStyle} placeholder="Display Name" value={applyName} onChange={e => setApplyName(e.target.value)} required />
-                  <input style={inputStyle} placeholder="Phone Number" value={applyPhone} onChange={e => setApplyPhone(e.target.value)} required />
+                  <p style={{ fontSize: 12, color: 'var(--text-light)', margin: '-4px 0 0', lineHeight: 1.5 }}>
+                    <i className="fa-brands fa-google" style={{ marginRight: 5, color: '#ea4335' }} />
+                    A Gmail account is required to become an agent.
+                  </p>
                   <textarea style={{ ...inputStyle, resize: 'vertical', minHeight: 80 }} placeholder="Why do you want to become an agent? (optional)" value={applyNotes} onChange={e => setApplyNotes(e.target.value)} />
                   {applyMsg && <p style={{ fontSize: 13, color: applyMsg.startsWith('✓') ? 'var(--teal-dark)' : 'var(--sale-red)', fontWeight: 600 }}>{applyMsg}</p>}
                   <motion.button type="submit" disabled={applying} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
