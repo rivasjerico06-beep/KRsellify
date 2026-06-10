@@ -16,7 +16,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
               currency: 'USD',
               intent: 'capture',
-              'enable-funding': 'card',
             }}>
               {children}
             </PayPalScriptProvider>

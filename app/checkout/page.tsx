@@ -484,25 +484,6 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
                 onError={handlePayPalError}
                 onCancel={() => showToast('Payment cancelled.')}
               />
-              <PayPalButtons
-                fundingSource={FUNDING.CARD}
-                style={{ layout: 'vertical', shape: 'rect', height: 55 }}
-                disabled={placing}
-                forceReRender={[finalTotal, cart.length, email, isVip]}
-                onClick={(_, actions) => {
-                  if (!email.trim()) {
-                    setEmailShake(true)
-                    emailRef.current?.focus()
-                    emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                    return actions.reject()
-                  }
-                  return actions.resolve()
-                }}
-                createOrder={createPayPalOrder}
-                onApprove={async (data) => { await onPayPalApprove(data.orderID) }}
-                onError={handlePayPalError}
-                onCancel={() => showToast('Payment cancelled.')}
-              />
             </>
           )}
 
