@@ -62,12 +62,7 @@ function StripeForm({
 
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/order-success`,
-        payment_method_data: {
-          billing_details: { email },
-        },
-      },
+      confirmParams: { return_url: `${window.location.origin}/order-success` },
       redirect: 'if_required',
     })
 
@@ -142,12 +137,7 @@ function StripeForm({
         background: '#ffffff',
         marginBottom: 4,
       }}>
-        <PaymentElement
-          options={{
-            layout: 'tabs',
-            fields: { billingDetails: { email: 'never' } },
-          }}
-        />
+        <PaymentElement options={{ layout: 'tabs' }} />
       </div>
 
       <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 16, marginTop: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
