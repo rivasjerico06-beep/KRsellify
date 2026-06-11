@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { PayPalButtons, usePayPalScriptReducer, FUNDING } from '@paypal/react-paypal-js'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 import StripeCheckoutForm from '@/components/StripeCheckoutForm'
@@ -14,7 +13,6 @@ export default function CheckoutPage() {
   const { cart, cartTotal, clearCart, updateQty, removeFromCart, changeBundleTier, showToast } = useCart()
   const { user, session } = useAuth()
   const router = useRouter()
-  const [{ isPending: paypalLoading, isRejected: paypalFailed }] = usePayPalScriptReducer()
 
   const [email, setEmail] = useState('')
   const [editingEmail, setEditingEmail] = useState(false)
@@ -24,7 +22,6 @@ export default function CheckoutPage() {
   const [couponDiscount, setCouponDiscount] = useState(0)
   const [couponMsg, setCouponMsg] = useState('')
   const [validating, setValidating] = useState(false)
-  const [placing, setPlacing] = useState(false)
   const [emailShake, setEmailShake] = useState(false)
   const [stripeMode, setStripeMode] = useState(false)
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null)
@@ -67,12 +64,12 @@ export default function CheckoutPage() {
   }, [email])
 
   useEffect(() => {
-    if (cart.length === 0 && !placing) {
+    if (cart.length === 0 && !stripeMode) {
       router.push('/')
     }
-  }, [cart.length, placing, router])
+  }, [cart.length, stripeMode, router])
 
-const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
+  const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
   const afterVipTotal = cartTotal - vipDiscountAmount
   const couponDiscountAmount = couponDiscount > 0 ? afterVipTotal * (couponDiscount / 100) : 0
   const discountAmount = vipDiscountAmount + couponDiscountAmount
@@ -99,120 +96,6 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
       setCouponMsg(data.message)
     }
     setValidating(false)
-  }
-
-  async function createPayPalOrder() {
-    if (!email.trim()) throw new Error('Please enter your email address')
-    const res = await fetch('/api/paypal/create-order', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
-      },
-      body: JSON.stringify({
-        items: cart.map(i => ({ id: i.id, qty: i.qty, bundle_label: i.bundle_label })),
-        coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
-        email: email.trim(),
-      }),
-    })
-    const data = await res.json()
-    if (!data.id) throw new Error(data.error ?? 'Failed to create PayPal order')
-    return data.id as string
-  }
-
-  async function onPayPalApprove(paypalOrderId: string) {
-    setPlacing(true)
-    const res = await fetch('/api/paypal/capture-order', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
-      },
-      body: JSON.stringify({
-        paypal_order_id: paypalOrderId,
-        items: cart,
-        total: finalTotal,
-        discount_amount: discountAmount,
-        coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
-        guest_email: !user ? email.trim() : undefined,
-      }),
-    })
-
-    const order = await res.json()
-    if (!res.ok) {
-      showToast(`Payment error: ${order.error ?? 'Unknown error'}`)
-      setPlacing(false)
-      return
-    }
-
-    try {
-      localStorage.setItem('themaga_last_order', JSON.stringify({
-        id: order.id ?? '',
-        order_number: order.order_number ?? null,
-        total: finalTotal,
-        discount: discountAmount,
-        itemCount: cart.reduce((s, i) => s + i.qty, 0),
-        items: cart.map(i => ({ name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img })),
-      }))
-    } catch {}
-
-    clearCart()
-    setPlacing(false)
-    router.push('/order-success')
-  }
-
-  function handlePayPalError(err: unknown) {
-    const msg = typeof err === 'object' && err !== null && 'message' in err
-      ? (err as { message: string }).message : String(err)
-    showToast(`Payment error: ${msg || 'Please try again.'}`)
-    setPlacing(false)
-  }
-
-  async function handlePayMongoCheckout() {
-    if (!email.trim()) {
-      setEmailShake(true)
-      emailRef.current?.focus()
-      emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      return
-    }
-    setPlacing(true)
-    try {
-      const res = await fetch('/api/paymongo/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
-        },
-        body: JSON.stringify({
-          items: cart,
-          total: finalTotal,
-          discount_amount: discountAmount,
-          coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
-          guest_email: !user ? email.trim() : undefined,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok || !data.checkout_url) {
-        showToast(data.error ?? 'Failed to create payment. Please try again.')
-        setPlacing(false)
-        return
-      }
-      // Save order data for success page before leaving
-      try {
-        localStorage.setItem('themaga_last_order', JSON.stringify({
-          id: data.order_id ?? '',
-          total: finalTotal,
-          discount: discountAmount,
-          itemCount: cart.reduce((s, i) => s + i.qty, 0),
-          items: cart.map(i => ({ name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img })),
-        }))
-      } catch {}
-      clearCart()
-      window.location.href = data.checkout_url
-    } catch {
-      showToast('Network error. Please try again.')
-      setPlacing(false)
-    }
   }
 
   async function initStripePayment() {
@@ -265,7 +148,6 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
       }))
     } catch {}
     clearCart()
-    setPlacing(false)
     router.push('/order-success')
   }
 
@@ -505,7 +387,7 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
             </>
           )}
 
-          {/* Payment buttons */}
+          {/* Payment section */}
           {stripeMode ? (
             <div>
               <button
@@ -533,92 +415,41 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
                 />
               ) : null}
             </div>
-          ) : placing ? (
-            <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-mid)', fontSize: 17, fontWeight: 700 }}>
-              <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 10, color: 'var(--teal)', fontSize: 20 }} />
-              Processing your payment…
-            </div>
-          ) : paypalLoading ? (
-            <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-light)', fontSize: 15 }}>
-              <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 8 }} />
-              Loading payment options…
-            </div>
-          ) : paypalFailed ? (
-            <div style={{ textAlign: 'center', padding: '16px', color: '#dc2626', fontSize: 15, background: '#fef2f2', borderRadius: 10, fontWeight: 600 }}>
-              <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 8 }} />
-              Payment failed to load. Please refresh the page.
-            </div>
           ) : (
-            <>
-              <PayPalButtons
-                fundingSource={FUNDING.PAYPAL}
-                style={{ layout: 'vertical', shape: 'rect', height: 55 }}
-                disabled={placing}
-                forceReRender={[finalTotal, cart.length, email, isVip]}
-                onClick={(_, actions) => {
-                  if (!email.trim()) {
-                    setEmailShake(true)
-                    emailRef.current?.focus()
-                    emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                    return actions.reject()
-                  }
-                  return actions.resolve()
-                }}
-                createOrder={createPayPalOrder}
-                onApprove={async (data) => { await onPayPalApprove(data.orderID) }}
-                onError={handlePayPalError}
-                onCancel={() => showToast('Payment cancelled.')}
-              />
-              <PayPalButtons
-                fundingSource={FUNDING.CARD}
-                style={{ layout: 'vertical', shape: 'rect', height: 55 }}
-                disabled={placing}
-                forceReRender={[finalTotal, cart.length, email, isVip]}
-                onClick={(_, actions) => {
-                  if (!email.trim()) {
-                    setEmailShake(true)
-                    emailRef.current?.focus()
-                    emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                    return actions.reject()
-                  }
-                  return actions.resolve()
-                }}
-                createOrder={createPayPalOrder}
-                onApprove={async (data) => { await onPayPalApprove(data.orderID) }}
-                onError={handlePayPalError}
-                onCancel={() => showToast('Payment cancelled.')}
-              />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '14px 0' }}>
-                <div style={{ flex: 1, height: 1, background: 'var(--gray)' }} />
-                <span style={{ fontSize: 13, color: 'var(--text-light)', fontWeight: 600, whiteSpace: 'nowrap' }}>or pay directly with card</span>
-                <div style={{ flex: 1, height: 1, background: 'var(--gray)' }} />
-              </div>
-              <button
-                onClick={initStripePayment}
-                disabled={placing}
-                style={{
-                  width: '100%',
-                  background: '#635BFF',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '16px 24px',
-                  fontSize: 16,
-                  fontWeight: 700,
-                  cursor: placing ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 10,
-                  opacity: placing ? 0.5 : 1,
-                  transition: 'opacity 0.2s',
-                }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
-                  <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/>
-                </svg>
-                Pay with Card (Stripe)
-              </button>
-            </>
+            <button
+              onClick={initStripePayment}
+              disabled={stripeInitLoading}
+              style={{
+                width: '100%',
+                background: '#1c1e21',
+                color: 'white',
+                border: 'none',
+                borderRadius: 4,
+                height: 55,
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: stripeInitLoading ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 10,
+                opacity: stripeInitLoading ? 0.7 : 1,
+                transition: 'opacity 0.2s',
+                letterSpacing: '0.01em',
+              }}
+            >
+              {stripeInitLoading ? (
+                <>
+                  <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 14 }} />
+                  Loading…
+                </>
+              ) : (
+                <>
+                  <i className="fa-solid fa-credit-card" style={{ fontSize: 16 }} />
+                  Debit or Credit Card
+                </>
+              )}
+            </button>
           )}
 
           {/* Security note */}
@@ -641,8 +472,8 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--navy)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>2</div>
               <div>
-                <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Choose payment</p>
-                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Pay securely with PayPal or your debit/credit card.</p>
+                <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Enter your card details</p>
+                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Pay securely with your debit or credit card.</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>

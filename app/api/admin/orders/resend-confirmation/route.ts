@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     name = profile?.full_name ?? email?.split('@')[0]
   } else if (order.guest_email) {
     email = order.guest_email
-    name = email.split('@')[0]
+    name = (email as string).split('@')[0]
   }
 
   if (!email) return NextResponse.json({ error: 'No email on order' }, { status: 400 })

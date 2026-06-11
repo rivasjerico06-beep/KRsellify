@@ -3,10 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { useAuth } from '@/context/AuthContext'
-
-const VIP_PLAN_ID = process.env.NEXT_PUBLIC_PAYPAL_VIP_PLAN_ID!
 
 const BENEFITS = [
   { icon: 'fa-tag', title: '30% Off Every Order', desc: 'Automatically applied at checkout on every purchase, forever.' },
@@ -21,8 +18,7 @@ export default function VipPage() {
   const [emailReady, setEmailReady] = useState(false)
   const [isVip, setIsVip] = useState(false)
   const [checking, setChecking] = useState(false)
-  const [activating, setActivating] = useState(false)
-  const [success, setSuccess] = useState(false)
+  const [subscribing, setSubscribing] = useState(false)
   const [error, setError] = useState('')
 
   async function handleCheckEmail() {
@@ -43,25 +39,26 @@ export default function VipPage() {
     }
   }
 
-  async function handleSubscriptionApproved(subscriptionId: string) {
-    setActivating(true)
+  async function handleStripeSubscribe() {
+    setSubscribing(true)
     setError('')
     try {
-      const res = await fetch('/api/paypal/activate-subscription', {
+      const res = await fetch('/api/stripe/create-vip-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription_id: subscriptionId, email: email.trim().toLowerCase() }),
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
       })
-      if (res.ok) {
-        setSuccess(true)
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
       } else {
-        const d = await res.json()
-        setError(d.error ?? 'Something went wrong. Please contact support.')
+        setError(data.error ?? 'Something went wrong. Please try again.')
+        setSubscribing(false)
       }
     } catch {
       setError('Network error. Please try again.')
+      setSubscribing(false)
     }
-    setActivating(false)
   }
 
   return (
@@ -116,13 +113,13 @@ export default function VipPage() {
           style={{ background: 'white', borderRadius: 24, padding: '40px 48px', maxWidth: 480, margin: '0 auto', textAlign: 'center', boxShadow: '0 24px 80px rgba(0,0,0,0.4)' }}>
 
           {/* Already VIP */}
-          {(isVip || success) ? (
+          {isVip ? (
             <div>
               <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                 <i className="fa-solid fa-crown" style={{ fontSize: 32, color: 'white' }} />
               </div>
               <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: '#0f2441', marginBottom: 10 }}>
-                {success ? 'Welcome to VIP!' : 'You\'re already VIP!'}
+                You&apos;re already VIP!
               </h2>
               <p style={{ fontSize: 15, color: '#666', lineHeight: 1.6, marginBottom: 8 }}>
                 <strong style={{ color: '#0f2441' }}>{email}</strong>
@@ -135,14 +132,8 @@ export default function VipPage() {
               </Link>
             </div>
 
-          ) : activating ? (
-            <div style={{ padding: '32px 0', color: '#555' }}>
-              <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 24, marginBottom: 12, display: 'block', color: '#0f2441' }} />
-              <p style={{ fontWeight: 700 }}>Activating your VIP membership…</p>
-            </div>
-
           ) : emailReady ? (
-            // Email entered — show PayPal subscribe button
+            // Email confirmed — show Stripe subscribe button
             <div>
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 48, fontWeight: 900, color: '#0f2441', lineHeight: 1 }}>$20</div>
@@ -170,23 +161,40 @@ export default function VipPage() {
                 </div>
               )}
 
-              <PayPalScriptProvider options={{
-                clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
-                vault: 'true',
-                intent: 'subscription',
-              }}>
-                <PayPalButtons
-                  style={{ layout: 'vertical', shape: 'rect', height: 50 }}
-                  createSubscription={(_, actions) =>
-                    actions.subscription.create({ plan_id: VIP_PLAN_ID })
-                  }
-                  onApprove={async (data) => {
-                    if (data.subscriptionID) await handleSubscriptionApproved(data.subscriptionID)
-                  }}
-                  onError={() => setError('Payment failed. Please try again.')}
-                  onCancel={() => {}}
-                />
-              </PayPalScriptProvider>
+              <button
+                onClick={handleStripeSubscribe}
+                disabled={subscribing}
+                style={{
+                  width: '100%',
+                  background: '#1c1e21',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 4,
+                  height: 55,
+                  fontSize: 15,
+                  fontWeight: 700,
+                  cursor: subscribing ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 10,
+                  opacity: subscribing ? 0.7 : 1,
+                  transition: 'opacity 0.2s',
+                  letterSpacing: '0.01em',
+                }}
+              >
+                {subscribing ? (
+                  <>
+                    <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 14 }} />
+                    Redirecting…
+                  </>
+                ) : (
+                  <>
+                    <i className="fa-solid fa-credit-card" style={{ fontSize: 16 }} />
+                    Debit or Credit Card
+                  </>
+                )}
+              </button>
 
               <button
                 onClick={() => { setEmailReady(false); setError('') }}
@@ -196,7 +204,7 @@ export default function VipPage() {
 
               <p style={{ fontSize: 12, color: '#aaa', marginTop: 10 }}>
                 <i className="fa-solid fa-lock" style={{ marginRight: 6 }} />
-                Secured by PayPal — cancel anytime by contacting support
+                Secured by Stripe — cancel anytime by contacting support
               </p>
             </div>
 
