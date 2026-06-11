@@ -61,13 +61,15 @@ function StripeForm({
 
     let confirmResult: Awaited<ReturnType<typeof stripe.confirmPayment>>
     try {
+      console.log('[Stripe] calling confirmPayment…')
       confirmResult = await stripe.confirmPayment({
         elements,
         confirmParams: { return_url: `${window.location.origin}/order-success` },
         redirect: 'if_required',
       })
+      console.log('[Stripe] confirmPayment resolved:', confirmResult)
     } catch (err) {
-      console.error('[stripe.confirmPayment] threw:', err)
+      console.error('[Stripe] confirmPayment threw:', err)
       setStripeError('Payment could not be processed. Please try again.')
       setPlacing(false)
       return
