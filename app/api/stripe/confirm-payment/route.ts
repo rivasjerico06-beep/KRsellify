@@ -5,7 +5,11 @@ import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { CartItem } from '@/lib/types'
 import { sendOrderConfirmation } from '@/lib/email'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) throw new Error('STRIPE_SECRET_KEY is not set in environment variables')
+  return new Stripe(key)
+}
 
 const TIERS = [
   { min: 2000, tier: 'platinum', pct: 50, label: 'PLATINUM50' },
@@ -14,6 +18,7 @@ const TIERS = [
 ]
 
 export async function POST(request: Request) {
+  try {
   const token = request.headers.get('authorization')?.replace('Bearer ', '').trim()
   let userId: string | null = null
 
@@ -40,6 +45,7 @@ export async function POST(request: Request) {
   }
 
   // Verify payment with Stripe — amount comes from Stripe, never from client
+  const stripe = getStripe()
   const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent_id)
 
   if (paymentIntent.status !== 'succeeded') {
@@ -163,4 +169,9 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json(order, { status: 201 })
+  } catch (err) {
+    console.error('[stripe/confirm-payment]', err)
+    const message = err instanceof Error ? err.message : 'Stripe error'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }

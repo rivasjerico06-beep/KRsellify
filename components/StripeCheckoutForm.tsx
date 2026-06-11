@@ -93,6 +93,12 @@ function StripeForm({
         onError('Network error. Please try again.')
         setPlacing(false)
       }
+    } else if (paymentIntent) {
+      setStripeError(`Payment status: ${paymentIntent.status}. Please try again or use a different card.`)
+      setPlacing(false)
+    } else {
+      setStripeError('Payment did not complete. Please try again.')
+      setPlacing(false)
     }
   }
 
