@@ -530,8 +530,6 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
                   authToken={session?.access_token}
                   onSuccess={handleStripeSuccess}
                   onError={(msg) => showToast(`Payment error: ${msg}`)}
-                  placing={placing}
-                  setPlacing={setPlacing}
                 />
               ) : null}
             </div>

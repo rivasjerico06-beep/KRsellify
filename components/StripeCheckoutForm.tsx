@@ -23,8 +23,6 @@ interface Props {
   authToken?: string
   onSuccess: (order: Record<string, unknown>) => void
   onError: (msg: string) => void
-  placing: boolean
-  setPlacing: (v: boolean) => void
 }
 
 function StripeForm({
@@ -37,18 +35,17 @@ function StripeForm({
   authToken,
   onSuccess,
   onError,
-  placing,
-  setPlacing,
 }: Omit<Props, 'clientSecret'>) {
   const stripe = useStripe()
   const elements = useElements()
+  const [processing, setProcessing] = useState(false)
   const [stripeError, setStripeError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!stripe || !elements) return
+    if (!stripe || !elements || processing) return
 
-    setPlacing(true)
+    setProcessing(true)
     setStripeError(null)
 
     try {
@@ -59,19 +56,17 @@ function StripeForm({
       }))
     } catch {}
 
-    let confirmResult: Awaited<ReturnType<typeof stripe.confirmPayment>>
+    let confirmResult: { error?: { message?: string }; paymentIntent?: { id: string; status: string } }
     try {
-      console.log('[Stripe] calling confirmPayment…')
       confirmResult = await stripe.confirmPayment({
         elements,
         confirmParams: { return_url: `${window.location.origin}/order-success` },
         redirect: 'if_required',
       })
-      console.log('[Stripe] confirmPayment resolved:', confirmResult)
     } catch (err) {
       console.error('[Stripe] confirmPayment threw:', err)
       setStripeError('Payment could not be processed. Please try again.')
-      setPlacing(false)
+      setProcessing(false)
       return
     }
 
@@ -79,7 +74,7 @@ function StripeForm({
 
     if (error) {
       setStripeError(error.message ?? 'Payment failed. Please try again.')
-      setPlacing(false)
+      setProcessing(false)
       return
     }
 
@@ -104,20 +99,20 @@ function StripeForm({
         const order = await res.json()
         if (!res.ok) {
           onError(order.error ?? 'Failed to confirm order.')
-          setPlacing(false)
+          setProcessing(false)
           return
         }
         onSuccess(order)
       } catch {
         onError('Network error. Please try again.')
-        setPlacing(false)
+        setProcessing(false)
       }
     } else if (paymentIntent) {
       setStripeError(`Payment status: ${paymentIntent.status}. Please try again or use a different card.`)
-      setPlacing(false)
+      setProcessing(false)
     } else {
       setStripeError('Payment did not complete. Please try again.')
-      setPlacing(false)
+      setProcessing(false)
     }
   }
 
@@ -140,7 +135,7 @@ function StripeForm({
         ))}
       </div>
 
-      {/* Stripe Elements — the actual card input */}
+      {/* Stripe Elements */}
       <div style={{
         border: '2px solid #e5e7eb',
         borderRadius: 10,
@@ -178,26 +173,26 @@ function StripeForm({
 
       <button
         type="submit"
-        disabled={!stripe || !elements || placing}
+        disabled={!stripe || !elements || processing}
         style={{
           width: '100%',
-          background: (!stripe || !elements || placing) ? '#9ca3af' : '#635BFF',
+          background: (!stripe || !elements || processing) ? '#9ca3af' : '#635BFF',
           color: 'white',
           border: 'none',
           borderRadius: 8,
           padding: '16px 24px',
           fontSize: 17,
           fontWeight: 700,
-          cursor: (!stripe || !elements || placing) ? 'not-allowed' : 'pointer',
+          cursor: (!stripe || !elements || processing) ? 'not-allowed' : 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: 10,
           transition: 'background 0.2s',
-          boxShadow: (!stripe || !elements || placing) ? 'none' : '0 4px 14px rgba(99,91,255,0.35)',
+          boxShadow: (!stripe || !elements || processing) ? 'none' : '0 4px 14px rgba(99,91,255,0.35)',
         }}
       >
-        {placing ? (
+        {processing ? (
           <>
             <i className="fa-solid fa-spinner fa-spin" />
             Processing payment…
