@@ -10,13 +10,16 @@
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^9.2.0",
+    "@stripe/react-stripe-js": "^6.6.0",
+    "@stripe/stripe-js": "^9.8.0",
     "@supabase/supabase-js": "^2.45.0",
     "framer-motion": "^11.3.0",
     "next": "^16.2.6",
     "react": "^18",
     "react-dom": "^18",
     "recharts": "^3.8.1",
-    "resend": "^6.12.4"
+    "resend": "^6.12.4",
+    "stripe": "^22.2.0"
   },
   "devDependencies": {
     "@types/node": "^20",
