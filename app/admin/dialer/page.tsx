@@ -350,6 +350,10 @@ function DialerContent() {
 
   function openDialer() {
     stopPolling()
+    // Auto-copy phone number so agent can paste it immediately in HelloAirDial
+    if (currentLead?.customer_phone) {
+      navigator.clipboard.writeText(currentLead.customer_phone).catch(() => {})
+    }
     const popup = window.open(
       'https://www.helloairdial.com/',
       'helloairdial',

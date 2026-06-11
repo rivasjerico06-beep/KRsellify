@@ -84,11 +84,24 @@ function AgentContent() {
   }
 
   const [copied, setCopied] = useState(false)
+  const [phoneCopied, setPhoneCopied] = useState(false)
+
   function copyCode() {
     if (!agentProfile?.referral_code) return
     navigator.clipboard.writeText(agentProfile.referral_code)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  function openDialer(phone: string) {
+    navigator.clipboard.writeText(phone).catch(() => {})
+    setPhoneCopied(true)
+    setTimeout(() => setPhoneCopied(false), 3000)
+    window.open(
+      'https://www.helloairdial.com/',
+      'helloairdial',
+      'width=500,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
+    )
   }
 
   function formatDate(d: string | null | undefined) {
@@ -219,12 +232,32 @@ function AgentContent() {
             <motion.div key="drawer" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 32 }}
               style={{ position: 'fixed', top: 0, right: 0, width: 420, maxWidth: '100vw', height: '100%', background: 'white', zIndex: 101, display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 40px rgba(0,0,0,0.15)' }}>
-              <div style={{ padding: '24px 24px 16px', borderBottom: '1px solid var(--gray)', background: 'var(--navy)', color: 'white' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ padding: '20px 24px 20px', borderBottom: '1px solid var(--gray)', background: 'var(--navy)', color: 'white' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700 }}>{selected.customer_name}</h3>
                   <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: 18 }}><i className="fa-solid fa-xmark" /></button>
                 </div>
-                <p style={{ fontSize: 14, opacity: 0.8, marginTop: 4 }}>{selected.customer_phone}</p>
+
+                {/* Phone + call button */}
+                <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                  <div>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>Phone</p>
+                    <p style={{ fontSize: 20, fontWeight: 900, color: 'white', fontFamily: 'monospace', letterSpacing: '0.04em' }}>{selected.customer_phone}</p>
+                  </div>
+                  <button
+                    onClick={() => openDialer(selected.customer_phone)}
+                    style={{
+                      background: phoneCopied ? '#059669' : '#4dd9b8',
+                      color: phoneCopied ? 'white' : '#0f2441',
+                      border: 'none', borderRadius: 10, padding: '10px 18px',
+                      fontWeight: 800, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
+                      display: 'flex', alignItems: 'center', gap: 7,
+                      transition: 'all 0.2s', whiteSpace: 'nowrap', flexShrink: 0,
+                    }}>
+                    <i className={`fa-solid ${phoneCopied ? 'fa-check' : 'fa-phone'}`} />
+                    {phoneCopied ? 'Number copied!' : 'Call with HelloAirDial'}
+                  </button>
+                </div>
               </div>
 
               <div style={{ flex: 1, padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
