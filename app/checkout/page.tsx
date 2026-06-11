@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
-import StripeCheckoutForm from '@/components/StripeCheckoutForm'
 
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart, updateQty, removeFromCart, changeBundleTier, showToast } = useCart()
@@ -23,11 +23,9 @@ export default function CheckoutPage() {
   const [couponMsg, setCouponMsg] = useState('')
   const [validating, setValidating] = useState(false)
   const [emailShake, setEmailShake] = useState(false)
-  const [stripeMode, setStripeMode] = useState(false)
-  const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null)
-  const [stripeInitLoading, setStripeInitLoading] = useState(false)
   const [productOptions, setProductOptions] = useState<Record<string, { label: string; qty: number; bundle_total: number }[]>>({})
   const emailRef = useRef<HTMLInputElement>(null)
+  const paypalSucceeded = useRef(false)
 
   useEffect(() => {
     fetch('/api/products')
@@ -64,10 +62,10 @@ export default function CheckoutPage() {
   }, [email])
 
   useEffect(() => {
-    if (cart.length === 0 && !stripeMode) {
+    if (cart.length === 0 && !paypalSucceeded.current) {
       router.push('/')
     }
-  }, [cart.length, stripeMode, router])
+  }, [cart.length, router])
 
   const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
   const afterVipTotal = cartTotal - vipDiscountAmount
@@ -98,57 +96,15 @@ export default function CheckoutPage() {
     setValidating(false)
   }
 
-  async function initStripePayment() {
+  function requireEmail() {
     if (!email.trim()) {
       setEmailShake(true)
       emailRef.current?.focus()
       emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      return
+      setTimeout(() => setEmailShake(false), 600)
+      return false
     }
-    setStripeInitLoading(true)
-    setStripeMode(true)
-    setStripeClientSecret(null)
-    try {
-      const res = await fetch('/api/stripe/create-payment-intent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
-        },
-        body: JSON.stringify({
-          items: cart.map(i => ({ id: i.id, qty: i.qty, bundle_label: i.bundle_label })),
-          coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
-          email: email.trim(),
-        }),
-      })
-      const data = await res.json()
-      if (!data.clientSecret) {
-        showToast(data.error ?? 'Failed to initialize payment.')
-        setStripeMode(false)
-        return
-      }
-      setStripeClientSecret(data.clientSecret)
-    } catch {
-      showToast('Network error. Please try again.')
-      setStripeMode(false)
-    } finally {
-      setStripeInitLoading(false)
-    }
-  }
-
-  async function handleStripeSuccess(order: Record<string, unknown>) {
-    try {
-      localStorage.setItem('themaga_last_order', JSON.stringify({
-        id: order.id ?? '',
-        order_number: order.order_number ?? null,
-        total: finalTotal,
-        discount: discountAmount,
-        itemCount: cart.reduce((s, i) => s + i.qty, 0),
-        items: cart.map(i => ({ name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img })),
-      }))
-    } catch {}
-    clearCart()
-    router.push('/order-success')
+    return true
   }
 
   const emailMissing = !email.trim()
@@ -211,7 +167,7 @@ export default function CheckoutPage() {
                     )
                   })()}
 
-                  {/* Sets counter */}
+                  {/* Qty counter */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
                     <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-mid)', marginRight: 12 }}>
                       {item.bundle_label ? 'Sets:' : 'Qty:'}
@@ -372,7 +328,6 @@ export default function CheckoutPage() {
               <motion.div
                 animate={emailShake ? { x: [0, -8, 8, -8, 8, -4, 4, 0] } : {}}
                 transition={{ duration: 0.45 }}
-                onAnimationComplete={() => setEmailShake(false)}
               >
                 <input
                   ref={emailRef}
@@ -387,76 +342,96 @@ export default function CheckoutPage() {
             </>
           )}
 
-          {/* Payment section */}
-          {stripeMode ? (
-            <div>
-              <button
-                onClick={() => { setStripeMode(false); setStripeClientSecret(null) }}
-                style={{ background: 'none', border: 'none', color: 'var(--text-light)', cursor: 'pointer', fontSize: 14, fontWeight: 600, padding: '0 0 16px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                ← Back to payment options
-              </button>
-              {stripeInitLoading ? (
-                <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-light)', fontSize: 15 }}>
-                  <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 8 }} />
-                  Loading payment form…
-                </div>
-              ) : stripeClientSecret ? (
-                <StripeCheckoutForm
-                  clientSecret={stripeClientSecret}
-                  finalTotal={finalTotal}
-                  cart={cart}
-                  email={email.trim()}
-                  discountAmount={discountAmount}
-                  couponCode={couponCode}
-                  couponDiscount={couponDiscount}
-                  authToken={session?.access_token}
-                  onSuccess={handleStripeSuccess}
-                  onError={(msg) => showToast(`Payment error: ${msg}`)}
-                />
-              ) : null}
+          {/* PayPal payment */}
+          <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--text-mid)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Payment
+          </label>
+
+          {emailMissing ? (
+            <div style={{ textAlign: 'center', padding: '18px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)', marginBottom: 4 }}>
+              <p style={{ fontSize: 14, color: 'var(--text-light)', fontWeight: 600 }}>Enter your email above to continue</p>
             </div>
           ) : (
-            <button
-              onClick={initStripePayment}
-              disabled={stripeInitLoading}
-              style={{
-                width: '100%',
-                background: '#1c1e21',
-                color: 'white',
-                border: 'none',
-                borderRadius: 4,
-                height: 55,
-                fontSize: 15,
-                fontWeight: 700,
-                cursor: stripeInitLoading ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 10,
-                opacity: stripeInitLoading ? 0.7 : 1,
-                transition: 'opacity 0.2s',
-                letterSpacing: '0.01em',
+            <PayPalScriptProvider
+              options={{
+                clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? '',
+                currency: 'USD',
+                intent: 'capture',
               }}
             >
-              {stripeInitLoading ? (
-                <>
-                  <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 14 }} />
-                  Loading…
-                </>
-              ) : (
-                <>
-                  <i className="fa-solid fa-credit-card" style={{ fontSize: 16 }} />
-                  Debit or Credit Card
-                </>
-              )}
-            </button>
+              <PayPalButtons
+                style={{ layout: 'vertical', color: 'gold', shape: 'rect', label: 'pay', height: 55 }}
+                forceReRender={[email, couponCode, couponDiscount, finalTotal]}
+                createOrder={async () => {
+                  if (!requireEmail()) throw new Error('Email required')
+                  const res = await fetch('/api/paypal/create-order', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+                    },
+                    body: JSON.stringify({
+                      items: cart.map(i => ({ id: i.id, qty: i.qty, bundle_label: i.bundle_label })),
+                      coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
+                      email: email.trim(),
+                    }),
+                  })
+                  const data = await res.json()
+                  if (!data.id) throw new Error(data.error ?? 'Failed to create order')
+                  return data.id
+                }}
+                onApprove={async (data) => {
+                  const res = await fetch('/api/paypal/capture-order', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+                    },
+                    body: JSON.stringify({
+                      orderID: data.orderID,
+                      items: cart,
+                      coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
+                      email: email.trim(),
+                    }),
+                  })
+                  const order = await res.json()
+                  if (!res.ok) {
+                    showToast(order.error ?? 'Payment failed. Please try again.')
+                    return
+                  }
+                  try {
+                    localStorage.setItem('themaga_last_order', JSON.stringify({
+                      id: order.id ?? '',
+                      order_number: order.order_number ?? null,
+                      total: finalTotal,
+                      discount: discountAmount,
+                      itemCount: cart.reduce((s, i) => s + i.qty, 0),
+                      items: cart.map(i => ({ name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img })),
+                      guest_email: email.trim(),
+                    }))
+                    if (order.has_gift_card) {
+                      localStorage.setItem('themaga_gift_card_bonus', 'true')
+                    }
+                  } catch {}
+                  paypalSucceeded.current = true
+                  clearCart()
+                  router.push('/order-success')
+                }}
+                onError={() => {
+                  showToast('Payment error. Please try again.')
+                }}
+                onCancel={() => {
+                  showToast('Payment cancelled.')
+                }}
+              />
+            </PayPalScriptProvider>
           )}
 
           {/* Security note */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 18, padding: '12px 16px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)' }}>
             <i className="fa-solid fa-lock" style={{ color: '#059669', fontSize: 16, flexShrink: 0 }} />
             <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 600 }}>
-              Secure checkout — all data is encrypted via SSL
+              Secure checkout — PayPal buyer protection included
             </span>
           </div>
 
@@ -472,8 +447,8 @@ export default function CheckoutPage() {
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--navy)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>2</div>
               <div>
-                <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Enter your card details</p>
-                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Pay securely with your debit or credit card.</p>
+                <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Pay with PayPal</p>
+                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Log in to PayPal or pay with any debit or credit card.</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>

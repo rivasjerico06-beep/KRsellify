@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
@@ -29,7 +29,6 @@ function Confetti() {
       shape: Math.random() > 0.4 ? 'rect' : 'circle',
     }))
   )
-
   return (
     <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 99, overflow: 'hidden' }}>
       {pieces.map(p => (
@@ -52,6 +51,195 @@ interface OrderInfo {
   discount: number
   itemCount: number
   items: { name: string; price: number; qty: number; img: string }[]
+  guest_email?: string
+}
+
+function GiftCardBonusModal({ guestEmail, authToken, onClose }: { guestEmail?: string; authToken?: string; onClose: () => void }) {
+  const [chosen, setChosen] = useState<30 | 50 | null>(null)
+  const [couponCode, setCouponCode] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [countdown, setCountdown] = useState(600) // 10 minutes
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (couponCode) return
+    const t = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) { clearInterval(t); onClose(); return 0 }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(t)
+  }, [couponCode, onClose])
+
+  const mins = String(Math.floor(countdown / 60)).padStart(2, '0')
+  const secs = String(countdown % 60).padStart(2, '0')
+
+  async function pickBonus(choice: 30 | 50) {
+    setLoading(true)
+    setChosen(choice)
+    try {
+      const res = await fetch('/api/coupons/gift-bonus', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
+        body: JSON.stringify({ choice }),
+      })
+      const data = await res.json()
+      if (data.code) setCouponCode(data.code)
+    } catch {}
+    setLoading(false)
+  }
+
+  function copyCode() {
+    if (!couponCode) return
+    navigator.clipboard.writeText(couponCode).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.72)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <motion.div
+        initial={{ scale: 0.88, opacity: 0, y: 24 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+        style={{ background: 'white', borderRadius: 24, padding: '40px 36px', maxWidth: 520, width: '100%', textAlign: 'center', position: 'relative', boxShadow: '0 24px 80px rgba(0,0,0,0.4)' }}
+      >
+        {/* Close */}
+        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#94a3b8', lineHeight: 1 }}>
+          <i className="fa-solid fa-xmark" />
+        </button>
+
+        {!couponCode ? (
+          <>
+            {/* Gift icon */}
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(245,158,11,0.4)' }}>
+              <i className="fa-solid fa-gift" style={{ color: 'white', fontSize: 30 }} />
+            </div>
+
+            <div style={{ display: 'inline-block', background: '#fef3c7', border: '1.5px solid #fbbf24', borderRadius: 50, padding: '4px 14px', fontSize: 12, fontWeight: 800, color: '#92400e', letterSpacing: '0.06em', marginBottom: 16 }}>
+              LIMITED TIME OFFER
+            </div>
+
+            <h2 style={{ fontSize: 24, fontWeight: 900, color: '#0f172a', marginBottom: 8, lineHeight: 1.3 }}>
+              Thank You! Pick Your Bonus Discount
+            </h2>
+            <p style={{ fontSize: 15, color: '#64748b', lineHeight: 1.6, marginBottom: 8 }}>
+              As a gift card purchaser, choose ONE bonus coupon for your next order.
+            </p>
+
+            {/* Countdown */}
+            <p style={{ fontSize: 13, color: '#ef4444', fontWeight: 700, marginBottom: 28 }}>
+              <i className="fa-solid fa-clock" style={{ marginRight: 5 }} />
+              Expires in {mins}:{secs}
+            </p>
+
+            {/* Choice cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 8 }}>
+              {/* 30% option */}
+              <motion.button
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => pickBonus(30)}
+                disabled={loading}
+                style={{ border: '2.5px solid #e2e8f0', borderRadius: 16, padding: '24px 16px', cursor: loading ? 'not-allowed' : 'pointer', background: 'white', transition: 'border-color 0.2s', textAlign: 'center' }}
+              >
+                <div style={{ fontSize: 36, fontWeight: 900, color: '#0f172a', lineHeight: 1 }}>30%</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#059669', marginBottom: 8 }}>OFF</div>
+                <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>Works on any order. Flexible savings!</div>
+              </motion.button>
+
+              {/* 50% option */}
+              <motion.button
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => pickBonus(50)}
+                disabled={loading}
+                style={{ border: '2.5px solid #ef4444', borderRadius: 16, padding: '24px 16px', cursor: loading ? 'not-allowed' : 'pointer', background: '#fff5f5', transition: 'border-color 0.2s', textAlign: 'center', position: 'relative', overflow: 'hidden' }}
+              >
+                <div style={{ position: 'absolute', top: 8, right: 8, background: '#ef4444', color: 'white', borderRadius: 50, fontSize: 9, fontWeight: 900, padding: '3px 7px', letterSpacing: '0.04em' }}>BEST DEAL</div>
+                <div style={{ fontSize: 36, fontWeight: 900, color: '#0f172a', lineHeight: 1 }}>50%</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#ef4444', marginBottom: 8 }}>OFF</div>
+                <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>Maximum savings on your next big order!</div>
+              </motion.button>
+            </div>
+
+            {loading && (
+              <p style={{ fontSize: 14, color: '#64748b', marginTop: 16 }}>
+                <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 6 }} />
+                Generating your coupon…
+              </p>
+            )}
+
+            <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 16 }}>
+              One-time use. Applies to your entire next order.
+            </p>
+
+            {/* THEMAGA10 reminder */}
+            <div style={{ marginTop: 20, padding: '12px 16px', background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 10 }}>
+              <p style={{ fontSize: 12, color: '#15803d', fontWeight: 700 }}>
+                <i className="fa-solid fa-circle-check" style={{ marginRight: 5 }} />
+                Your THEMAGA10 coupon (10% off) is also activated and was sent to your email!
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Success state */}
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg, var(--teal), #059669)', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(88,148,143,0.4)' }}>
+              <i className="fa-solid fa-check" style={{ color: 'white', fontSize: 30 }} />
+            </div>
+
+            <h2 style={{ fontSize: 24, fontWeight: 900, color: '#0f172a', marginBottom: 6 }}>
+              Your {chosen}% Off Coupon
+            </h2>
+            <p style={{ fontSize: 14, color: '#64748b', marginBottom: 24 }}>
+              Use this code at checkout on your next order.
+            </p>
+
+            {/* Coupon code display */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#f8fafc', border: '2.5px dashed #cbd5e1', borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
+              <span style={{ fontFamily: 'monospace', fontSize: 22, fontWeight: 900, color: '#0f172a', flex: 1, letterSpacing: '0.08em' }}>
+                {couponCode}
+              </span>
+              <motion.button
+                whileTap={{ scale: 0.92 }}
+                onClick={copyCode}
+                style={{ background: copied ? '#059669' : 'var(--navy)', border: 'none', borderRadius: 8, color: 'white', fontSize: 13, fontWeight: 700, padding: '10px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', flexShrink: 0 }}
+              >
+                <i className={`fa-solid ${copied ? 'fa-circle-check' : 'fa-copy'}`} />
+                {copied ? 'Copied!' : 'Copy'}
+              </motion.button>
+            </div>
+
+            <p style={{ fontSize: 13, color: '#64748b', marginBottom: 24, lineHeight: 1.6 }}>
+              {chosen}% off your entire next order. Single-use, no minimum spend, no expiry.
+            </p>
+
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={onClose}
+              style={{ width: '100%', background: 'var(--navy)', border: 'none', borderRadius: 50, color: 'white', fontSize: 15, fontWeight: 700, padding: '14px', cursor: 'pointer' }}
+            >
+              <i className="fa-solid fa-store" style={{ marginRight: 8 }} />
+              Continue Shopping
+            </motion.button>
+          </>
+        )}
+      </motion.div>
+    </motion.div>
+  )
 }
 
 export default function OrderSuccessPage() {
@@ -59,75 +247,35 @@ export default function OrderSuccessPage() {
   const [order, setOrder] = useState<OrderInfo | null>(null)
   const [showConfetti, setShowConfetti] = useState(true)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [authToken, setAuthToken] = useState<string | undefined>(undefined)
+  const [showBonusModal, setShowBonusModal] = useState(false)
   const redirectRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    async function init() {
-      // Handle Stripe 3DS redirect return
-      const params = new URLSearchParams(window.location.search)
-      const paymentIntentId = params.get('payment_intent')
-      const redirectStatus = params.get('redirect_status')
-
-      if (paymentIntentId && redirectStatus === 'succeeded') {
-        try {
-          const pendingRaw = localStorage.getItem('themaga_pending_stripe')
-          localStorage.removeItem('themaga_pending_stripe')
-          if (pendingRaw) {
-            const pending = JSON.parse(pendingRaw)
-            const res = await fetch('/api/stripe/confirm-payment', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                ...(pending.authToken ? { Authorization: `Bearer ${pending.authToken}` } : {}),
-              },
-              body: JSON.stringify({
-                payment_intent_id: paymentIntentId,
-                items: pending.cart,
-                total: pending.finalTotal,
-                discount_amount: pending.discountAmount,
-                coupon_code: pending.couponCode || undefined,
-                guest_email: pending.email,
-              }),
-            })
-            const orderData = await res.json()
-            if (res.ok) {
-              setOrder({
-                id: orderData.id ?? '',
-                order_number: orderData.order_number ?? null,
-                total: pending.finalTotal,
-                discount: pending.discountAmount,
-                itemCount: pending.cart.reduce((s: number, i: { qty: number }) => s + i.qty, 0),
-                items: pending.cart.map((i: { name: string; bundle_price?: number; price: number; qty: number; img: string }) => ({
-                  name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img,
-                })),
-              })
-              return
-            }
-          }
-        } catch {}
+    // Load order from localStorage
+    try {
+      const raw = localStorage.getItem('themaga_last_order')
+      if (raw) {
+        setOrder(JSON.parse(raw))
+        localStorage.removeItem('themaga_last_order')
       }
+    } catch {}
 
-      // Standard path — load from localStorage (set directly after payment)
-      try {
-        const raw = localStorage.getItem('themaga_last_order')
-        if (raw) {
-          setOrder(JSON.parse(raw))
-          localStorage.removeItem('themaga_last_order')
-        }
-      } catch {}
+    // Check for gift card bonus flag
+    const hasGiftCardBonus = localStorage.getItem('themaga_gift_card_bonus')
+    if (hasGiftCardBonus) {
+      localStorage.removeItem('themaga_gift_card_bonus')
+      // Delay modal slightly so order success screen loads first
+      setTimeout(() => setShowBonusModal(true), 2000)
     }
 
-    init()
-
-    // Check if user is logged in to show appropriate CTAs
+    // Auth session
     getBrowserSupabase().auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session)
+      setAuthToken(session?.access_token)
     })
 
-    // Stop confetti after 4 s
     const t = setTimeout(() => setShowConfetti(false), 4000)
-
-    // Auto-redirect to home after 30 s if user doesn't click
     redirectRef.current = setTimeout(() => router.push('/'), 30000)
 
     return () => { clearTimeout(t); if (redirectRef.current) clearTimeout(redirectRef.current) }
@@ -142,6 +290,17 @@ export default function OrderSuccessPage() {
       onClick={cancelRedirect}>
 
       <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
+
+      {/* Gift card bonus modal */}
+      <AnimatePresence>
+        {showBonusModal && (
+          <GiftCardBonusModal
+            guestEmail={order?.guest_email}
+            authToken={authToken}
+            onClose={() => setShowBonusModal(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* logo */}
       <Link href="/" style={{ marginBottom: 32, display: 'block' }}>
