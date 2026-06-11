@@ -50,8 +50,7 @@ export async function POST(request: Request) {
     }
 
     const admin = getAdminSupabase()
-    const suffix = Math.random().toString(36).slice(2, 7).toUpperCase()
-    const code = choice === 30 ? `BONUS30-${suffix}` : `BONUS50-${suffix}`
+    const code = choice === 30 ? 'THEMAGA30' : 'THEMAGA50'
 
     await admin.from('coupons').insert({
       code,
