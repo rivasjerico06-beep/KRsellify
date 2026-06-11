@@ -62,14 +62,62 @@ export default function OrderSuccessPage() {
   const redirectRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    // Load from localStorage (set by Cart on successful checkout)
-    try {
-      const raw = localStorage.getItem('themaga_last_order')
-      if (raw) {
-        setOrder(JSON.parse(raw))
-        localStorage.removeItem('themaga_last_order')
+    async function init() {
+      // Handle Stripe 3DS redirect return
+      const params = new URLSearchParams(window.location.search)
+      const paymentIntentId = params.get('payment_intent')
+      const redirectStatus = params.get('redirect_status')
+
+      if (paymentIntentId && redirectStatus === 'succeeded') {
+        try {
+          const pendingRaw = localStorage.getItem('themaga_pending_stripe')
+          localStorage.removeItem('themaga_pending_stripe')
+          if (pendingRaw) {
+            const pending = JSON.parse(pendingRaw)
+            const res = await fetch('/api/stripe/confirm-payment', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(pending.authToken ? { Authorization: `Bearer ${pending.authToken}` } : {}),
+              },
+              body: JSON.stringify({
+                payment_intent_id: paymentIntentId,
+                items: pending.cart,
+                total: pending.finalTotal,
+                discount_amount: pending.discountAmount,
+                coupon_code: pending.couponCode || undefined,
+                guest_email: pending.email,
+              }),
+            })
+            const orderData = await res.json()
+            if (res.ok) {
+              setOrder({
+                id: orderData.id ?? '',
+                order_number: orderData.order_number ?? null,
+                total: pending.finalTotal,
+                discount: pending.discountAmount,
+                itemCount: pending.cart.reduce((s: number, i: { qty: number }) => s + i.qty, 0),
+                items: pending.cart.map((i: { name: string; bundle_price?: number; price: number; qty: number; img: string }) => ({
+                  name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img,
+                })),
+              })
+              return
+            }
+          }
+        } catch {}
       }
-    } catch {}
+
+      // Standard path — load from localStorage (set directly after payment)
+      try {
+        const raw = localStorage.getItem('themaga_last_order')
+        if (raw) {
+          setOrder(JSON.parse(raw))
+          localStorage.removeItem('themaga_last_order')
+        }
+      } catch {}
+    }
+
+    init()
 
     // Check if user is logged in to show appropriate CTAs
     getBrowserSupabase().auth.getSession().then(({ data: { session } }) => {

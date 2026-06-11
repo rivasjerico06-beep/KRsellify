@@ -51,10 +51,22 @@ function StripeForm({
     setPlacing(true)
     setStripeError(null)
 
+    // Save pending data before redirect — needed for 3DS authentication flow
+    try {
+      localStorage.setItem('themaga_pending_stripe', JSON.stringify({
+        cart, finalTotal, discountAmount,
+        couponCode: couponDiscount > 0 ? couponCode : '',
+        email, authToken: authToken ?? null,
+      }))
+    } catch {}
+
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/order-success`,
+        payment_method_data: {
+          billing_details: { email },
+        },
       },
       redirect: 'if_required',
     })
@@ -66,6 +78,7 @@ function StripeForm({
     }
 
     if (paymentIntent?.status === 'succeeded') {
+      try { localStorage.removeItem('themaga_pending_stripe') } catch {}
       try {
         const res = await fetch('/api/stripe/confirm-payment', {
           method: 'POST',
