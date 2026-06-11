@@ -506,12 +506,7 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
           )}
 
           {/* Payment buttons */}
-          {placing ? (
-            <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-mid)', fontSize: 17, fontWeight: 700 }}>
-              <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 10, color: 'var(--teal)', fontSize: 20 }} />
-              Processing your payment…
-            </div>
-          ) : stripeMode ? (
+          {stripeMode ? (
             <div>
               <button
                 onClick={() => { setStripeMode(false); setStripeClientSecret(null) }}
@@ -539,6 +534,11 @@ const vipDiscountAmount = isVip ? cartTotal * 0.3 : 0
                   setPlacing={setPlacing}
                 />
               ) : null}
+            </div>
+          ) : placing ? (
+            <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-mid)', fontSize: 17, fontWeight: 700 }}>
+              <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 10, color: 'var(--teal)', fontSize: 20 }} />
+              Processing your payment…
             </div>
           ) : paypalLoading ? (
             <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-light)', fontSize: 15 }}>
