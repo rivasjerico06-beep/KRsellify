@@ -103,6 +103,8 @@ export interface Lead {
   status: 'new' | 'assigned' | 'attempted' | 'interested' | 'follow_up' | 'converted' | 'not_interested' | 'do_not_contact'
   notes?: string | null
   follow_up_date?: string | null
+  claimed_by?: string | null
+  claimed_at?: string | null
   created_at?: string
   updated_at?: string
 }

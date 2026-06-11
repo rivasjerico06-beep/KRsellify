@@ -120,6 +120,9 @@ function AgentContent() {
         </a>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>{profile?.full_name ?? user?.email}</span>
+          <a href="/agent/dialer" style={{ background: 'var(--teal)', color: 'var(--navy)', padding: '6px 16px', borderRadius: 50, fontSize: 12, fontWeight: 800, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <i className="fa-solid fa-phone" />Dialer
+          </a>
           <a href="/account" style={{ color: 'var(--teal-light)', fontSize: 13, fontWeight: 600 }}>Account</a>
           <button onClick={signOut} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '6px 14px', borderRadius: 50, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Sign Out</button>
         </div>
