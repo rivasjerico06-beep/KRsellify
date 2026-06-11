@@ -104,30 +104,68 @@ function StripeForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      <PaymentElement options={{ layout: 'tabs' }} />
+      {/* Card brand icons */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Accepted cards</span>
+        {['VISA', 'MC', 'AMEX', 'DISC'].map(brand => (
+          <span key={brand} style={{
+            fontSize: 11,
+            fontWeight: 800,
+            color: '#374151',
+            background: '#f3f4f6',
+            border: '1.5px solid #e5e7eb',
+            borderRadius: 5,
+            padding: '3px 7px',
+            letterSpacing: '0.02em',
+          }}>{brand}</span>
+        ))}
+      </div>
+
+      {/* Stripe Elements — the actual card input */}
+      <div style={{
+        border: '2px solid #e5e7eb',
+        borderRadius: 10,
+        padding: '18px 16px',
+        background: '#ffffff',
+        marginBottom: 4,
+      }}>
+        <PaymentElement
+          options={{
+            layout: 'tabs',
+            fields: { billingDetails: { email: 'never' } },
+          }}
+        />
+      </div>
+
+      <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 16, marginTop: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#9ca3af"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        Your card info is encrypted and never stored on our servers.
+      </p>
+
       {stripeError && (
         <div style={{
           color: '#dc2626',
           fontSize: 14,
           fontWeight: 600,
-          marginTop: 12,
-          padding: '10px 14px',
+          marginBottom: 14,
+          padding: '12px 14px',
           background: '#fef2f2',
           borderRadius: 8,
-          border: '1px solid #fca5a5',
+          border: '1.5px solid #fca5a5',
           display: 'flex',
           alignItems: 'flex-start',
           gap: 8,
+          lineHeight: 1.5,
         }}>
           <i className="fa-solid fa-circle-xmark" style={{ marginTop: 2, flexShrink: 0 }} />
           {stripeError}
         </div>
       )}
+
       <button
         type="submit"
         disabled={!stripe || !elements || placing}
         style={{
-          marginTop: 16,
           width: '100%',
           background: (!stripe || !elements || placing) ? '#9ca3af' : '#635BFF',
           color: 'white',
@@ -142,17 +180,29 @@ function StripeForm({
           justifyContent: 'center',
           gap: 10,
           transition: 'background 0.2s',
+          boxShadow: (!stripe || !elements || placing) ? 'none' : '0 4px 14px rgba(99,91,255,0.35)',
         }}
       >
         {placing ? (
           <>
             <i className="fa-solid fa-spinner fa-spin" />
-            Processing…
+            Processing payment…
           </>
         ) : (
-          `Pay $${finalTotal.toFixed(2)}`
+          <>
+            <i className="fa-solid fa-lock" style={{ fontSize: 15 }} />
+            Pay ${finalTotal.toFixed(2)} securely
+          </>
         )}
       </button>
+
+      {/* Powered by Stripe */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 14 }}>
+        <span style={{ fontSize: 12, color: '#9ca3af' }}>Powered by</span>
+        <svg width="40" height="16" viewBox="0 0 60 25" fill="#9ca3af">
+          <path d="M59.64 14.28h-8.06v-1.44c0-.69.56-1.01 1.38-1.01.82 0 1.97.25 2.93.78V8.5c-.97-.39-1.94-.54-2.93-.54-2.4 0-4 1.27-4 3.38v.94h-1.62v4.01h1.62V25h4.62v-8.71h2.7l.36-1.01zm-15.08 0v-.94c0-.69.56-1.01 1.38-1.01.82 0 1.97.25 2.93.78V8.5c-.97-.39-1.94-.54-2.93-.54-2.4 0-4 1.27-4 3.38v.94h-1.62v4.01h1.62V25h4.62v-8.71h2.7l.36-1.01h-3.06zm-5.99 0H34.5V8.28h-4.62v5.99h-1.62v4.01h1.62V25h4.62v-6.72h4.07v-4.01zm-13.14 0h-4.62V6.38L16.2 7.8v6.48h-1.62v4.01h1.62V24c0 .83.67 1 1.67 1h3.56v-3.72h-1.62v-2.99h1.62v-4.01zm-9.25 5.6c0 2.44-1.66 3.99-4.1 3.99-1.14 0-2.04-.26-2.66-.67V25h-4.62V8.28h4.62v.56c.62-.41 1.52-.67 2.66-.67 2.44 0 4.1 1.55 4.1 3.99v7.72zm-4.62-6.76c-.52 0-.95.18-1.24.48v5.84c.29.3.72.48 1.24.48.88 0 1.38-.57 1.38-1.44v-3.92c0-.87-.5-1.44-1.38-1.44z"/>
+        </svg>
+      </div>
     </form>
   )
 }
@@ -165,12 +215,45 @@ export default function StripeCheckoutForm(props: Props) {
       options={{
         clientSecret,
         appearance: {
-          theme: 'stripe',
+          theme: 'flat',
           variables: {
-            colorPrimary: '#0f172a',
+            colorPrimary: '#635BFF',
             colorBackground: '#ffffff',
-            borderRadius: '8px',
+            colorText: '#1f2937',
+            colorTextPlaceholder: '#9ca3af',
+            colorDanger: '#dc2626',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
             fontSizeBase: '15px',
+            borderRadius: '8px',
+            spacingUnit: '4px',
+          },
+          rules: {
+            '.Input': {
+              border: '2px solid #e5e7eb',
+              padding: '12px 14px',
+              fontSize: '15px',
+              color: '#1f2937',
+            },
+            '.Input:focus': {
+              border: '2px solid #635BFF',
+              boxShadow: '0 0 0 3px rgba(99,91,255,0.15)',
+            },
+            '.Label': {
+              fontSize: '13px',
+              fontWeight: '700',
+              color: '#6b7280',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              marginBottom: '6px',
+            },
+            '.Tab': {
+              border: '2px solid #e5e7eb',
+              borderRadius: '8px',
+            },
+            '.Tab--selected': {
+              border: '2px solid #635BFF',
+              color: '#635BFF',
+            },
           },
         },
       }}
