@@ -63,8 +63,11 @@ export async function POST(request: Request) {
       }
 
       case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice
-        const subId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const invoice = event.data.object as any
+        const subId: string | null = typeof invoice.subscription === 'string'
+          ? invoice.subscription
+          : (invoice.subscription?.id ?? invoice.parent?.subscription_details?.subscription ?? null)
         if (subId) {
           await admin
             .from('vip_subscriptions')
@@ -76,10 +79,12 @@ export async function POST(request: Request) {
       }
 
       case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice
-        // Only reactivate on subscription renewal cycles (not the initial payment)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const invoice = event.data.object as any
         if (invoice.billing_reason === 'subscription_cycle') {
-          const subId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id
+          const subId: string | null = typeof invoice.subscription === 'string'
+            ? invoice.subscription
+            : (invoice.subscription?.id ?? invoice.parent?.subscription_details?.subscription ?? null)
           if (subId) {
             await admin
               .from('vip_subscriptions')
