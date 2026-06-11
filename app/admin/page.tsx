@@ -21,7 +21,7 @@ export default function AdminPage() {
   )
 }
 
-type Tab = 'overview' | 'products' | 'orders' | 'customers' | 'agents' | 'sales' | 'agent-performance' | 'landing' | 'leads' | 'coupons'
+type Tab = 'overview' | 'products' | 'orders' | 'customers' | 'agents' | 'sales' | 'agent-performance' | 'landing' | 'leads' | 'coupons' | 'settings'
 
 const TIER_STYLE: Record<string, { bg: string; text: string }> = {
   bronze:   { bg: '#fef3c7', text: '#92400e' },
@@ -76,6 +76,9 @@ function AdminContent() {
   const [msg, setMsg]                 = useState('')
   const [realtimeAlert, setRealtimeAlert] = useState('')
   const alertTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [vipPrice, setVipPrice]       = useState<number>(20)
+  const [vipPriceInput, setVipPriceInput] = useState<string>('20')
+  const [savingVipPrice, setSavingVipPrice] = useState(false)
 
   // New lead form
   const [showNewLead, setShowNewLead]       = useState(false)
@@ -156,6 +159,13 @@ function AdminContent() {
         if (row.key in merged) (merged as unknown as Record<string, unknown>)[row.key] = row.value
       }
       setSiteConfig(merged)
+    } else if (t === 'settings') {
+      const r = await fetch('/api/admin/site-config', { headers: authHeaders() })
+      const rows: { key: string; value: unknown }[] = await r.json()
+      const priceRow = rows.find(r => r.key === 'vip_price')
+      const price = typeof priceRow?.value === 'number' ? priceRow.value : 20
+      setVipPrice(price)
+      setVipPriceInput(String(price))
     } else {
       const [p, o, c, a, an] = await Promise.all([
         fetch('/api/admin/products',  { headers: authHeaders() }).then(r => r.json()),
@@ -306,6 +316,7 @@ function AdminContent() {
     { id: 'leads',             icon: 'fa-phone',        label: 'Leads' },
     { id: 'coupons',           icon: 'fa-tag',          label: 'Coupons' },
     { id: 'landing',           icon: 'fa-paintbrush',   label: 'Landing Page' },
+    { id: 'settings',          icon: 'fa-gear',         label: 'Settings' },
   ]
 
   const pendingAgents      = agents.filter(a => a.status === 'pending').length
@@ -1086,6 +1097,59 @@ function AdminContent() {
               {/* ── LANDING PAGE EDITOR ──────────────── */}
               {tab === 'landing' && (
                 <LandingEditor initialConfig={siteConfig} />
+              )}
+
+              {/* ── SETTINGS ──────────────────────────── */}
+              {tab === 'settings' && (
+                <div style={{ maxWidth: 560 }}>
+                  <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--heading)', marginBottom: 24 }}>Settings</h2>
+
+                  {/* VIP Price */}
+                  <div style={{ background: 'var(--white)', borderRadius: 14, border: '1px solid var(--gray)', padding: '28px 32px', marginBottom: 20 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                      <i className="fa-solid fa-crown" style={{ color: '#f59e0b', fontSize: 18 }} />
+                      <h3 style={{ fontSize: 17, fontWeight: 800, color: 'var(--heading)', margin: 0 }}>VIP Membership Price</h3>
+                    </div>
+                    <p style={{ fontSize: 14, color: 'var(--text-light)', marginBottom: 20, lineHeight: 1.6 }}>
+                      Monthly subscription price charged to VIP members. Currently <strong style={{ color: 'var(--text-dark)' }}>${vipPrice}/month</strong>.
+                    </p>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 16, fontWeight: 700, color: 'var(--text-mid)' }}>$</span>
+                        <input
+                          type="number"
+                          min="1"
+                          max="999"
+                          value={vipPriceInput}
+                          onChange={e => setVipPriceInput(e.target.value)}
+                          style={{ width: 120, border: '2px solid var(--gray)', borderRadius: 8, padding: '12px 14px 12px 28px', fontSize: 16, fontWeight: 700, color: 'var(--text-dark)', outline: 'none', background: 'var(--white)' }}
+                        />
+                      </div>
+                      <span style={{ fontSize: 14, color: 'var(--text-light)', fontWeight: 600 }}>/month</span>
+                      <button
+                        onClick={async () => {
+                          const parsed = parseFloat(vipPriceInput)
+                          if (isNaN(parsed) || parsed <= 0) { flash('Enter a valid price'); return }
+                          setSavingVipPrice(true)
+                          const r = await fetch('/api/admin/site-config', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json', ...authHeaders() },
+                            body: JSON.stringify({ key: 'vip_price', value: parsed }),
+                          })
+                          setSavingVipPrice(false)
+                          if (r.ok) { setVipPrice(parsed); flash(`VIP price updated to $${parsed}/month`) }
+                          else flash('Failed to save price')
+                        }}
+                        disabled={savingVipPrice}
+                        style={{ background: 'var(--navy)', color: 'white', border: 'none', borderRadius: 8, padding: '12px 22px', fontSize: 14, fontWeight: 700, cursor: savingVipPrice ? 'not-allowed' : 'pointer', opacity: savingVipPrice ? 0.6 : 1, fontFamily: 'inherit' }}>
+                        {savingVipPrice ? 'Saving…' : 'Save'}
+                      </button>
+                    </div>
+                    <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 12 }}>
+                      This price takes effect immediately for all new subscriptions.
+                    </p>
+                  </div>
+                </div>
               )}
 
             </motion.div>

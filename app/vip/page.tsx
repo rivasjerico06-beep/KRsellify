@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
@@ -20,6 +20,14 @@ export default function VipPage() {
   const [checking, setChecking] = useState(false)
   const [subscribing, setSubscribing] = useState(false)
   const [error, setError] = useState('')
+  const [vipPrice, setVipPrice] = useState(20)
+
+  useEffect(() => {
+    fetch('/api/vip/price')
+      .then(r => r.json())
+      .then(d => { if (typeof d.price === 'number') setVipPrice(d.price) })
+      .catch(() => {})
+  }, [])
 
   async function handleCheckEmail() {
     const trimmed = email.trim().toLowerCase()
@@ -90,7 +98,7 @@ export default function VipPage() {
             Unlock VIP Access
           </h1>
           <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.65)', maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>
-            Join the inner circle. Get 30% off every purchase, exclusive products, and early access — all for $20/month.
+            Join the inner circle. Get 30% off every purchase, exclusive products, and early access — all for ${vipPrice}/month.
           </p>
         </motion.div>
 
@@ -136,7 +144,7 @@ export default function VipPage() {
             // Email confirmed — show Stripe subscribe button
             <div>
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 48, fontWeight: 900, color: '#0f2441', lineHeight: 1 }}>$20</div>
+                <div style={{ fontSize: 48, fontWeight: 900, color: '#0f2441', lineHeight: 1 }}>${vipPrice}</div>
                 <div style={{ fontSize: 16, color: '#888', fontWeight: 600 }}>/month — cancel anytime</div>
               </div>
 
@@ -212,7 +220,7 @@ export default function VipPage() {
             // Email input step
             <div>
               <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 48, fontWeight: 900, color: '#0f2441', lineHeight: 1 }}>$20</div>
+                <div style={{ fontSize: 48, fontWeight: 900, color: '#0f2441', lineHeight: 1 }}>${vipPrice}</div>
                 <div style={{ fontSize: 16, color: '#888', fontWeight: 600 }}>/month — cancel anytime</div>
               </div>
 

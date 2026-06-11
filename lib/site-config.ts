@@ -42,6 +42,7 @@ export interface SiteConfig {
   banner: SiteBanner
   trust_bar: SiteTrustItem[]
   newsletter: SiteNewsletter
+  vip_price: number
 }
 
 export const DEFAULT_CONFIG: SiteConfig = {
@@ -103,6 +104,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
     heading: 'Stay in the Loop',
     subheading: 'Get notified about new arrivals, exclusive deals, and limited-edition drops straight to your inbox.',
   },
+  vip_price: 20,
 }
 
 export async function getSiteConfig(): Promise<SiteConfig> {
