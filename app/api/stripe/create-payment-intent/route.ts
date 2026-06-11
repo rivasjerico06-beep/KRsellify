@@ -3,7 +3,11 @@ import Stripe from 'stripe'
 import { getAdminSupabase } from '@/lib/supabase-admin'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) throw new Error('STRIPE_SECRET_KEY is not set in environment variables')
+  return new Stripe(key)
+}
 
 interface OrderItem {
   id: string
@@ -12,6 +16,7 @@ interface OrderItem {
 }
 
 export async function POST(request: Request) {
+  try {
   const body = await request.json()
   const { items, coupon_code, email: checkoutEmail }: { items: OrderItem[]; coupon_code?: string; email?: string } = body
 
@@ -84,6 +89,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid order total' }, { status: 400 })
   }
 
+  const stripe = getStripe()
   const paymentIntent = await stripe.paymentIntents.create({
     amount: Math.round(amount * 100),
     currency: 'usd',
@@ -95,4 +101,9 @@ export async function POST(request: Request) {
   })
 
   return NextResponse.json({ clientSecret: paymentIntent.client_secret })
+  } catch (err) {
+    console.error('[stripe/create-payment-intent]', err)
+    const message = err instanceof Error ? err.message : 'Stripe error'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }
