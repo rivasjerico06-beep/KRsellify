@@ -51,7 +51,6 @@ function StripeForm({
     setPlacing(true)
     setStripeError(null)
 
-    // Save pending data before redirect — needed for 3DS authentication flow
     try {
       localStorage.setItem('themaga_pending_stripe', JSON.stringify({
         cart, finalTotal, discountAmount,
@@ -60,11 +59,21 @@ function StripeForm({
       }))
     } catch {}
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      confirmParams: { return_url: `${window.location.origin}/order-success` },
-      redirect: 'if_required',
-    })
+    let confirmResult: Awaited<ReturnType<typeof stripe.confirmPayment>>
+    try {
+      confirmResult = await stripe.confirmPayment({
+        elements,
+        confirmParams: { return_url: `${window.location.origin}/order-success` },
+        redirect: 'if_required',
+      })
+    } catch (err) {
+      console.error('[stripe.confirmPayment] threw:', err)
+      setStripeError('Payment could not be processed. Please try again.')
+      setPlacing(false)
+      return
+    }
+
+    const { error, paymentIntent } = confirmResult
 
     if (error) {
       setStripeError(error.message ?? 'Payment failed. Please try again.')
