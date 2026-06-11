@@ -22,4 +22,8 @@ yarn-error.log*
 *.pem
 .vercel
 
+# Data files
+*.xlsx
+*.csv
+
 .vercel
