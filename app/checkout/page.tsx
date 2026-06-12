@@ -357,6 +357,7 @@ export default function CheckoutPage() {
                 clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? '',
                 currency: 'USD',
                 intent: 'capture',
+                disableFunding: 'card,credit,venmo',
               }}
             >
               <PayPalButtons
@@ -435,7 +436,7 @@ export default function CheckoutPage() {
                 Secure checkout — PayPal buyer protection included
               </span>
               <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5, display: 'block', marginTop: 2 }}>
-                Tip: Log in to your PayPal account for the smoothest checkout. Paying as a guest may be declined by some banks.
+                Log in to your PayPal account to complete payment. Don&apos;t have one? Create a free account at paypal.com — it only takes a minute.
               </span>
             </div>
           </div>
@@ -453,7 +454,7 @@ export default function CheckoutPage() {
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--navy)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>2</div>
               <div>
                 <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Pay with PayPal</p>
-                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Log in to your PayPal account for the best experience. Card payments are supported but may require bank approval.</p>
+                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Log in to your PayPal account to complete your purchase securely.</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
