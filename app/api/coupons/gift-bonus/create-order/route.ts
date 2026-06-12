@@ -40,6 +40,7 @@ export async function POST(request: Request) {
         purchase_units: [{
           amount: { currency_code: 'USD', value: amount },
           description: `Maga Offers ${choice}% Discount Coupon`,
+          payee: { merchant_id: process.env.PAYPAL_MERCHANT_ID },
         }],
         application_context: {
           brand_name: 'Maga Offers',
