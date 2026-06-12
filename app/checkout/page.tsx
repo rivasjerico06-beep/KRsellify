@@ -357,7 +357,6 @@ export default function CheckoutPage() {
                 clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? '',
                 currency: 'USD',
                 intent: 'capture',
-                disableFunding: 'card,credit,venmo',
               }}
             >
               <PayPalButtons

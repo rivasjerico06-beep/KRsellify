@@ -123,7 +123,7 @@ function GiftCardBonusModal({ authToken, onClose }: { authToken?: string; onClos
         </button>
 
         {!couponCode ? (
-          <PayPalScriptProvider options={{ clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? '', currency: 'USD', intent: 'capture', disableFunding: 'card,credit,venmo' }}>
+          <PayPalScriptProvider options={{ clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? '', currency: 'USD', intent: 'capture' }}>
             {/* Header */}
             <div style={{ width: 68, height: 68, borderRadius: '50%', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', margin: '0 auto 18px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(245,158,11,0.35)' }}>
               <i className="fa-solid fa-bolt" style={{ color: 'white', fontSize: 28 }} />
