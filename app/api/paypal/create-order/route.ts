@@ -112,6 +112,7 @@ export async function POST(request: Request) {
         }],
         application_context: {
           brand_name: 'Maga Offers',
+          landing_page: 'LOGIN',
           user_action: 'PAY_NOW',
           shipping_preference: 'NO_SHIPPING',
         },

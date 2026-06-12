@@ -428,11 +428,16 @@ export default function CheckoutPage() {
           )}
 
           {/* Security note */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 18, padding: '12px 16px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)' }}>
-            <i className="fa-solid fa-lock" style={{ color: '#059669', fontSize: 16, flexShrink: 0 }} />
-            <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 600 }}>
-              Secure checkout — PayPal buyer protection included
-            </span>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginTop: 18, padding: '12px 16px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)' }}>
+            <i className="fa-solid fa-lock" style={{ color: '#059669', fontSize: 16, flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 700, display: 'block' }}>
+                Secure checkout — PayPal buyer protection included
+              </span>
+              <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5, display: 'block', marginTop: 2 }}>
+                Tip: Log in to your PayPal account for the smoothest checkout. Paying as a guest may be declined by some banks.
+              </span>
+            </div>
           </div>
 
           {/* Steps */}
@@ -448,7 +453,7 @@ export default function CheckoutPage() {
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--navy)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>2</div>
               <div>
                 <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Pay with PayPal</p>
-                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Log in to PayPal or pay with any debit or credit card.</p>
+                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Log in to your PayPal account for the best experience. Card payments are supported but may require bank approval.</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
