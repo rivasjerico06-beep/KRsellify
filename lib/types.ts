@@ -107,6 +107,17 @@ export interface Lead {
   claimed_at?: string | null
   created_at?: string
   updated_at?: string
+  lineitem_price?: number | null
+  billing_address?: string | null
+  billing_city?: string | null
+  billing_zip?: string | null
+  billing_province?: string | null
+  billing_country?: string | null
+  tagging?: string | null
+  assigned_agent_name?: string | null
+  disposition?: string | null
+  call_count?: number
+  last_called_at?: string | null
 }
 
 export interface Coupon {

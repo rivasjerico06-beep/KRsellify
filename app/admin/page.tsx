@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
@@ -19,7 +18,7 @@ export default function AdminPage() {
       <AdminContent />
     </AuthGuard>
   )
-}
+} 
 
 type Tab = 'overview' | 'products' | 'orders' | 'customers' | 'agents' | 'sales' | 'agent-performance' | 'landing' | 'leads' | 'coupons' | 'settings'
 
@@ -58,6 +57,258 @@ function StatCard({ label, value, icon, color, delay = 0 }: { label: string; val
         <i className={`fa-solid ${icon}`} style={{ fontSize: 22, color, opacity: 0.6 }} />
       </div>
     </motion.div>
+  )
+}
+
+// ── Dialer (merged into Leads tab) ──
+
+const DIALER_STATUSES = ['new', 'assigned', 'attempted', 'follow_up', 'interested']
+
+const DISPOSITIONS = [
+  { value: 'interested',     label: 'Interested',            icon: 'fa-star',                 color: '#059669', bg: '#d1fae5' },
+  { value: 'follow_up',      label: 'Follow Up / Call Back', icon: 'fa-calendar-plus',        color: '#0369a1', bg: '#e0f2fe' },
+  { value: 'voicemail',      label: 'Left Voicemail',        icon: 'fa-voicemail',            color: '#7c3aed', bg: '#ede9fe' },
+  { value: 'no_answer',      label: 'No Answer',             icon: 'fa-phone-slash',          color: '#d97706', bg: '#fef3c7' },
+  { value: 'hung_up',        label: 'Hung Up',                icon: 'fa-phone-xmark',          color: '#ea580c', bg: '#ffedd5' },
+  { value: 'not_interested', label: 'Not Interested',        icon: 'fa-thumbs-down',          color: '#64748b', bg: '#f1f5f9' },
+  { value: 'wrong_number',   label: 'Wrong Number',          icon: 'fa-triangle-exclamation', color: '#b45309', bg: '#fef9c3' },
+  { value: 'converted',      label: 'Converted / Ordered',   icon: 'fa-circle-check',         color: '#065f46', bg: '#a7f3d0' },
+  { value: 'do_not_call',    label: 'Do Not Call',           icon: 'fa-ban',                  color: '#991b1b', bg: '#fee2e2' },
+]
+
+function DispositionModal({
+  lead, agentName, onSubmit, onClose, submitting,
+}: {
+  lead: Lead
+  agentName: string
+  onSubmit: (disposition: string, notes: string) => void
+  onClose: () => void
+  submitting: boolean
+}) {
+  const [selected, setSelected] = useState('')
+  const [notes, setNotes] = useState('')
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 1000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
+    }} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <motion.div
+        initial={{ scale: 0.92, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.92, opacity: 0, y: 20 }}
+        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          background: 'white', borderRadius: 20, padding: '32px 28px',
+          width: '100%', maxWidth: 520, boxShadow: '0 24px 60px rgba(0,0,0,0.25)',
+        }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--heading)' }}>
+            <i className="fa-solid fa-clipboard-list" style={{ marginRight: 8, color: 'var(--teal)' }} />
+            Log Call Outcome
+          </h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 18, padding: 4 }}>
+            <i className="fa-solid fa-xmark" />
+          </button>
+        </div>
+        <p style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 22 }}>
+          {lead.customer_name} — {lead.customer_phone}
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
+          {DISPOSITIONS.map(d => (
+            <button key={d.value} onClick={() => setSelected(d.value)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
+                fontWeight: 700, fontSize: 13, fontFamily: 'inherit', transition: 'all 0.15s',
+                border: selected === d.value ? `2px solid ${d.color}` : '2px solid transparent',
+                background: selected === d.value ? d.bg : '#f8fafc',
+                color: selected === d.value ? d.color : '#475569',
+              }}>
+              <i className={`fa-solid ${d.icon}`} style={{ fontSize: 13, color: selected === d.value ? d.color : '#94a3b8' }} />
+              {d.label}
+            </button>
+          ))}
+        </div>
+        <textarea
+          placeholder="Notes (optional)..."
+          value={notes} onChange={e => setNotes(e.target.value)} rows={3}
+          style={{
+            width: '100%', padding: '12px 14px', borderRadius: 10, fontSize: 14,
+            border: '2px solid var(--gray)', outline: 'none', resize: 'vertical',
+            background: 'var(--off-white)', color: 'var(--text-dark)', fontFamily: 'inherit',
+            marginBottom: 18, boxSizing: 'border-box',
+          }} />
+        <button
+          disabled={!selected || submitting}
+          onClick={() => selected && onSubmit(selected, notes)}
+          style={{
+            width: '100%', padding: '14px', borderRadius: 50, border: 'none',
+            background: selected ? 'var(--navy)' : '#e2e8f0',
+            color: selected ? 'white' : '#94a3b8',
+            fontWeight: 700, fontSize: 15, cursor: selected ? 'pointer' : 'default',
+            fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}>
+          {submitting
+            ? <><i className="fa-solid fa-spinner fa-spin" /> Saving…</>
+            : <><i className="fa-solid fa-arrow-right" /> Submit & Next Lead</>}
+        </button>
+      </motion.div>
+    </div>
+  )
+}
+
+function ImportModal({
+  authHeaders, onClose, onImported,
+}: {
+  authHeaders: HeadersInit
+  onClose: () => void
+  onImported: (count: number) => void
+}) {
+  const [file, setFile] = useState<File | null>(null)
+  const [preview, setPreview] = useState<{ rows: number; delimiter: string } | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [dragging, setDragging] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  function detectDelimiter(text: string) {
+    const firstLine = text.split('\n')[0] ?? ''
+    return firstLine.includes('\t') ? '\t' : ','
+  }
+
+  function handleFileChange(selected: File | null) {
+    if (!selected) return
+    setFile(selected)
+    setError('')
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const text = e.target?.result as string
+      const delimiter = detectDelimiter(text)
+      const rows = text.trim().split('\n').filter(l => l.trim()).length - 1
+      setPreview({ rows: Math.max(0, rows), delimiter })
+    }
+    reader.readAsText(selected)
+  }
+
+  async function handleImport() {
+    if (!file) return
+    setLoading(true)
+    setError('')
+    try {
+      const text = await file.text()
+      const delimiter = detectDelimiter(text)
+      const res = await fetch('/api/admin/leads/import', {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({ content: text, delimiter }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Import failed')
+      onImported(data.imported)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Import failed')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 1000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
+    }} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <motion.div
+        initial={{ scale: 0.92, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.92, opacity: 0, y: 20 }}
+        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          background: 'white', borderRadius: 20, padding: '32px 28px',
+          width: '100%', maxWidth: 520, boxShadow: '0 24px 60px rgba(0,0,0,0.25)',
+        }}>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--heading)' }}>
+            <i className="fa-solid fa-file-import" style={{ marginRight: 8, color: 'var(--teal)' }} />
+            Import Leads
+          </h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 18, padding: 4 }}>
+            <i className="fa-solid fa-xmark" />
+          </button>
+        </div>
+
+        <p style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 20, lineHeight: 1.6 }}>
+          Upload a <strong>.csv</strong> or <strong>.tsv</strong> file exported from your spreadsheet. The first row must be the header row.
+        </p>
+
+        <div
+          onDragOver={e => { e.preventDefault(); setDragging(true) }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={e => {
+            e.preventDefault()
+            setDragging(false)
+            handleFileChange(e.dataTransfer.files[0] ?? null)
+          }}
+          onClick={() => inputRef.current?.click()}
+          style={{
+            border: `2px dashed ${dragging ? 'var(--teal)' : file ? '#059669' : 'var(--gray)'}`,
+            borderRadius: 14, padding: '32px 20px', textAlign: 'center', cursor: 'pointer',
+            background: dragging ? '#f0fdf4' : file ? '#f0fdf4' : 'var(--off-white)',
+            transition: 'all 0.2s', marginBottom: 16,
+          }}>
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".csv,.tsv,.txt"
+            style={{ display: 'none' }}
+            onChange={e => handleFileChange(e.target.files?.[0] ?? null)}
+          />
+          {file ? (
+            <>
+              <i className="fa-solid fa-file-csv" style={{ fontSize: 36, color: '#059669', marginBottom: 10, display: 'block' }} />
+              <p style={{ fontWeight: 700, fontSize: 15, color: '#065f46', marginBottom: 4 }}>{file.name}</p>
+              {preview && (
+                <p style={{ fontSize: 13, color: '#059669' }}>
+                  {preview.rows} lead{preview.rows !== 1 ? 's' : ''} detected · {preview.delimiter === '\t' ? 'Tab' : 'Comma'}-separated
+                </p>
+              )}
+              <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 8 }}>Click to choose a different file</p>
+            </>
+          ) : (
+            <>
+              <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: 36, color: '#94a3b8', marginBottom: 10, display: 'block' }} />
+              <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--heading)', marginBottom: 4 }}>
+                Drop your file here or click to browse
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--text-mid)' }}>Supports .csv and .tsv files</p>
+            </>
+          )}
+        </div>
+
+        {error && (
+          <div style={{ marginBottom: 14, padding: '10px 14px', background: '#fff0f0', border: '1.5px solid #fca5a5', borderRadius: 10, fontSize: 13, color: '#b91c1c', fontWeight: 600 }}>
+            <i className="fa-solid fa-circle-exclamation" style={{ marginRight: 6 }} />{error}
+          </div>
+        )}
+
+        <button
+          disabled={!file || loading}
+          onClick={handleImport}
+          style={{
+            width: '100%', padding: '14px', borderRadius: 50, border: 'none',
+            background: file ? 'var(--navy)' : '#e2e8f0',
+            color: file ? 'white' : '#94a3b8',
+            fontWeight: 700, fontSize: 15, cursor: file ? 'pointer' : 'default',
+            fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}>
+          {loading
+            ? <><i className="fa-solid fa-spinner fa-spin" /> Importing…</>
+            : <><i className="fa-solid fa-upload" /> Import {preview && preview.rows > 0 ? `${preview.rows} Leads` : 'Leads'}</>
+          }
+        </button>
+      </motion.div>
+    </div>
   )
 }
 
@@ -107,6 +358,20 @@ function AdminContent() {
 
   // Clear all leads
   const [clearingLeads, setClearingLeads] = useState(false)
+
+  // Dialer (merged into Leads tab)
+  const [dialerIdx, setDialerIdx]             = useState(0)
+  const [dialerAgentName, setDialerAgentName] = useState(() =>
+    typeof window !== 'undefined' ? localStorage.getItem('dialer_agent_name') ?? '' : ''
+  )
+  const [showImportLeads, setShowImportLeads] = useState(false)
+  const [dialerCopied, setDialerCopied]       = useState(false)
+  const [dialerCallStatus, setDialerCallStatus] = useState<'idle' | 'calling' | 'ended'>('idle')
+  const [dialerPopupBlocked, setDialerPopupBlocked] = useState(false)
+  const [showDialerDisposition, setShowDialerDisposition] = useState(false)
+  const [dialerSubmitting, setDialerSubmitting] = useState(false)
+  const dialerWindowRef = useRef<Window | null>(null)
+  const dialerPollRef   = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Create agent
   const [showCreateAgent, setShowCreateAgent]     = useState(false)
@@ -185,6 +450,11 @@ function AdminContent() {
 
   useEffect(() => { load(tab) }, [tab, load])
 
+  // Stop dialer popup-close polling on lead change or unmount
+  useEffect(() => {
+    return () => stopDialerPolling()
+  }, [dialerIdx])
+
   // Supabase Realtime: live order alerts
   useEffect(() => {
     const supabase = getBrowserSupabase()
@@ -260,8 +530,90 @@ function AdminContent() {
     await fetch('/api/admin/leads', { method: 'DELETE', headers: authHeaders() })
     setLeads([])
     setSelectedLead(null)
+    setDialerIdx(0)
     setClearingLeads(false)
     flash('✓ All leads cleared')
+  }
+
+  function handleDialerAgentNameChange(name: string) {
+    setDialerAgentName(name)
+    localStorage.setItem('dialer_agent_name', name)
+  }
+
+  function stopDialerPolling() {
+    if (dialerPollRef.current) { clearInterval(dialerPollRef.current); dialerPollRef.current = null }
+  }
+
+  function handleCopyDialerPhone(phone: string) {
+    navigator.clipboard.writeText(phone).catch(() => {})
+    setDialerCopied(true)
+    setTimeout(() => setDialerCopied(false), 1800)
+  }
+
+  function openDialerPopup(phone: string) {
+    stopDialerPolling()
+    navigator.clipboard.writeText(phone).catch(() => {})
+    const popup = window.open(
+      'https://www.helloairdial.com/',
+      'helloairdial',
+      'width=500,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
+    )
+    if (!popup || popup.closed) {
+      setDialerPopupBlocked(true)
+      setDialerCallStatus('calling')
+      return
+    }
+    setDialerPopupBlocked(false)
+    dialerWindowRef.current = popup
+    setDialerCallStatus('calling')
+    dialerPollRef.current = setInterval(() => {
+      if (dialerWindowRef.current?.closed) {
+        stopDialerPolling()
+        setDialerCallStatus('ended')
+        setShowDialerDisposition(true)
+      }
+    }, 1000)
+  }
+
+  async function handleDialerDisposition(disposition: string, notes: string) {
+    const lead = dialerQueue[dialerIdx]
+    if (!lead) return
+    setDialerSubmitting(true)
+    try {
+      await fetch('/api/admin/dialer/disposition', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          lead_id: lead.id,
+          disposition,
+          agent_name: dialerAgentName || null,
+          notes: notes || null,
+        }),
+      })
+      setShowDialerDisposition(false)
+      setDialerCallStatus('idle')
+      setDialerPopupBlocked(false)
+      setDialerIdx(i => i + 1)
+      flash('✓ Call logged')
+      load('leads', true)
+    } finally {
+      setDialerSubmitting(false)
+    }
+  }
+
+  const dialerQueue = leads
+    .filter(l => DIALER_STATUSES.includes(l.status))
+    .slice()
+    .sort((a, b) => new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime())
+  const currentDialerLead = dialerQueue[dialerIdx] ?? null
+
+  function skipDialerLead() {
+    setDialerIdx(i => i + 1)
+  }
+
+  function refreshDialerQueue() {
+    setDialerIdx(0)
+    load('leads', true)
   }
 
   async function createAgent(e: React.FormEvent) {
@@ -369,12 +721,6 @@ function AdminContent() {
             )}
           </button>
         ))}
-        <Link href="/admin/dialer"
-          style={{ color: 'rgba(255,255,255,0.6)', background: 'transparent', borderBottom: '3px solid transparent', padding: '13px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none', transition: 'color 0.2s' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'white')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}>
-          <i className="fa-solid fa-phone-volume" style={{ fontSize: 12 }} /> Dialer
-        </Link>
       </div>
 
       {/* Realtime new-order alert */}
@@ -831,6 +1177,10 @@ function AdminContent() {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 10 }}>
                     <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--heading)' }}>Lead Management</h2>
                     <div style={{ display: 'flex', gap: 10 }}>
+                      <motion.button onClick={() => setShowImportLeads(true)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                        style={{ background: 'var(--gray)', color: 'var(--text-mid)', border: 'none', padding: '11px 18px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <i className="fa-solid fa-file-import" /> Import
+                      </motion.button>
                       <motion.button onClick={clearAllLeads} disabled={clearingLeads || leads.length === 0} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                         style={{ background: '#fee2e2', color: '#dc2626', border: '1.5px solid #fca5a5', padding: '11px 18px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: leads.length === 0 ? 'default' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8, opacity: leads.length === 0 ? 0.5 : 1 }}>
                         <i className="fa-solid fa-trash" /> {clearingLeads ? 'Clearing…' : 'Clear All'}
@@ -840,6 +1190,122 @@ function AdminContent() {
                         <i className="fa-solid fa-plus" /> New Lead
                       </motion.button>
                     </div>
+                  </div>
+
+                  {/* ── Call Queue (merged dialer) ── */}
+                  <div style={{ marginBottom: 28 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+                      <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--heading)' }}>
+                        <i className="fa-solid fa-phone" style={{ marginRight: 8, color: 'var(--teal)' }} />
+                        Call Queue
+                      </h3>
+                      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <input
+                          value={dialerAgentName}
+                          onChange={e => handleDialerAgentNameChange(e.target.value)}
+                          placeholder="Your name (caller)"
+                          style={{ border: '2px solid var(--gray)', borderRadius: 50, padding: '7px 14px', fontSize: 12, fontFamily: 'inherit', outline: 'none', width: 160 }}
+                        />
+                        <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>
+                          Lead {dialerQueue.length > 0 ? Math.min(dialerIdx + 1, dialerQueue.length) : 0} of {dialerQueue.length}
+                        </span>
+                        <button onClick={refreshDialerQueue} style={{ background: 'var(--gray)', border: 'none', color: 'var(--text-mid)', padding: '7px 14px', borderRadius: 50, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+                          <i className="fa-solid fa-rotate" style={{ marginRight: 5 }} />Refresh
+                        </button>
+                      </div>
+                    </div>
+
+                    {!currentDialerLead ? (
+                      <div style={{ background: 'var(--white)', borderRadius: 16, padding: '32px 28px', textAlign: 'center', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
+                        <i className="fa-solid fa-phone-slash" style={{ fontSize: 32, color: '#cbd5e1', marginBottom: 10, display: 'block' }} />
+                        <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--heading)', marginBottom: 4 }}>No leads left to call</p>
+                        <p style={{ fontSize: 13, color: 'var(--text-mid)' }}>Import more leads or refresh the queue.</p>
+                      </div>
+                    ) : (
+                      <motion.div key={currentDialerLead.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                        style={{ background: 'var(--navy)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 30px rgba(9,52,89,0.12)' }}>
+                        <div style={{ padding: '24px 28px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
+                            <div>
+                              <p style={{ fontSize: 22, fontWeight: 900, color: 'white', marginBottom: 4 }}>{currentDialerLead.customer_name || '(No name)'}</p>
+                              <p style={{ fontSize: 19, fontWeight: 700, color: 'var(--teal-light)', fontFamily: 'monospace', letterSpacing: '0.06em' }}>
+                                {currentDialerLead.customer_phone}
+                              </p>
+                              {currentDialerLead.product_interest && (
+                                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', marginTop: 8 }}>
+                                  <i className="fa-solid fa-tag" style={{ marginRight: 6 }} />{currentDialerLead.product_interest}
+                                  {currentDialerLead.lineitem_price != null && (
+                                    <span style={{ marginLeft: 8, color: '#86efac', fontWeight: 700 }}>${Number(currentDialerLead.lineitem_price).toFixed(2)}</span>
+                                  )}
+                                </p>
+                              )}
+                              {currentDialerLead.call_count != null && currentDialerLead.call_count > 0 && (
+                                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 6 }}>
+                                  Called {currentDialerLead.call_count}× · Last: {currentDialerLead.disposition?.replace(/_/g, ' ') ?? '—'}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {dialerPopupBlocked && (
+                            <div style={{ padding: '10px 14px', background: '#fff7ed', border: '1.5px solid #fed7aa', borderRadius: 10, fontSize: 13, color: '#9a3412', marginBottom: 14 }}>
+                              <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }} />
+                              Popup blocked.{' '}
+                              <a href="https://www.helloairdial.com/" target="_blank" rel="noreferrer" style={{ color: '#9a3412', fontWeight: 700 }}>
+                                Open HelloAirDial manually
+                              </a>
+                            </div>
+                          )}
+
+                          <div style={{ display: 'flex', gap: 10 }}>
+                            {dialerCallStatus === 'idle' ? (
+                              <>
+                                <button
+                                  onClick={() => handleCopyDialerPhone(currentDialerLead.customer_phone)}
+                                  style={{
+                                    background: dialerCopied ? '#059669' : 'rgba(255,255,255,0.12)', color: 'white', border: 'none',
+                                    padding: '13px 18px', borderRadius: 50, fontWeight: 700, fontSize: 14,
+                                    cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6,
+                                  }}>
+                                  <i className={`fa-solid ${dialerCopied ? 'fa-check' : 'fa-copy'}`} />
+                                  {dialerCopied ? 'Copied!' : 'Copy'}
+                                </button>
+                                <button
+                                  onClick={() => openDialerPopup(currentDialerLead.customer_phone)}
+                                  style={{
+                                    flex: 1, background: '#4dd9b8', color: 'var(--navy)', border: 'none',
+                                    padding: '13px 24px', borderRadius: 50, fontWeight: 800, fontSize: 15,
+                                    cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                  }}>
+                                  <i className="fa-solid fa-phone" /> Start Call
+                                </button>
+                                <button
+                                  onClick={skipDialerLead}
+                                  title="Skip this lead"
+                                  style={{
+                                    background: 'rgba(255,255,255,0.12)', color: 'white', border: 'none',
+                                    padding: '13px 18px', borderRadius: 50, fontWeight: 700, fontSize: 14,
+                                    cursor: 'pointer', fontFamily: 'inherit',
+                                  }}>
+                                  <i className="fa-solid fa-forward" />
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                onClick={() => { stopDialerPolling(); setDialerCallStatus('ended'); setShowDialerDisposition(true) }}
+                                style={{
+                                  flex: 1, background: '#4dd9b8', color: 'var(--navy)', border: 'none',
+                                  padding: '13px 24px', borderRadius: 50, fontWeight: 800, fontSize: 15,
+                                  cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                }}>
+                                <i className="fa-solid fa-clipboard-list" />
+                                {dialerCallStatus === 'ended' ? 'Log Disposition' : 'Done Calling — Log Outcome'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 16, marginBottom: 24 }}>
@@ -946,6 +1412,34 @@ function AdminContent() {
                           </form>
                         </motion.div>
                       </>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Import leads modal */}
+                  <AnimatePresence>
+                    {showImportLeads && (
+                      <ImportModal
+                        authHeaders={authHeaders()}
+                        onClose={() => setShowImportLeads(false)}
+                        onImported={(count) => {
+                          setShowImportLeads(false)
+                          flash(`✓ ${count} leads imported`)
+                          load('leads', true)
+                        }}
+                      />
+                    )}
+                  </AnimatePresence>
+
+                  {/* Dialer disposition modal */}
+                  <AnimatePresence>
+                    {showDialerDisposition && currentDialerLead && (
+                      <DispositionModal
+                        lead={currentDialerLead}
+                        agentName={dialerAgentName}
+                        onSubmit={handleDialerDisposition}
+                        onClose={() => setShowDialerDisposition(false)}
+                        submitting={dialerSubmitting}
+                      />
                     )}
                   </AnimatePresence>
                 </div>
@@ -1331,7 +1825,7 @@ function AdminContent() {
                         Clear
                       </button>
                     )}
-                  </div>
+                  </div> 
                 </div>
 
                 {/* Meta */}
