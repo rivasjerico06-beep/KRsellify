@@ -140,6 +140,7 @@ function AgentContent() {
   // ── Call-pool / dialer state ──
   const [poolQueue, setPoolQueue] = useState<PoolLead[]>([])
   const [poolLoading, setPoolLoading] = useState(true)
+  const [poolPhoneCopied, setPoolPhoneCopied] = useState(false)
   const [claiming, setClaiming] = useState(false)
   const [claimedLead, setClaimedLead] = useState<PoolLead | null>(null)
   const [showDisposition, setShowDisposition] = useState(false)
@@ -218,6 +219,12 @@ function AgentContent() {
 
   function skipPoolLead() {
     setPoolQueue(prev => prev.slice(1))
+  }
+
+  function copyPoolPhone(phone: string) {
+    navigator.clipboard.writeText(phone).catch(() => {})
+    setPoolPhoneCopied(true)
+    setTimeout(() => setPoolPhoneCopied(false), 1800)
   }
 
   async function handleClaimAndCall() {
@@ -438,9 +445,21 @@ function AgentContent() {
                   </span>
                 </div>
                 <p style={{ fontSize: 24, fontWeight: 900, color: 'white', marginBottom: 4 }}>{claimedLead!.customer_name}</p>
-                <p style={{ fontSize: 20, fontWeight: 700, color: 'var(--teal-light)', fontFamily: 'monospace', letterSpacing: '0.06em', marginBottom: 14 }}>
-                  {claimedLead!.customer_phone}
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                  <p style={{ fontSize: 20, fontWeight: 700, color: 'var(--teal-light)', fontFamily: 'monospace', letterSpacing: '0.06em' }}>
+                    {claimedLead!.customer_phone}
+                  </p>
+                  <button
+                    onClick={() => copyPoolPhone(claimedLead!.customer_phone)}
+                    style={{
+                      background: poolPhoneCopied ? '#059669' : 'rgba(255,255,255,0.12)', color: 'white', border: 'none',
+                      padding: '6px 12px', borderRadius: 50, fontWeight: 700, fontSize: 12,
+                      cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 5,
+                    }}>
+                    <i className={`fa-solid ${poolPhoneCopied ? 'fa-check' : 'fa-copy'}`} />
+                    {poolPhoneCopied ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
                 {popupBlocked && (
                   <div style={{ padding: '10px 14px', background: '#fff7ed', border: '1.5px solid #fed7aa', borderRadius: 10, fontSize: 13, color: '#9a3412', marginBottom: 14 }}>
                     <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }} />
@@ -481,6 +500,16 @@ function AgentContent() {
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+                  <button
+                    onClick={() => copyPoolPhone(currentPoolLead.customer_phone)}
+                    style={{
+                      background: poolPhoneCopied ? '#059669' : 'rgba(255,255,255,0.12)', color: 'white', border: 'none',
+                      padding: '14px 18px', borderRadius: 50, fontWeight: 700, fontSize: 14,
+                      cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6,
+                    }}>
+                    <i className={`fa-solid ${poolPhoneCopied ? 'fa-check' : 'fa-copy'}`} />
+                    {poolPhoneCopied ? 'Copied!' : 'Copy'}
+                  </button>
                   <button
                     onClick={handleClaimAndCall}
                     disabled={claiming}
