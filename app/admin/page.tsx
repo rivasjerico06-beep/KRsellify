@@ -89,6 +89,17 @@ function DispositionModal({
 }) {
   const [selected, setSelected] = useState('')
   const [notes, setNotes] = useState('')
+  const { isDark } = useTheme()
+  const M = {
+    card:    isDark ? '#1a2e42' : '#ffffff',
+    text:    isDark ? '#ecf5fc' : '#0d1f2d',
+    muted:   isDark ? '#5e8faa' : '#64748b',
+    inputBg: isDark ? '#0b1622' : '#f8fafc',
+    btnBg:   isDark ? '#273d52' : '#f8fafc',
+    btnText: isDark ? '#94c0d8' : '#475569',
+    iconMut: isDark ? '#5e8faa' : '#94a3b8',
+    border:  isDark ? '#273d52' : '#e2e8f0',
+  }
 
   return (
     <div style={{
@@ -101,19 +112,19 @@ function DispositionModal({
         exit={{ scale: 0.92, opacity: 0, y: 20 }}
         transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         style={{
-          background: 'white', borderRadius: 20, padding: '32px 28px',
+          background: M.card, borderRadius: 20, padding: '32px 28px',
           width: '100%', maxWidth: 520, boxShadow: '0 24px 60px rgba(0,0,0,0.25)',
         }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--heading)' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: M.text }}>
             <i className="fa-solid fa-clipboard-list" style={{ marginRight: 8, color: 'var(--teal)' }} />
             Log Call Outcome
           </h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 18, padding: 4 }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: M.muted, fontSize: 18, padding: 4 }}>
             <i className="fa-solid fa-xmark" />
           </button>
         </div>
-        <p style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 22 }}>
+        <p style={{ fontSize: 13, color: M.muted, marginBottom: 22 }}>
           {lead.customer_name} — {lead.customer_phone}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
@@ -123,11 +134,11 @@ function DispositionModal({
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
                 fontWeight: 700, fontSize: 13, fontFamily: 'inherit', transition: 'all 0.15s',
-                border: selected === d.value ? `2px solid ${d.color}` : '2px solid transparent',
-                background: selected === d.value ? d.bg : '#f8fafc',
-                color: selected === d.value ? d.color : '#475569',
+                border: selected === d.value ? `2px solid ${d.color}` : `2px solid ${M.border}`,
+                background: selected === d.value ? d.bg : M.btnBg,
+                color: selected === d.value ? d.color : M.btnText,
               }}>
-              <i className={`fa-solid ${d.icon}`} style={{ fontSize: 13, color: selected === d.value ? d.color : '#94a3b8' }} />
+              <i className={`fa-solid ${d.icon}`} style={{ fontSize: 13, color: selected === d.value ? d.color : M.iconMut }} />
               {d.label}
             </button>
           ))}
@@ -137,8 +148,8 @@ function DispositionModal({
           value={notes} onChange={e => setNotes(e.target.value)} rows={3}
           style={{
             width: '100%', padding: '12px 14px', borderRadius: 10, fontSize: 14,
-            border: '2px solid var(--gray)', outline: 'none', resize: 'vertical',
-            background: 'var(--off-white)', color: 'var(--text-dark)', fontFamily: 'inherit',
+            border: `2px solid ${M.border}`, outline: 'none', resize: 'vertical',
+            background: M.inputBg, color: M.text, fontFamily: 'inherit',
             marginBottom: 18, boxSizing: 'border-box',
           }} />
         <button
@@ -146,8 +157,8 @@ function DispositionModal({
           onClick={() => selected && onSubmit(selected, notes)}
           style={{
             width: '100%', padding: '14px', borderRadius: 50, border: 'none',
-            background: selected ? 'var(--navy)' : '#e2e8f0',
-            color: selected ? 'white' : '#94a3b8',
+            background: selected ? 'var(--navy)' : M.border,
+            color: selected ? 'white' : M.muted,
             fontWeight: 700, fontSize: 15, cursor: selected ? 'pointer' : 'default',
             fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}>
@@ -173,6 +184,14 @@ function ImportModal({
   const [error, setError] = useState('')
   const [dragging, setDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const { isDark } = useTheme()
+  const M = {
+    card:    isDark ? '#1a2e42' : '#ffffff',
+    text:    isDark ? '#ecf5fc' : '#0d1f2d',
+    muted:   isDark ? '#5e8faa' : '#64748b',
+    inputBg: isDark ? '#0b1622' : '#f8fafc',
+    border:  isDark ? '#273d52' : '#e2e8f0',
+  }
 
   function detectDelimiter(text: string) {
     const firstLine = text.split('\n')[0] ?? ''
@@ -226,21 +245,21 @@ function ImportModal({
         exit={{ scale: 0.92, opacity: 0, y: 20 }}
         transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         style={{
-          background: 'white', borderRadius: 20, padding: '32px 28px',
+          background: M.card, borderRadius: 20, padding: '32px 28px',
           width: '100%', maxWidth: 520, boxShadow: '0 24px 60px rgba(0,0,0,0.25)',
         }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--heading)' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: M.text }}>
             <i className="fa-solid fa-file-import" style={{ marginRight: 8, color: 'var(--teal)' }} />
             Import Leads
           </h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 18, padding: 4 }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: M.muted, fontSize: 18, padding: 4 }}>
             <i className="fa-solid fa-xmark" />
           </button>
         </div>
 
-        <p style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 20, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 13, color: M.muted, marginBottom: 20, lineHeight: 1.6 }}>
           Upload a <strong>.csv</strong> or <strong>.tsv</strong> file exported from your spreadsheet. The first row must be the header row.
         </p>
 
@@ -254,9 +273,9 @@ function ImportModal({
           }}
           onClick={() => inputRef.current?.click()}
           style={{
-            border: `2px dashed ${dragging ? 'var(--teal)' : file ? '#059669' : 'var(--gray)'}`,
+            border: `2px dashed ${dragging ? 'var(--teal)' : file ? '#059669' : M.border}`,
             borderRadius: 14, padding: '32px 20px', textAlign: 'center', cursor: 'pointer',
-            background: dragging ? '#f0fdf4' : file ? '#f0fdf4' : 'var(--off-white)',
+            background: dragging ? '#f0fdf4' : file ? '#f0fdf4' : M.inputBg,
             transition: 'all 0.2s', marginBottom: 16,
           }}>
           <input
@@ -275,15 +294,15 @@ function ImportModal({
                   {preview.rows} lead{preview.rows !== 1 ? 's' : ''} detected · {preview.delimiter === '\t' ? 'Tab' : 'Comma'}-separated
                 </p>
               )}
-              <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 8 }}>Click to choose a different file</p>
+              <p style={{ fontSize: 12, color: M.muted, marginTop: 8 }}>Click to choose a different file</p>
             </>
           ) : (
             <>
-              <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: 36, color: '#94a3b8', marginBottom: 10, display: 'block' }} />
-              <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--heading)', marginBottom: 4 }}>
+              <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: 36, color: M.muted, marginBottom: 10, display: 'block' }} />
+              <p style={{ fontWeight: 700, fontSize: 15, color: M.text, marginBottom: 4 }}>
                 Drop your file here or click to browse
               </p>
-              <p style={{ fontSize: 13, color: 'var(--text-mid)' }}>Supports .csv and .tsv files</p>
+              <p style={{ fontSize: 13, color: M.muted }}>Supports .csv and .tsv files</p>
             </>
           )}
         </div>
@@ -299,8 +318,8 @@ function ImportModal({
           onClick={handleImport}
           style={{
             width: '100%', padding: '14px', borderRadius: 50, border: 'none',
-            background: file ? 'var(--navy)' : '#e2e8f0',
-            color: file ? 'white' : '#94a3b8',
+            background: file ? 'var(--navy)' : M.border,
+            color: file ? 'white' : M.muted,
             fontWeight: 700, fontSize: 15, cursor: file ? 'pointer' : 'default',
             fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}>
@@ -1217,7 +1236,7 @@ function AdminContent() {
                           value={dialerAgentName}
                           onChange={e => handleDialerAgentNameChange(e.target.value)}
                           placeholder="Your name (caller)"
-                          style={{ border: '2px solid var(--gray)', borderRadius: 50, padding: '7px 14px', fontSize: 12, fontFamily: 'inherit', outline: 'none', width: 160 }}
+                          style={{ border: `2px solid ${D.border}`, borderRadius: 50, padding: '7px 14px', fontSize: 12, fontFamily: 'inherit', outline: 'none', width: 160, background: D.inputBg, color: D.text }}
                         />
                         <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>
                           Lead {dialerQueue.length > 0 ? Math.min(dialerIdx + 1, dialerQueue.length) : 0} of {dialerQueue.length}
@@ -1678,7 +1697,7 @@ function AdminContent() {
               style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 300 }} />
             <motion.div key="order-drawer" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 32 }}
-              style={{ position: 'fixed', top: 0, right: 0, width: 460, maxWidth: '100vw', height: '100%', background: 'white', zIndex: 301, display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 40px rgba(0,0,0,0.15)' }}>
+              style={{ position: 'fixed', top: 0, right: 0, width: 460, maxWidth: '100vw', height: '100%', background: D.card, zIndex: 301, display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 40px rgba(0,0,0,0.15)' }}>
               {/* Header */}
               <div style={{ background: 'var(--navy)', padding: '20px 24px', color: 'white' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -1692,37 +1711,37 @@ function AdminContent() {
                 </div>
               </div>
               {/* Body */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div style={{ flex: 1, overflowY: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 20, background: D.drawerBg }}>
                 {/* Customer */}
                 <div>
-                  <p style={SECTION_LABEL}>Customer</p>
-                  <div style={{ background: 'var(--off-white)', borderRadius: 12, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <p style={{ fontWeight: 700, fontSize: 15 }}>{selectedOrder.customer_name ?? 'Guest Order'}</p>
+                  <p style={{ ...SECTION_LABEL, color: D.muted }}>Customer</p>
+                  <div style={{ background: D.card, borderRadius: 12, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <p style={{ fontWeight: 700, fontSize: 15, color: D.text }}>{selectedOrder.customer_name ?? 'Guest Order'}</p>
                     {(selectedOrder.customer_email || selectedOrder.guest_email) && (
-                      <p style={{ fontSize: 13, color: 'var(--text-mid)' }}>
+                      <p style={{ fontSize: 13, color: D.muted }}>
                         <i className="fa-solid fa-envelope" style={{ marginRight: 6, opacity: 0.5 }} />
                         {selectedOrder.customer_email ?? selectedOrder.guest_email}
-                        {!selectedOrder.customer_email && <span style={{ fontSize: 11, color: 'var(--text-light)', marginLeft: 6 }}>(guest)</span>}
+                        {!selectedOrder.customer_email && <span style={{ fontSize: 11, color: D.muted, marginLeft: 6 }}>(guest)</span>}
                       </p>
                     )}
-                    {selectedOrder.customer_phone && <p style={{ fontSize: 13, color: 'var(--text-mid)' }}><i className="fa-solid fa-phone" style={{ marginRight: 6, opacity: 0.5 }} />{selectedOrder.customer_phone}</p>}
-                    {selectedOrder.customer_city  && <p style={{ fontSize: 13, color: 'var(--text-mid)' }}><i className="fa-solid fa-location-dot" style={{ marginRight: 6, opacity: 0.5 }} />{selectedOrder.customer_city}</p>}
-                    {selectedOrder.customer_address && <p style={{ fontSize: 13, color: 'var(--text-mid)' }}>{selectedOrder.customer_address}</p>}
+                    {selectedOrder.customer_phone && <p style={{ fontSize: 13, color: D.muted }}><i className="fa-solid fa-phone" style={{ marginRight: 6, opacity: 0.5 }} />{selectedOrder.customer_phone}</p>}
+                    {selectedOrder.customer_city  && <p style={{ fontSize: 13, color: D.muted }}><i className="fa-solid fa-location-dot" style={{ marginRight: 6, opacity: 0.5 }} />{selectedOrder.customer_city}</p>}
+                    {selectedOrder.customer_address && <p style={{ fontSize: 13, color: D.muted }}>{selectedOrder.customer_address}</p>}
                   </div>
                 </div>
 
                 {/* Items */}
                 <div>
-                  <p style={SECTION_LABEL}>Items ({Array.isArray(selectedOrder.items) ? selectedOrder.items.length : 0})</p>
+                  <p style={{ ...SECTION_LABEL, color: D.muted }}>Items ({Array.isArray(selectedOrder.items) ? selectedOrder.items.length : 0})</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {(Array.isArray(selectedOrder.items) ? selectedOrder.items : []).map((item, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: 'var(--off-white)', borderRadius: 10 }}>
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: D.card, borderRadius: 10 }}>
                         {item.img && <img src={item.img} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />}
                         <div style={{ flex: 1 }}>
-                          <p style={{ fontSize: 13, fontWeight: 600 }}>{item.name}</p>
-                          <p style={{ fontSize: 11, color: 'var(--text-light)' }}>{item.bundle_label ?? `×${item.qty}`}</p>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: D.text }}>{item.name}</p>
+                          <p style={{ fontSize: 11, color: D.muted }}>{item.bundle_label ?? `×${item.qty}`}</p>
                         </div>
-                        <p style={{ fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+                        <p style={{ fontWeight: 700, fontSize: 14, flexShrink: 0, color: D.text }}>
                           ${(item.bundle_price != null ? item.bundle_price : item.price * item.qty).toFixed(2)}
                         </p>
                       </div>
@@ -1731,10 +1750,10 @@ function AdminContent() {
                 </div>
 
                 {/* Amounts */}
-                <div style={{ background: 'var(--off-white)', borderRadius: 12, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ background: D.card, borderRadius: 12, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 13, color: 'var(--text-mid)' }}>Subtotal</span>
-                    <span style={{ fontSize: 13, fontWeight: 600 }}>${(Number(selectedOrder.total) + Number(selectedOrder.discount_amount ?? 0)).toFixed(2)}</span>
+                    <span style={{ fontSize: 13, color: D.muted }}>Subtotal</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: D.text }}>${(Number(selectedOrder.total) + Number(selectedOrder.discount_amount ?? 0)).toFixed(2)}</span>
                   </div>
                   {selectedOrder.discount_amount ? (
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1744,25 +1763,25 @@ function AdminContent() {
                       <span style={{ fontSize: 13, fontWeight: 600, color: '#059669' }}>-${Number(selectedOrder.discount_amount).toFixed(2)}</span>
                     </div>
                   ) : null}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, borderTop: '1px solid var(--gray)', marginTop: 2 }}>
-                    <span style={{ fontWeight: 700, fontSize: 14 }}>Total</span>
-                    <span style={{ fontWeight: 900, fontSize: 18, color: 'var(--heading)' }}>${Number(selectedOrder.total).toFixed(2)}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, borderTop: `1px solid ${D.border}`, marginTop: 2 }}>
+                    <span style={{ fontWeight: 700, fontSize: 14, color: D.text }}>Total</span>
+                    <span style={{ fontWeight: 900, fontSize: 18, color: 'var(--teal)' }}>${Number(selectedOrder.total).toFixed(2)}</span>
                   </div>
                 </div>
 
                 {/* Status update */}
                 <div>
-                  <p style={SECTION_LABEL}>Update Status</p>
+                  <p style={{ ...SECTION_LABEL, color: D.muted }}>Update Status</p>
                   <select value={selectedOrder.status ?? 'pending'}
                     onChange={e => updateOrderStatus(selectedOrder.id!, e.target.value)}
-                    style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', outline: 'none' }}>
+                    style={{ width: '100%', border: `2px solid ${D.border}`, borderRadius: 10, padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', outline: 'none', background: D.inputBg, color: D.text }}>
                     {['paid', 'pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled'].map(s => (
                       <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
                     ))}
                   </select>
                 </div>
 
-                <p style={{ fontSize: 12, color: 'var(--text-light)' }}>
+                <p style={{ fontSize: 12, color: D.muted }}>
                   <i className="fa-solid fa-clock" style={{ marginRight: 6 }} />
                   Placed {selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleString() : '—'}
                 </p>

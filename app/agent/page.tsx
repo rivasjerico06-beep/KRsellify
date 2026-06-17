@@ -55,6 +55,17 @@ function DispositionModal({ lead, onSubmit, onClose, submitting }: {
 }) {
   const [selected, setSelected] = useState('')
   const [notes, setNotes] = useState('')
+  const { isDark } = useTheme()
+  const M = {
+    card:    isDark ? '#1a2e42' : '#ffffff',
+    text:    isDark ? '#ecf5fc' : '#0d1f2d',
+    muted:   isDark ? '#5e8faa' : '#64748b',
+    inputBg: isDark ? '#0b1622' : '#f8fafc',
+    btnBg:   isDark ? '#273d52' : '#f8fafc',
+    btnText: isDark ? '#94c0d8' : '#475569',
+    iconMut: isDark ? '#5e8faa' : '#94a3b8',
+    border:  isDark ? '#273d52' : '#e2e8f0',
+  }
 
   return (
     <div style={{
@@ -67,19 +78,19 @@ function DispositionModal({ lead, onSubmit, onClose, submitting }: {
         exit={{ scale: 0.92, opacity: 0, y: 20 }}
         transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         style={{
-          background: 'white', borderRadius: 20, padding: '32px 28px',
+          background: M.card, borderRadius: 20, padding: '32px 28px',
           width: '100%', maxWidth: 520, boxShadow: '0 24px 60px rgba(0,0,0,0.25)',
         }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--heading)' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: M.text }}>
             <i className="fa-solid fa-clipboard-list" style={{ marginRight: 8, color: 'var(--teal)' }} />
             Log Call Outcome
           </h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 18 }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: M.muted, fontSize: 18 }}>
             <i className="fa-solid fa-xmark" />
           </button>
         </div>
-        <p style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 22 }}>
+        <p style={{ fontSize: 13, color: M.muted, marginBottom: 22 }}>
           {lead.customer_name} — {lead.customer_phone}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
@@ -89,11 +100,11 @@ function DispositionModal({ lead, onSubmit, onClose, submitting }: {
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
                 fontWeight: 700, fontSize: 13, fontFamily: 'inherit', transition: 'all 0.15s',
-                border: selected === d.value ? `2px solid ${d.color}` : '2px solid transparent',
-                background: selected === d.value ? d.bg : '#f8fafc',
-                color: selected === d.value ? d.color : '#475569',
+                border: selected === d.value ? `2px solid ${d.color}` : `2px solid ${M.border}`,
+                background: selected === d.value ? d.bg : M.btnBg,
+                color: selected === d.value ? d.color : M.btnText,
               }}>
-              <i className={`fa-solid ${d.icon}`} style={{ fontSize: 13, color: selected === d.value ? d.color : '#94a3b8' }} />
+              <i className={`fa-solid ${d.icon}`} style={{ fontSize: 13, color: selected === d.value ? d.color : M.iconMut }} />
               {d.label}
             </button>
           ))}
@@ -103,8 +114,8 @@ function DispositionModal({ lead, onSubmit, onClose, submitting }: {
           value={notes} onChange={e => setNotes(e.target.value)} rows={3}
           style={{
             width: '100%', padding: '12px 14px', borderRadius: 10, fontSize: 14,
-            border: '2px solid var(--gray)', outline: 'none', resize: 'vertical',
-            background: 'var(--off-white)', color: 'var(--text-dark)', fontFamily: 'inherit',
+            border: `2px solid ${M.border}`, outline: 'none', resize: 'vertical',
+            background: M.inputBg, color: M.text, fontFamily: 'inherit',
             marginBottom: 18, boxSizing: 'border-box',
           }} />
         <button
@@ -112,8 +123,8 @@ function DispositionModal({ lead, onSubmit, onClose, submitting }: {
           onClick={() => selected && onSubmit(selected, notes)}
           style={{
             width: '100%', padding: 14, borderRadius: 50, border: 'none',
-            background: selected ? 'var(--navy)' : '#e2e8f0',
-            color: selected ? 'white' : '#94a3b8',
+            background: selected ? 'var(--navy)' : M.border,
+            color: selected ? 'white' : M.muted,
             fontWeight: 700, fontSize: 15, cursor: selected ? 'pointer' : 'default',
             fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}>
@@ -583,9 +594,9 @@ function AgentContent() {
         {/* filters */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search leads…"
-            style={{ flex: 1, minWidth: 200, border: '2px solid var(--gray)', borderRadius: 50, padding: '10px 18px', fontSize: 14, fontFamily: 'inherit', outline: 'none' }} />
+            style={{ flex: 1, minWidth: 200, border: '2px solid var(--gray)', borderRadius: 50, padding: '10px 18px', fontSize: 14, fontFamily: 'inherit', outline: 'none', background: D.inputBg, color: D.text }} />
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-            style={{ border: '2px solid var(--gray)', borderRadius: 50, padding: '10px 18px', fontSize: 13, fontFamily: 'inherit', outline: 'none', cursor: 'pointer' }}>
+            style={{ border: '2px solid var(--gray)', borderRadius: 50, padding: '10px 18px', fontSize: 13, fontFamily: 'inherit', outline: 'none', cursor: 'pointer', background: D.inputBg, color: D.text }}>
             <option value="all">All Statuses</option>
             {Object.entries(STATUS_COLORS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>

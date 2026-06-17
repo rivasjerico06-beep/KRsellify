@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
+import { useTheme } from '@/context/ThemeContext'
 
 interface ProductOption { id: string; name: string; price: number }
 interface RFSProfile {
@@ -38,6 +39,17 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
   const [saving, setSaving]               = useState(false)
   const [flash, setFlash]                 = useState('')
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const { isDark } = useTheme()
+  const D = {
+    bg:      isDark ? '#0f1e2e' : '#f8fafc',
+    card:    isDark ? '#1a2e42' : '#ffffff',
+    text:    isDark ? '#ecf5fc' : '#0d1f2d',
+    muted:   isDark ? '#5e8faa' : '#64748b',
+    border:  isDark ? '#273d52' : '#e5e7eb',
+    inputBg: isDark ? '#0b1622' : '#ffffff',
+    rowHov:  isDark ? '#273d52' : '#f9fafb',
+    btnBg:   isDark ? '#273d52' : '#f3f4f6',
+  }
 
   const showFlash = (msg: string) => { setFlash(msg); setTimeout(() => setFlash(''), 3200) }
 
@@ -86,12 +98,14 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
     setEditing({ ...editing, [field]: cur.includes(pid) ? cur.filter((x: string) => x !== pid) : [...cur, pid] })
   }
 
-  // ── Render ────────────────────────────────────────────────
-
-  const cs: React.CSSProperties = { fontFamily:'inherit' }
+  const inp = (disabled = false): React.CSSProperties => ({
+    border: `1.5px solid ${D.border}`, borderRadius: 8, padding: '9px 12px', fontSize: 13,
+    fontFamily: 'inherit', width: '100%', outline: 'none',
+    background: disabled ? D.bg : D.inputBg, color: D.text, cursor: disabled ? 'not-allowed' : 'text',
+  })
 
   return (
-    <div style={{ ...cs }}>
+    <div style={{ fontFamily:'inherit' }}>
       {/* Flash */}
       {flash && (
         <div style={{ position:'fixed', top:20, right:20, zIndex:9999, background:flash.startsWith('Error')?'#ef4444':'#10b981', color:'white', padding:'12px 20px', borderRadius:10, fontWeight:700, fontSize:13, boxShadow:'0 4px 20px rgba(0,0,0,.25)', fontFamily:'inherit' }}>
@@ -102,12 +116,12 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
       {/* Header row */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:24, gap:16, flexWrap:'wrap' }}>
         <div>
-          <h2 style={{ fontSize:22, fontWeight:800, margin:0, color:'var(--navy)' }}>RFS Profiles</h2>
-          <p style={{ fontSize:13, color:'var(--text-light)', margin:'4px 0 0' }}>Manage customer reward profiles for the /rfs portal</p>
+          <h2 style={{ fontSize:22, fontWeight:800, margin:0, color:D.text }}>RFS Profiles</h2>
+          <p style={{ fontSize:13, color:D.muted, margin:'4px 0 0' }}>Manage customer reward profiles for the /rfs portal</p>
         </div>
         <div style={{ display:'flex', gap:12, alignItems:'center', flexWrap:'wrap' }}>
           <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search Gmail or name…"
-            style={{ border:'1.5px solid #e5e7eb', borderRadius:8, padding:'9px 14px', fontSize:13, width:240, fontFamily:'inherit', outline:'none' }}/>
+            style={{ border:`1.5px solid ${D.border}`, borderRadius:8, padding:'9px 14px', fontSize:13, width:240, fontFamily:'inherit', outline:'none', background:D.inputBg, color:D.text }}/>
           <button onClick={() => setEditing(empty())}
             style={{ background:'var(--navy)', color:'white', border:'none', borderRadius:8, padding:'10px 18px', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'inherit', display:'flex', alignItems:'center', gap:7 }}>
             <i className="fa-solid fa-plus"/> New Profile
@@ -117,9 +131,9 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
 
       {/* Table */}
       {loading ? (
-        <div style={{ textAlign:'center', padding:60, color:'var(--text-light)', fontSize:14 }}>Loading…</div>
+        <div style={{ textAlign:'center', padding:60, color:D.muted, fontSize:14 }}>Loading…</div>
       ) : filtered.length === 0 ? (
-        <div style={{ textAlign:'center', padding:60, color:'var(--text-light)' }}>
+        <div style={{ textAlign:'center', padding:60, color:D.muted }}>
           <i className="fa-solid fa-inbox" style={{ fontSize:36, marginBottom:12, display:'block', opacity:.3 }}/>
           {search ? 'No profiles match your search.' : 'No RFS profiles yet. Create one to get started.'}
         </div>
@@ -127,24 +141,24 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
         <div style={{ overflowX:'auto' }}>
           <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
             <thead>
-              <tr style={{ borderBottom:'2px solid #f3f4f6' }}>
+              <tr style={{ borderBottom:`2px solid ${D.border}` }}>
                 {['Gmail','Name','Benefit','Activation','Deduction','Status','Products','Created',''].map(h=>(
-                  <th key={h} style={{ textAlign:'left', padding:'10px 12px', fontWeight:700, color:'var(--text-light)', fontSize:11, textTransform:'uppercase', letterSpacing:.5, whiteSpace:'nowrap' }}>{h}</th>
+                  <th key={h} style={{ textAlign:'left', padding:'10px 12px', fontWeight:700, color:D.muted, fontSize:11, textTransform:'uppercase', letterSpacing:.5, whiteSpace:'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.map(p => (
-                <tr key={p.id} style={{ borderBottom:'1px solid #f3f4f6' }}>
-                  <td style={{ padding:'12px', fontWeight:600, color:'var(--navy)' }}>{p.gmail}</td>
-                  <td style={{ padding:'12px' }}>{p.display_name}</td>
-                  <td style={{ padding:'12px', fontWeight:700, color:'var(--navy)' }}>${Number(p.benefit_amount).toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+                <tr key={p.id} style={{ borderBottom:`1px solid ${D.border}` }}>
+                  <td style={{ padding:'12px', fontWeight:600, color:D.text }}>{p.gmail}</td>
+                  <td style={{ padding:'12px', color:D.text }}>{p.display_name}</td>
+                  <td style={{ padding:'12px', fontWeight:700, color:'#10b981' }}>${Number(p.benefit_amount).toLocaleString('en-US',{minimumFractionDigits:2})}</td>
                   <td style={{ padding:'12px' }}>
                     <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                      <div style={{ width:60, height:6, background:'#f3f4f6', borderRadius:3, overflow:'hidden' }}>
+                      <div style={{ width:60, height:6, background:D.border, borderRadius:3, overflow:'hidden' }}>
                         <div style={{ height:'100%', width:`${p.activation_pct}%`, background:'#10b981', borderRadius:3 }}/>
                       </div>
-                      <span style={{ fontSize:12, color:'#374151' }}>{p.activation_pct}%</span>
+                      <span style={{ fontSize:12, color:D.text }}>{p.activation_pct}%</span>
                     </div>
                   </td>
                   <td style={{ padding:'12px', color:'#ef4444', fontWeight:700 }}>{p.deduction_pct}%</td>
@@ -153,12 +167,12 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
                       {STATUS_LABEL[p.status] ?? p.status}
                     </span>
                   </td>
-                  <td style={{ padding:'12px', color:'var(--text-light)' }}>{p.required_product_ids.length} req / {p.completed_product_ids.length} done</td>
-                  <td style={{ padding:'12px', color:'var(--text-light)', whiteSpace:'nowrap' }}>{new Date(p.created_at).toLocaleDateString()}</td>
+                  <td style={{ padding:'12px', color:D.muted }}>{p.required_product_ids.length} req / {p.completed_product_ids.length} done</td>
+                  <td style={{ padding:'12px', color:D.muted, whiteSpace:'nowrap' }}>{new Date(p.created_at).toLocaleDateString()}</td>
                   <td style={{ padding:'12px' }}>
                     <div style={{ display:'flex', gap:8 }}>
                       <button onClick={()=>setEditing({...p})}
-                        style={{ background:'#f3f4f6', border:'none', borderRadius:6, padding:'6px 12px', cursor:'pointer', fontSize:12, fontWeight:600, fontFamily:'inherit', color:'var(--navy)' }}>
+                        style={{ background:D.btnBg, border:'none', borderRadius:6, padding:'6px 12px', cursor:'pointer', fontSize:12, fontWeight:600, fontFamily:'inherit', color:D.text }}>
                         Edit
                       </button>
                       <button onClick={()=>setConfirmDelete(p.id)}
@@ -177,13 +191,13 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
       {/* Delete confirm modal */}
       {confirmDelete && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.45)', zIndex:800, display:'flex', alignItems:'center', justifyContent:'center' }}>
-          <div style={{ background:'white', borderRadius:16, padding:28, width:340, textAlign:'center', fontFamily:'inherit' }}>
+          <div style={{ background:D.card, borderRadius:16, padding:28, width:340, textAlign:'center', fontFamily:'inherit' }}>
             <i className="fa-solid fa-trash-can" style={{ fontSize:32, color:'#ef4444', marginBottom:12 }}/>
-            <h3 style={{ margin:'0 0 8px', color:'var(--navy)' }}>Delete Profile?</h3>
-            <p style={{ fontSize:13, color:'var(--text-light)', margin:'0 0 22px' }}>This action cannot be undone.</p>
+            <h3 style={{ margin:'0 0 8px', color:D.text }}>Delete Profile?</h3>
+            <p style={{ fontSize:13, color:D.muted, margin:'0 0 22px' }}>This action cannot be undone.</p>
             <div style={{ display:'flex', gap:10, justifyContent:'center' }}>
               <button onClick={()=>setConfirmDelete(null)}
-                style={{ padding:'9px 20px', borderRadius:8, border:'1.5px solid #e5e7eb', background:'white', cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:13 }}>
+                style={{ padding:'9px 20px', borderRadius:8, border:`1.5px solid ${D.border}`, background:D.btnBg, cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:13, color:D.text }}>
                 Cancel
               </button>
               <button onClick={()=>del(confirmDelete)}
@@ -199,7 +213,7 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
       {editing && (
         <>
           <div onClick={()=>setEditing(null)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.4)', zIndex:800 }}/>
-          <div style={{ position:'fixed', top:0, right:0, width:560, maxWidth:'100vw', height:'100%', background:'white', zIndex:801, display:'flex', flexDirection:'column', boxShadow:'-4px 0 40px rgba(0,0,0,.15)', fontFamily:'inherit', overflow:'hidden' }}>
+          <div style={{ position:'fixed', top:0, right:0, width:560, maxWidth:'100vw', height:'100%', background:D.card, zIndex:801, display:'flex', flexDirection:'column', boxShadow:'-4px 0 40px rgba(0,0,0,.15)', fontFamily:'inherit', overflow:'hidden' }}>
             {/* Drawer header */}
             <div style={{ background:'var(--navy)', padding:'18px 24px', color:'white', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0 }}>
               <div>
@@ -210,40 +224,40 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
             </div>
 
             {/* Drawer body */}
-            <div style={{ flex:1, overflowY:'auto', padding:24, display:'flex', flexDirection:'column', gap:20 }}>
+            <div style={{ flex:1, overflowY:'auto', padding:24, display:'flex', flexDirection:'column', gap:20, background:D.bg }}>
 
               {/* Gmail */}
-              <Field label="Gmail Address *">
+              <Field label="Gmail Address *" color={D.muted}>
                 <input value={editing.gmail ?? ''} onChange={e=>setEditing({...editing, gmail:e.target.value})}
                   placeholder="customer@gmail.com" disabled={!!editing.id}
                   style={inp(!!editing.id)}/>
-                {editing.id && <p style={{ fontSize:11, color:'var(--text-light)', margin:'4px 0 0' }}>Gmail cannot be changed after creation.</p>}
+                {editing.id && <p style={{ fontSize:11, color:D.muted, margin:'4px 0 0' }}>Gmail cannot be changed after creation.</p>}
               </Field>
 
               {/* Display name */}
-              <Field label="Display Name">
+              <Field label="Display Name" color={D.muted}>
                 <input value={editing.display_name ?? ''} onChange={e=>setEditing({...editing, display_name:e.target.value})} style={inp()}/>
               </Field>
 
               {/* Benefit */}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
-                <Field label="Benefit Title">
+                <Field label="Benefit Title" color={D.muted}>
                   <input value={editing.benefit_title ?? ''} onChange={e=>setEditing({...editing, benefit_title:e.target.value})} style={inp()}/>
                 </Field>
-                <Field label="Benefit Amount ($)">
+                <Field label="Benefit Amount ($)" color={D.muted}>
                   <input type="number" value={editing.benefit_amount ?? 0} onChange={e=>setEditing({...editing, benefit_amount:Number(e.target.value)})} style={inp()}/>
                 </Field>
               </div>
 
               {/* Activation + deductions */}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:14 }}>
-                <Field label="Activation %">
+                <Field label="Activation %" color={D.muted}>
                   <input type="number" min={0} max={100} value={editing.activation_pct ?? 0} onChange={e=>setEditing({...editing, activation_pct:Math.min(100,Math.max(0,Number(e.target.value)))})} style={inp()}/>
                 </Field>
-                <Field label="Deduction %">
+                <Field label="Deduction %" color={D.muted}>
                   <input type="number" min={0} max={100} value={editing.deduction_pct ?? 0} onChange={e=>setEditing({...editing, deduction_pct:Math.min(100,Math.max(0,Number(e.target.value)))})} style={inp()}/>
                 </Field>
-                <Field label="Min. Deduction %">
+                <Field label="Min. Deduction %" color={D.muted}>
                   <input type="number" min={0} max={100} value={editing.minimized_deduction_pct ?? ''} placeholder="none"
                     onChange={e=>setEditing({...editing, minimized_deduction_pct:e.target.value===''?null:Math.min(100,Math.max(0,Number(e.target.value)))})} style={inp()}/>
                 </Field>
@@ -251,18 +265,18 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
 
               {/* Status + deadline */}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
-                <Field label="Status">
+                <Field label="Status" color={D.muted}>
                   <select value={editing.status ?? 'under_review'} onChange={e=>setEditing({...editing, status:e.target.value})} style={inp()}>
                     {STATUSES.map(s=><option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
                   </select>
                 </Field>
-                <Field label="Deadline (optional)">
+                <Field label="Deadline (optional)" color={D.muted}>
                   <input type="datetime-local" value={editing.deadline ? editing.deadline.slice(0,16) : ''} onChange={e=>setEditing({...editing, deadline:e.target.value?new Date(e.target.value).toISOString():null})} style={inp()}/>
                 </Field>
               </div>
 
               {/* Custom message */}
-              <Field label="Custom Message (shown on portal)">
+              <Field label="Custom Message (shown on portal)" color={D.muted}>
                 <textarea value={editing.custom_message ?? ''} rows={3}
                   onChange={e=>setEditing({...editing, custom_message:e.target.value||null})}
                   placeholder="Your account is currently being processed…"
@@ -270,22 +284,22 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
               </Field>
 
               {/* Admin notes */}
-              <Field label="Admin Notes (internal only)">
+              <Field label="Admin Notes (internal only)" color={D.muted}>
                 <textarea value={editing.admin_notes ?? ''} rows={2}
                   onChange={e=>setEditing({...editing, admin_notes:e.target.value||null})}
                   style={{ ...inp(), resize:'vertical', height:'auto' }}/>
               </Field>
 
               {/* Required products */}
-              <Field label={`Required Products (${(editing.required_product_ids??[]).length} selected)`}>
-                <div style={{ maxHeight:220, overflowY:'auto', border:'1.5px solid #e5e7eb', borderRadius:8, padding:10, display:'flex', flexDirection:'column', gap:6 }}>
+              <Field label={`Required Products (${(editing.required_product_ids??[]).length} selected)`} color={D.muted}>
+                <div style={{ maxHeight:220, overflowY:'auto', border:`1.5px solid ${D.border}`, borderRadius:8, padding:10, display:'flex', flexDirection:'column', gap:6, background:D.inputBg }}>
                   {products.map(p=>{
                     const checked=(editing.required_product_ids??[]).includes(p.id)
                     return (
                       <label key={p.id} style={{ display:'flex', alignItems:'center', gap:10, cursor:'pointer', padding:'4px 0', userSelect:'none' }}>
                         <input type="checkbox" checked={checked} onChange={()=>toggleProduct(p.id,'required_product_ids')} style={{ width:15, height:15 }}/>
-                        <span style={{ fontSize:13, flex:1 }}>{p.name}</span>
-                        <span style={{ fontSize:12, color:'var(--text-light)', fontWeight:600 }}>${Number(p.price).toFixed(2)}</span>
+                        <span style={{ fontSize:13, flex:1, color:D.text }}>{p.name}</span>
+                        <span style={{ fontSize:12, color:D.muted, fontWeight:600 }}>${Number(p.price).toFixed(2)}</span>
                       </label>
                     )
                   })}
@@ -294,14 +308,14 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
 
               {/* Completed products */}
               {(editing.required_product_ids??[]).length > 0 && (
-                <Field label={`Completed Products (${(editing.completed_product_ids??[]).length} marked done)`}>
-                  <div style={{ maxHeight:180, overflowY:'auto', border:'1.5px solid #e5e7eb', borderRadius:8, padding:10, display:'flex', flexDirection:'column', gap:6 }}>
+                <Field label={`Completed Products (${(editing.completed_product_ids??[]).length} marked done)`} color={D.muted}>
+                  <div style={{ maxHeight:180, overflowY:'auto', border:`1.5px solid ${D.border}`, borderRadius:8, padding:10, display:'flex', flexDirection:'column', gap:6, background:D.inputBg }}>
                     {products.filter(p=>(editing.required_product_ids??[]).includes(p.id)).map(p=>{
                       const checked=(editing.completed_product_ids??[]).includes(p.id)
                       return (
                         <label key={p.id} style={{ display:'flex', alignItems:'center', gap:10, cursor:'pointer', padding:'4px 0', userSelect:'none' }}>
                           <input type="checkbox" checked={checked} onChange={()=>toggleProduct(p.id,'completed_product_ids')} style={{ width:15, height:15 }}/>
-                          <span style={{ fontSize:13, color: checked?'#10b981':'var(--navy)', fontWeight: checked?700:400 }}>{p.name}</span>
+                          <span style={{ fontSize:13, color: checked?'#10b981':D.text, fontWeight: checked?700:400 }}>{p.name}</span>
                           {checked && <i className="fa-solid fa-circle-check" style={{ color:'#10b981', fontSize:12 }}/>}
                         </label>
                       )
@@ -312,8 +326,8 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
             </div>
 
             {/* Drawer footer */}
-            <div style={{ padding:'16px 24px', borderTop:'1px solid #f3f4f6', display:'flex', justifyContent:'flex-end', gap:10, flexShrink:0 }}>
-              <button onClick={()=>setEditing(null)} style={{ padding:'10px 22px', borderRadius:8, border:'1.5px solid #e5e7eb', background:'white', cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:13 }}>
+            <div style={{ padding:'16px 24px', borderTop:`1px solid ${D.border}`, display:'flex', justifyContent:'flex-end', gap:10, flexShrink:0, background:D.card }}>
+              <button onClick={()=>setEditing(null)} style={{ padding:'10px 22px', borderRadius:8, border:`1.5px solid ${D.border}`, background:D.btnBg, cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:13, color:D.text }}>
                 Cancel
               </button>
               <button onClick={save} disabled={saving || !editing.gmail}
@@ -328,19 +342,11 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
   )
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children, color }: { label: string; children: React.ReactNode; color: string }) {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:5 }}>
-      <label style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:.5 }}>{label}</label>
+      <label style={{ fontSize:11, fontWeight:700, color, textTransform:'uppercase', letterSpacing:.5 }}>{label}</label>
       {children}
     </div>
   )
-}
-
-function inp(disabled = false): React.CSSProperties {
-  return {
-    border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '9px 12px', fontSize: 13,
-    fontFamily: 'inherit', width: '100%', outline: 'none',
-    background: disabled ? '#f9fafb' : 'white', color: '#111', cursor: disabled ? 'not-allowed' : 'text',
-  }
 }
