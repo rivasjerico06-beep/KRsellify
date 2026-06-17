@@ -624,7 +624,7 @@ function AgentContent() {
               style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 100 }} />
             <motion.div key="drawer" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 32 }}
-              style={{ position: 'fixed', top: 0, right: 0, width: 420, maxWidth: '100vw', height: '100%', background: 'white', zIndex: 101, display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 40px rgba(0,0,0,0.15)' }}>
+              style={{ position: 'fixed', top: 0, right: 0, width: 420, maxWidth: '100vw', height: '100%', background: 'var(--white)', zIndex: 101, display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 40px rgba(0,0,0,0.15)' }}>
               <div style={{ padding: '20px 24px 20px', borderBottom: '1px solid var(--gray)', background: 'var(--navy)', color: 'white' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700 }}>{selected.customer_name}</h3>
@@ -669,7 +669,7 @@ function AgentContent() {
                           padding: '7px 13px', borderRadius: 20, fontSize: 12, fontWeight: 700,
                           cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
                           border: selected.status === k ? `2px solid ${v.text}` : '2px solid var(--gray)',
-                          background: selected.status === k ? v.bg : 'var(--white)',
+                          background: selected.status === k ? v.bg : 'var(--gray)',
                           color: selected.status === k ? v.text : 'var(--text-dark)',
                         }}>
                         {v.label}

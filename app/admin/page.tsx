@@ -1800,7 +1800,7 @@ function AdminContent() {
                           padding: '7px 13px', borderRadius: 20, fontSize: 12, fontWeight: 700,
                           cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
                           border: selectedLead.status === k ? `2px solid ${v.text}` : '2px solid var(--gray)',
-                          background: selectedLead.status === k ? v.bg : 'var(--off-white)',
+                          background: selectedLead.status === k ? v.bg : 'var(--gray)',
                           color: selectedLead.status === k ? v.text : 'var(--text-dark)',
                         }}>
                         {v.label}
