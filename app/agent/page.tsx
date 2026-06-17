@@ -653,17 +653,25 @@ function AgentContent() {
                 </div>
               </div>
 
-              <div style={{ flex: 1, padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div style={{ flex: 1, padding: 16, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, background: '#f1f5f9' }}>
+
                 {/* Status */}
-                <div>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Update Status</p>
+                <div style={{ background: 'white', borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(9,52,89,0.07)' }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                    <i className="fa-solid fa-circle-dot" style={{ marginRight: 6, color: 'var(--teal)' }} />
+                    Update Status
+                  </p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {Object.entries(STATUS_COLORS).map(([k, v]) => (
                       <button key={k} disabled={updating}
                         onClick={() => updateLead(selected.id, { status: k as Lead['status'] })}
-                        style={{ padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                          background: selected.status === k ? v.bg : 'var(--gray)',
-                          color: selected.status === k ? v.text : 'var(--text-mid)' }}>
+                        style={{
+                          padding: '7px 13px', borderRadius: 20, fontSize: 12, fontWeight: 700,
+                          cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+                          border: selected.status === k ? `2px solid ${v.text}` : '2px solid #e2e8f0',
+                          background: selected.status === k ? v.bg : '#f8fafc',
+                          color: selected.status === k ? v.text : '#374151',
+                        }}>
                         {v.label}
                       </button>
                     ))}
@@ -671,30 +679,60 @@ function AgentContent() {
                 </div>
 
                 {/* Notes */}
-                <div>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Notes</p>
+                <div style={{ background: 'white', borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(9,52,89,0.07)' }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                    <i className="fa-solid fa-note-sticky" style={{ marginRight: 6, color: 'var(--teal)' }} />
+                    Notes
+                  </p>
                   <textarea value={noteText} onChange={e => setNoteText(e.target.value)}
-                    style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 12, padding: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', resize: 'vertical', minHeight: 100 }} />
+                    placeholder="Add call notes here…"
+                    style={{
+                      width: '100%', border: '2px solid #e2e8f0', borderRadius: 10, padding: '10px 12px',
+                      fontSize: 14, fontFamily: 'inherit', outline: 'none', resize: 'vertical',
+                      minHeight: 100, color: '#0d1f2d', background: '#f8fafc', lineHeight: 1.5,
+                      boxSizing: 'border-box',
+                    }} />
                   <button onClick={() => updateLead(selected.id, { notes: noteText })} disabled={updating}
-                    style={{ marginTop: 8, background: 'var(--navy)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    style={{
+                      marginTop: 10, background: 'var(--navy)', color: 'white', border: 'none',
+                      padding: '10px 22px', borderRadius: 50, fontSize: 13, fontWeight: 700,
+                      cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6,
+                    }}>
+                    <i className="fa-solid fa-floppy-disk" />
                     {updating ? 'Saving…' : 'Save Notes'}
                   </button>
                 </div>
 
                 {/* Follow-up date */}
-                <div>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Follow-up Date</p>
+                <div style={{ background: 'white', borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(9,52,89,0.07)' }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                    <i className="fa-solid fa-calendar-days" style={{ marginRight: 6, color: '#7c3aed' }} />
+                    Follow-up Date
+                  </p>
                   <input type="date" value={followUpDate} onChange={e => setFollowUpDate(e.target.value)}
-                    style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none' }} />
-                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    style={{
+                      width: '100%', border: '2px solid #e2e8f0', borderRadius: 10,
+                      padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none',
+                      color: '#0d1f2d', background: '#f8fafc', boxSizing: 'border-box',
+                    }} />
+                  <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
                     <button onClick={() => updateLead(selected.id, { follow_up_date: followUpDate || null })} disabled={updating}
-                      style={{ background: '#7c3aed', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                      style={{
+                        background: '#7c3aed', color: 'white', border: 'none',
+                        padding: '10px 20px', borderRadius: 50, fontSize: 13, fontWeight: 700,
+                        cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6,
+                      }}>
+                      <i className="fa-solid fa-calendar-check" />
                       Save Date
                     </button>
                     {followUpDate && (
                       <button disabled={updating}
                         onClick={() => { setFollowUpDate(''); updateLead(selected.id, { follow_up_date: null }) }}
-                        style={{ background: 'var(--gray)', color: 'var(--text-mid)', border: 'none', padding: '10px 16px', borderRadius: 50, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                        style={{
+                          background: '#f1f5f9', color: '#374151', border: '2px solid #e2e8f0',
+                          padding: '10px 16px', borderRadius: 50, fontSize: 13, fontWeight: 600,
+                          cursor: 'pointer', fontFamily: 'inherit',
+                        }}>
                         Clear
                       </button>
                     )}
@@ -703,14 +741,17 @@ function AgentContent() {
 
                 {/* Product interest */}
                 {selected.product_interest && (
-                  <div>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Product Interest</p>
-                    <p style={{ fontSize: 14, color: 'var(--text-dark)' }}>{selected.product_interest}</p>
+                  <div style={{ background: 'white', borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(9,52,89,0.07)' }}>
+                    <p style={{ fontSize: 11, fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+                      <i className="fa-solid fa-tag" style={{ marginRight: 6, color: 'var(--gold)' }} />
+                      Product Interest
+                    </p>
+                    <p style={{ fontSize: 14, color: '#0d1f2d', fontWeight: 600 }}>{selected.product_interest}</p>
                   </div>
                 )}
 
-                <p style={{ fontSize: 12, color: 'var(--text-light)' }}>
-                  <i className="fa-solid fa-clock" style={{ marginRight: 6 }} />
+                <p style={{ fontSize: 12, color: '#64748b', padding: '4px 6px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <i className="fa-solid fa-clock" />
                   Added {selected.created_at ? new Date(selected.created_at).toLocaleDateString() : '—'}
                 </p>
               </div>

@@ -11,6 +11,7 @@ import { getBrowserSupabase } from '@/lib/supabase-browser'
 
 const AdminCharts   = dynamic(() => import('@/components/AdminCharts'),  { ssr: false })
 const LandingEditor = dynamic(() => import('@/components/LandingEditor'), { ssr: false })
+const RFSTab        = dynamic(() => import('./rfs-tab'),                  { ssr: false })
 
 export default function AdminPage() {
   return (
@@ -20,7 +21,7 @@ export default function AdminPage() {
   )
 } 
 
-type Tab = 'overview' | 'products' | 'orders' | 'customers' | 'agents' | 'sales' | 'agent-performance' | 'landing' | 'leads' | 'coupons' | 'settings'
+type Tab = 'overview' | 'products' | 'orders' | 'customers' | 'agents' | 'sales' | 'agent-performance' | 'landing' | 'leads' | 'coupons' | 'settings' | 'rfs'
 
 const TIER_STYLE: Record<string, { bg: string; text: string }> = {
   bronze:   { bg: '#fef3c7', text: '#92400e' },
@@ -669,6 +670,7 @@ function AdminContent() {
     { id: 'coupons',           icon: 'fa-tag',          label: 'Coupons' },
     { id: 'landing',           icon: 'fa-paintbrush',   label: 'Landing Page' },
     { id: 'settings',          icon: 'fa-gear',         label: 'Settings' },
+    { id: 'rfs',              icon: 'fa-star',         label: 'RFS Portal' },
   ]
 
   const pendingAgents      = agents.filter(a => a.status === 'pending').length
@@ -1644,6 +1646,11 @@ function AdminContent() {
                     </p>
                   </div>
                 </div>
+              )}
+
+              {/* ── RFS PORTAL ─────────────────────────────────── */}
+              {tab === 'rfs' && (
+                <RFSTab authHeaders={authHeaders} />
               )}
 
             </motion.div>
