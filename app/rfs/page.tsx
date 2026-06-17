@@ -1,7 +1,7 @@
 'use client'
 import { useState, FormEvent } from 'react'
 
-interface ProductInfo { id: string; name: string; price: number; img: string }
+interface ProductInfo { id: string; name: string; price: number; img: string; quantity: number }
 interface RFSProfile {
   id: string; gmail: string; display_name: string; benefit_title: string
   benefit_amount: number; activation_pct: number; deduction_pct: number
@@ -155,6 +155,19 @@ export default function RFSPage() {
               Only authorized accounts can access this portal.<br />Contact your representative if you need access.
             </p>
           </div>
+
+          <a href="/" style={{
+            marginTop: 28, display: 'inline-flex', alignItems: 'center', gap: 8,
+            color: 'rgba(255,255,255,0.45)', fontSize: 13, textDecoration: 'none',
+            border: '1px solid rgba(255,255,255,0.1)', borderRadius: 50,
+            padding: '9px 20px', backdropFilter: 'blur(8px)',
+            background: 'rgba(255,255,255,0.04)', transition: 'all .2s',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'white'; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(255,255,255,0.25)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.45)'; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(255,255,255,0.1)' }}>
+            <i className="fa-solid fa-arrow-left" style={{ fontSize: 11 }} />
+            Back to Website
+          </a>
         </div>
       ) : (
         /* ── DASHBOARD ─────────────────────────────── */
@@ -295,7 +308,14 @@ export default function RFSPage() {
                           </div>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: 'white', lineHeight: 1.35, marginBottom: 4 }}>{p.name}</div>
-                            <div style={{ fontSize: 17, fontWeight: 900, color: done ? '#10b981' : '#d4af37' }}>${Number(p.price).toFixed(2)}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                              <div style={{ fontSize: 17, fontWeight: 900, color: done ? '#10b981' : '#d4af37' }}>${Number(p.price).toFixed(2)}</div>
+                              {(p.quantity ?? 1) > 1 && (
+                                <div style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 800, color: '#d4af37', letterSpacing: 0.5 }}>
+                                  ×{p.quantity} pcs
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                         {done ? (

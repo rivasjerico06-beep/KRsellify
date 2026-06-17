@@ -34,7 +34,10 @@ export async function POST(request: Request) {
       .from('products')
       .select('id, name, price, img')
       .in('id', profile.required_product_ids)
-    required_products = products ?? []
+    const qtys: Record<string, number> = profile.required_product_quantities ?? {}
+    required_products = (products ?? []).map((p: { id: string; name: string; price: number; img: string }) => ({
+      ...p, quantity: qtys[p.id] ?? 1,
+    }))
   }
 
   return NextResponse.json({ profile: { ...profile, required_products }, email: normalised })
