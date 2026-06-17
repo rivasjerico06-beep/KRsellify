@@ -323,7 +323,7 @@ export default function RFSPage() {
                             <i className="fa-solid fa-circle-check" style={{ marginRight: 6 }} />Completed
                           </div>
                         ) : (
-                          <a href={`/product/${p.id}`} target="_blank" rel="noopener noreferrer" className="buy-btn"
+                          <a href={`/products/${p.id}`} target="_blank" rel="noopener noreferrer" className="buy-btn"
                             style={{ background: 'linear-gradient(135deg,#d4af37,#f5d87a)', color: '#060a14', borderRadius: 8, padding: '10px 14px', textAlign: 'center', fontSize: 13, fontWeight: 800, textDecoration: 'none', display: 'block', letterSpacing: 0.5 }}>
                             Buy Now
                           </a>
@@ -404,7 +404,7 @@ export default function RFSPage() {
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#d4af37', marginBottom: 4 }}>Important Notice</div>
                 <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.42)', lineHeight: 1.7 }}>
-                  Activation cannot proceed while the required products have not been completed. Please complete all required steps to avoid delays in your request.
+                  This amount will be available once the required item has been secured.
                 </div>
               </div>
             </div>
