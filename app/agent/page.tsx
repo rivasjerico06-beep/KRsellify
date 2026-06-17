@@ -669,7 +669,7 @@ function AgentContent() {
                           padding: '7px 13px', borderRadius: 20, fontSize: 12, fontWeight: 700,
                           cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
                           border: selected.status === k ? `2px solid ${v.text}` : '2px solid var(--gray)',
-                          background: selected.status === k ? v.bg : 'var(--off-white)',
+                          background: selected.status === k ? v.bg : 'var(--white)',
                           color: selected.status === k ? v.text : 'var(--text-dark)',
                         }}>
                         {v.label}
