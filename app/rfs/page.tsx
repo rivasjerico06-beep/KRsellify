@@ -282,13 +282,12 @@ export default function RFSPage() {
             {/* Required Products */}
             {profile.required_products.length > 0 && (
               <div className="card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.14)', borderRadius: 18, padding: '26px 24px', marginBottom: 18 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                  <i className="fa-solid fa-cart-shopping" style={{ color: '#d4af37' }} />
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#d4af37', textTransform: 'uppercase', letterSpacing: 1 }}>Required Products to Complete Activation</div>
-                </div>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 22, lineHeight: 1.6 }}>
-                  Complete all required products below to proceed with your full activation.
-                  {profile.minimized_deduction_pct !== null && ` Completing them reduces your deduction to only ${profile.minimized_deduction_pct}%.`}
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 22 }}>
+                  <i className="fa-solid fa-triangle-exclamation" style={{ color: '#d4af37', marginTop: 2, flexShrink: 0 }} />
+                  <div style={{ fontSize: 14, fontWeight: 800, color: '#d4af37', lineHeight: 1.5 }}>
+                    Action Required: Complete the required product purchase to restore your account to the priority processing list.
+                    {profile.minimized_deduction_pct !== null && <span style={{ fontWeight: 400, color: 'rgba(255,255,255,0.45)', fontSize: 13 }}> Completing them reduces your deduction to only {profile.minimized_deduction_pct}%.</span>}
+                  </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 14 }}>
