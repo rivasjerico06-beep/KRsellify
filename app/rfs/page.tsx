@@ -397,15 +397,13 @@ export default function RFSPage() {
               )}
             </div>
 
-            {/* Footer notice */}
-            <div className="card" style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 14, padding: '18px 22px', display: 'flex', alignItems: 'center', gap: 18 }}>
-              <i className="fa-solid fa-sack-dollar" style={{ color: '#d4af37', fontSize: 26, flexShrink: 0 }} />
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4 }}>Your Possible Cash-Out</div>
-                <div style={{ fontSize: 28, fontWeight: 900, color: '#d4af37', letterSpacing: -0.5 }}>{benefitStr}</div>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', marginTop: 4, lineHeight: 1.6 }}>
-                  This amount will be available once the required item has been secured.</div>
+            {/* Footer — cashout amount */}
+            <div className="card" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.22)', borderRadius: 14, padding: '22px 26px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <i className="fa-solid fa-sack-dollar" style={{ color: '#d4af37', fontSize: 28, flexShrink: 0 }} />
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase' }}>Possible Cash-Out Amount</div>
               </div>
+              <div style={{ fontSize: 36, fontWeight: 900, color: '#d4af37', letterSpacing: -1 }}>{benefitStr}</div>
             </div>
           </div>
         </div>
