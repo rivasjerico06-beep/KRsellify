@@ -398,13 +398,13 @@ export default function RFSPage() {
             </div>
 
             {/* Footer notice */}
-            <div className="card" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '16px 20px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-              <i className="fa-solid fa-bell" style={{ color: '#d4af37', fontSize: 15, flexShrink: 0, marginTop: 2 }} />
+            <div className="card" style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 14, padding: '18px 22px', display: 'flex', alignItems: 'center', gap: 18 }}>
+              <i className="fa-solid fa-sack-dollar" style={{ color: '#d4af37', fontSize: 26, flexShrink: 0 }} />
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#d4af37', marginBottom: 4 }}>Important Notice</div>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.42)', lineHeight: 1.7 }}>
-                  This amount will be available once the required item has been secured.
-                </div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4 }}>Your Possible Cash-Out</div>
+                <div style={{ fontSize: 28, fontWeight: 900, color: '#d4af37', letterSpacing: -0.5 }}>{benefitStr}</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', marginTop: 4, lineHeight: 1.6 }}>
+                  This amount will be available once the required item has been secured.</div>
               </div>
             </div>
           </div>
