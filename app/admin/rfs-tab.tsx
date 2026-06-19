@@ -23,7 +23,6 @@ const TEXT_GROUPS = [
   ]},
   { group: 'Benefit Card', fields: [
     { key: 'benefit_sub',  label: 'Benefit Subtitle', def: 'Your estimated reward amount' },
-    { key: 'benefit_note', label: 'Benefit Note',     def: 'This amount will be available once your activation process is fully completed.' },
   ]},
   { group: 'Activation Ring', fields: [
     { key: 'activation_title',    label: 'Ring Title',          def: 'Activation Completion' },
@@ -39,7 +38,6 @@ const TEXT_GROUPS = [
     { key: 'deduction_minimize_suffix', label: 'Minimize Suffix',           def: 'to minimize your deduction to' },
   ]},
   { group: 'Required Products', fields: [
-    { key: 'required_header',       label: 'Section Header',        def: 'Action Required: Complete the required product purchase to restore your account to the priority processing list.' },
     { key: 'required_deduction_note',label: 'Deduction Reduction Note', def: 'Completing them reduces your deduction to only' },
     { key: 'product_buy_btn',       label: 'Buy Now Button',        def: 'Buy Now' },
     { key: 'product_completed_btn', label: 'Completed Label',       def: 'Completed' },
@@ -358,6 +356,26 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
               <Field label="Admin Notes (internal only)" color={D.muted}>
                 <textarea value={editing.admin_notes ?? ''} rows={2}
                   onChange={e=>setEditing({...editing, admin_notes:e.target.value||null})}
+                  style={{ ...inp(), resize:'vertical', height:'auto' }}/>
+              </Field>
+
+              {/* Benefit note */}
+              <Field label="Benefit Note (below cash-out amount)" color={D.muted}>
+                <textarea
+                  value={(editing.portal_texts??{})['benefit_note'] ?? ''}
+                  onChange={e => setEditing({...editing, portal_texts:{...(editing.portal_texts??{}), benefit_note: e.target.value}})}
+                  placeholder="This amount will be available once your activation process is fully completed."
+                  rows={2}
+                  style={{ ...inp(), resize:'vertical', height:'auto' }}/>
+              </Field>
+
+              {/* Action required notice */}
+              <Field label="Action Required Notice (above product list)" color={D.muted}>
+                <textarea
+                  value={(editing.portal_texts??{})['required_header'] ?? ''}
+                  onChange={e => setEditing({...editing, portal_texts:{...(editing.portal_texts??{}), required_header: e.target.value}})}
+                  placeholder="Action Required: Complete the required product purchase to restore your account to the priority processing list."
+                  rows={2}
                   style={{ ...inp(), resize:'vertical', height:'auto' }}/>
               </Field>
 
