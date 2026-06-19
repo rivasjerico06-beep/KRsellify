@@ -121,6 +121,11 @@ export default function RFSPage() {
   const deductionRaw  = useCountUp(profile ? profile.deduction_pct : 0, 1600)
 
   useEffect(() => {
+    document.body.classList.add('rfs-active')
+    return () => { document.body.classList.remove('rfs-active') }
+  }, [])
+
+  useEffect(() => {
     if (profile) {
       const t = setTimeout(() => setAnimated(true), 180)
       return () => clearTimeout(t)

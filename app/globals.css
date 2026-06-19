@@ -201,8 +201,11 @@ html.theme-transition *::after {
 }
 
 /* ── Reduced motion ──────────────────────────────────────── */
+/* Excluded: body.rfs-active (RFS portal uses intentional decorative animations) */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  body:not(.rfs-active) *,
+  body:not(.rfs-active) *::before,
+  body:not(.rfs-active) *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
