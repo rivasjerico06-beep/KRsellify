@@ -101,12 +101,12 @@ function Ring({ pct, size, stroke, color, children }: {
 
 const BG = 'linear-gradient(145deg,#060a14 0%,#0a1020 60%,#070c18 100%)'
 
-const PARTICLES = Array.from({ length: 22 }, (_, i) => ({
-  left: `${(i * 13 + 7) % 97}%`,
-  duration: `${7 + ((i * 131) % 800) / 100}s`,
-  delay: `-${((i * 73) % 700) / 100}s`,
-  size: i % 4 === 0 ? 2.5 : 1.5,
-  color: i % 6 === 0 ? 'rgba(16,185,129,0.75)' : i % 3 === 0 ? 'rgba(59,130,246,0.5)' : 'rgba(212,175,55,0.55)',
+const PARTICLES = Array.from({ length: 30 }, (_, i) => ({
+  left: `${(i * 11 + 3) % 96}%`,
+  duration: `${5 + ((i * 97) % 700) / 100}s`,
+  delay: `-${((i * 61) % 500) / 100}s`,
+  size: i % 5 === 0 ? 8 : i % 3 === 0 ? 6 : 4,
+  color: i % 6 === 0 ? '#10b981' : i % 4 === 0 ? '#3b82f6' : '#d4af37',
 }))
 
 export default function RFSPage() {
@@ -183,7 +183,7 @@ export default function RFSPage() {
         @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
         @keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         @keyframes pulseRing{0%{transform:scale(1);opacity:0.7}100%{transform:scale(3.5);opacity:0}}
-        @keyframes floatUp{0%{transform:translateY(0);opacity:0}12%{opacity:0.8}80%{opacity:0.35}100%{transform:translateY(-100vh);opacity:0}}
+        @keyframes floatUp{0%{transform:translateY(0) scale(1);opacity:0}8%{opacity:1}70%{opacity:0.9}100%{transform:translateY(-100vh) scale(0.4);opacity:0}}
         @keyframes rotateBorder{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
         @keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
@@ -222,14 +222,14 @@ export default function RFSPage() {
 
           <div style={{ position: 'relative', zIndex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.22)', borderRadius: 22, padding: '52px 44px', maxWidth: 440, width: '100%', textAlign: 'center', backdropFilter: 'blur(14px)', animation: 'fadeUp .4s ease', overflow: 'hidden' }}>
             {/* scan line */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,transparent,rgba(212,175,55,0.6),transparent)', animation: 'scanH 3s linear infinite', pointerEvents: 'none', zIndex: 2 }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: 'linear-gradient(90deg,transparent,#d4af37,#f5d87a,#d4af37,transparent)', boxShadow: '0 0 16px #d4af37', animation: 'scanH 2.5s linear infinite', pointerEvents: 'none', zIndex: 2 }} />
             {/* shield with orbit rings */}
             <div style={{ position: 'relative', width: 68, height: 68, margin: '0 auto 40px' }}>
-              <div style={{ position: 'absolute', top: '50%', left: '50%', marginLeft: -52, marginTop: -52, width: 104, height: 104, borderRadius: '50%', border: '1px dashed rgba(212,175,55,0.35)', animation: 'orbit 7s linear infinite', pointerEvents: 'none' }}>
-                <div style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 6, height: 6, borderRadius: '50%', background: '#d4af37', boxShadow: '0 0 8px #d4af37' }} />
+              <div style={{ position: 'absolute', top: '50%', left: '50%', marginLeft: -56, marginTop: -56, width: 112, height: 112, borderRadius: '50%', border: '2px solid rgba(212,175,55,0.6)', boxShadow: '0 0 12px rgba(212,175,55,0.4)', animation: 'orbit 7s linear infinite', pointerEvents: 'none' }}>
+                <div style={{ position: 'absolute', top: -6, left: '50%', transform: 'translateX(-50%)', width: 10, height: 10, borderRadius: '50%', background: '#d4af37', boxShadow: '0 0 14px #d4af37, 0 0 28px #d4af37' }} />
               </div>
-              <div style={{ position: 'absolute', top: '50%', left: '50%', marginLeft: -42, marginTop: -42, width: 84, height: 84, borderRadius: '50%', border: '1px dashed rgba(212,175,55,0.18)', animation: 'orbit 4.5s linear infinite reverse', pointerEvents: 'none' }}>
-                <div style={{ position: 'absolute', top: -3, left: '50%', transform: 'translateX(-50%)', width: 4, height: 4, borderRadius: '50%', background: '#f5d87a', boxShadow: '0 0 5px #f5d87a' }} />
+              <div style={{ position: 'absolute', top: '50%', left: '50%', marginLeft: -44, marginTop: -44, width: 88, height: 88, borderRadius: '50%', border: '2px solid rgba(16,185,129,0.55)', boxShadow: '0 0 10px rgba(16,185,129,0.3)', animation: 'orbit 4.5s linear infinite reverse', pointerEvents: 'none' }}>
+                <div style={{ position: 'absolute', top: -5, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 12px #10b981, 0 0 24px #10b981' }} />
               </div>
               <div style={{ position: 'absolute', inset: 0, width: 68, height: 68, background: 'linear-gradient(135deg,#d4af37,#f5d87a)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'glow 2.5s infinite', zIndex: 1 }}>
                 <i className="fa-solid fa-shield-halved" style={{ fontSize: 26, color: '#060a14' }} />
@@ -412,7 +412,7 @@ export default function RFSPage() {
                 <div style={{ position: 'absolute', inset: -80, background: 'conic-gradient(from 0deg, transparent 55%, rgba(212,175,55,0.55) 72%, rgba(245,216,122,0.25) 82%, transparent 96%)', animation: 'rotateBorder 4s linear infinite', pointerEvents: 'none', zIndex: 0 }} />
                 <div style={{ position: 'relative', zIndex: 1, background: 'rgba(5,9,18,0.97)', borderRadius: 17, padding: '26px 24px', overflow: 'hidden' }}>
                 {/* scan line animation */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg,transparent,rgba(212,175,55,0.5),transparent)', animation: 'scanH 4s linear 1s infinite', pointerEvents: 'none' }}/>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: 'linear-gradient(90deg,transparent,#d4af37,#f5d87a,#d4af37,transparent)', boxShadow: '0 0 14px #d4af37', animation: 'scanH 2.5s linear infinite', pointerEvents: 'none' }}/>
                 <div style={{ position: 'absolute', top: 0, right: 0, width: 130, height: 130, background: 'radial-gradient(circle,rgba(212,175,55,0.1) 0%,transparent 70%)', pointerEvents: 'none' }} />
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>{profile.benefit_title}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
@@ -437,12 +437,12 @@ export default function RFSPage() {
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase' }}>{t('activation_title', 'Activation Completion')}</div>
                 <div style={{ position: 'relative', width: 178, height: 178, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {/* outer orbit ring — explicitly centered */}
-                  <div style={{ position: 'absolute', top: 0, left: 0, width: 178, height: 178, borderRadius: '50%', border: '1px dashed rgba(16,185,129,0.22)', animation: 'orbit 14s linear infinite', pointerEvents: 'none' }}>
-                    <div style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 7, height: 7, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px #10b981' }} />
+                  <div style={{ position: 'absolute', top: 0, left: 0, width: 178, height: 178, borderRadius: '50%', border: '2px solid rgba(16,185,129,0.7)', boxShadow: '0 0 14px rgba(16,185,129,0.4)', animation: 'orbit 8s linear infinite', pointerEvents: 'none' }}>
+                    <div style={{ position: 'absolute', top: -6, left: '50%', transform: 'translateX(-50%)', width: 10, height: 10, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 16px #10b981, 0 0 32px #10b981' }} />
                   </div>
                   {/* inner counter-clockwise ring — explicitly centered */}
-                  <div style={{ position: 'absolute', top: 9, left: 9, width: 160, height: 160, borderRadius: '50%', border: '1px dashed rgba(212,175,55,0.18)', animation: 'orbit 9s linear infinite reverse', pointerEvents: 'none' }}>
-                    <div style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 6, height: 6, borderRadius: '50%', background: '#d4af37', boxShadow: '0 0 8px #d4af37' }} />
+                  <div style={{ position: 'absolute', top: 9, left: 9, width: 160, height: 160, borderRadius: '50%', border: '2px solid rgba(212,175,55,0.6)', boxShadow: '0 0 12px rgba(212,175,55,0.3)', animation: 'orbit 5s linear infinite reverse', pointerEvents: 'none' }}>
+                    <div style={{ position: 'absolute', top: -5, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, borderRadius: '50%', background: '#d4af37', boxShadow: '0 0 14px #d4af37, 0 0 28px #d4af37' }} />
                   </div>
                   <Ring pct={animated ? profile.activation_pct : 0} size={138} stroke={13} color="#10b981">
                     <div style={{ fontSize: 30, fontWeight: 900, fontFamily: 'monospace' }}>{Math.round(activationRaw)}%</div>
@@ -684,7 +684,7 @@ export default function RFSPage() {
 
             {/* Footer — cashout amount */}
             <div className="card" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.22)', borderRadius: 14, padding: '22px 26px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg,transparent,rgba(212,175,55,0.6),transparent)', animation: 'scanH 5s linear infinite', pointerEvents: 'none' }}/>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: 'linear-gradient(90deg,transparent,#d4af37,#f5d87a,#d4af37,transparent)', boxShadow: '0 0 16px #d4af37', animation: 'scanH 2.5s linear infinite', pointerEvents: 'none' }}/>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <i className="fa-solid fa-sack-dollar" style={{ color: '#d4af37', fontSize: 28, flexShrink: 0, animation: 'floatY 3s ease-in-out infinite' }} />
                 <div>
