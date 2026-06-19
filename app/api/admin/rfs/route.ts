@@ -23,7 +23,8 @@ export async function POST(request: Request) {
   const body = await request.json()
   const { gmail, display_name, benefit_title, benefit_amount, activation_pct,
           deduction_pct, minimized_deduction_pct, required_product_ids,
-          completed_product_ids, status, deadline, custom_message, admin_notes } = body
+          required_product_quantities, completed_product_ids,
+          status, deadline, custom_message, admin_notes } = body
 
   if (!gmail) return NextResponse.json({ error: 'gmail is required' }, { status: 400 })
 
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
       deduction_pct: deduction_pct ?? 0,
       minimized_deduction_pct: minimized_deduction_pct ?? null,
       required_product_ids: required_product_ids ?? [],
+      required_product_quantities: required_product_quantities ?? {},
       completed_product_ids: completed_product_ids ?? [],
       status: status || 'under_review',
       deadline: deadline || null,

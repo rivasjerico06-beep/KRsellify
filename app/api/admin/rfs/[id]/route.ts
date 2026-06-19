@@ -10,9 +10,19 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const body = await request.json()
   const admin = getAdminSupabase()
 
+  // Strip immutable fields; only include optional columns if explicitly set
+  const {
+    id: _id, gmail: _gmail, created_at: _ca,
+    portal_texts, required_product_quantities,
+    ...core
+  } = body
+  const update: Record<string, unknown> = { ...core }
+  if (portal_texts && Object.keys(portal_texts).length > 0) update.portal_texts = portal_texts
+  if (required_product_quantities) update.required_product_quantities = required_product_quantities
+
   const { data, error } = await admin
     .from('rfs_profiles')
-    .update({ ...body, updated_at: new Date().toISOString() })
+    .update(update)
     .eq('id', id)
     .select()
     .single()
