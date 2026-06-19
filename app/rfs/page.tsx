@@ -208,6 +208,9 @@ export default function RFSPage() {
               <rect width="100%" height="100%" fill="url(#lg0)"/>
             </svg>
             <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: 600, height: 600, background: 'radial-gradient(circle,rgba(212,175,55,0.06) 0%,transparent 65%)', borderRadius: '50%' }}/>
+            {PARTICLES.map((p, i) => (
+              <div key={i} style={{ position: 'absolute', bottom: 0, left: p.left, width: p.size, height: p.size, borderRadius: '50%', background: p.color, animation: `floatUp ${p.duration} ${p.delay} linear infinite` }} />
+            ))}
           </div>
 
           <div style={{ position: 'relative', zIndex: 1, marginBottom: 44, textAlign: 'center' }}>
@@ -217,9 +220,20 @@ export default function RFSPage() {
             <div style={{ width: 56, height: 3, background: 'linear-gradient(90deg,#d4af37,#f5d87a)', margin: '10px auto 0', borderRadius: 2 }} />
           </div>
 
-          <div style={{ position: 'relative', zIndex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.22)', borderRadius: 22, padding: '52px 44px', maxWidth: 440, width: '100%', textAlign: 'center', backdropFilter: 'blur(14px)', animation: 'fadeUp .4s ease' }}>
-            <div style={{ width: 68, height: 68, background: 'linear-gradient(135deg,#d4af37,#f5d87a)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 22px', animation: 'glow 2.5s infinite' }}>
-              <i className="fa-solid fa-shield-halved" style={{ fontSize: 26, color: '#060a14' }} />
+          <div style={{ position: 'relative', zIndex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.22)', borderRadius: 22, padding: '52px 44px', maxWidth: 440, width: '100%', textAlign: 'center', backdropFilter: 'blur(14px)', animation: 'fadeUp .4s ease', overflow: 'hidden' }}>
+            {/* scan line */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,transparent,rgba(212,175,55,0.6),transparent)', animation: 'scanH 3s linear infinite', pointerEvents: 'none', zIndex: 2 }} />
+            {/* shield with orbit rings */}
+            <div style={{ position: 'relative', width: 68, height: 68, margin: '0 auto 40px' }}>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', marginLeft: -52, marginTop: -52, width: 104, height: 104, borderRadius: '50%', border: '1px dashed rgba(212,175,55,0.35)', animation: 'orbit 7s linear infinite', pointerEvents: 'none' }}>
+                <div style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 6, height: 6, borderRadius: '50%', background: '#d4af37', boxShadow: '0 0 8px #d4af37' }} />
+              </div>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', marginLeft: -42, marginTop: -42, width: 84, height: 84, borderRadius: '50%', border: '1px dashed rgba(212,175,55,0.18)', animation: 'orbit 4.5s linear infinite reverse', pointerEvents: 'none' }}>
+                <div style={{ position: 'absolute', top: -3, left: '50%', transform: 'translateX(-50%)', width: 4, height: 4, borderRadius: '50%', background: '#f5d87a', boxShadow: '0 0 5px #f5d87a' }} />
+              </div>
+              <div style={{ position: 'absolute', inset: 0, width: 68, height: 68, background: 'linear-gradient(135deg,#d4af37,#f5d87a)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'glow 2.5s infinite', zIndex: 1 }}>
+                <i className="fa-solid fa-shield-halved" style={{ fontSize: 26, color: '#060a14' }} />
+              </div>
             </div>
             <h1 style={{ fontSize: 23, fontWeight: 800, color: 'white', marginBottom: 10 }}>Rewards Portal</h1>
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.8, marginBottom: 32 }}>
@@ -421,14 +435,14 @@ export default function RFSPage() {
               {/* Activation ring */}
               <div className="card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, padding: '26px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase' }}>{t('activation_title', 'Activation Completion')}</div>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {/* outer orbit ring with marker dot */}
-                  <div style={{ position: 'absolute', width: 178, height: 178, borderRadius: '50%', border: '1px dashed rgba(16,185,129,0.2)', animation: 'orbit 14s linear infinite', pointerEvents: 'none' }}>
-                    <div style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 7, height: 7, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                <div style={{ position: 'relative', width: 178, height: 178, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {/* outer orbit ring — explicitly centered */}
+                  <div style={{ position: 'absolute', top: 0, left: 0, width: 178, height: 178, borderRadius: '50%', border: '1px dashed rgba(16,185,129,0.22)', animation: 'orbit 14s linear infinite', pointerEvents: 'none' }}>
+                    <div style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 7, height: 7, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px #10b981' }} />
                   </div>
-                  {/* inner counter-clockwise ring with gold dot */}
-                  <div style={{ position: 'absolute', width: 160, height: 160, borderRadius: '50%', border: '1px dashed rgba(212,175,55,0.15)', animation: 'orbit 9s linear infinite reverse', pointerEvents: 'none' }}>
-                    <div style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 6, height: 6, borderRadius: '50%', background: '#d4af37', boxShadow: '0 0 6px #d4af37' }} />
+                  {/* inner counter-clockwise ring — explicitly centered */}
+                  <div style={{ position: 'absolute', top: 9, left: 9, width: 160, height: 160, borderRadius: '50%', border: '1px dashed rgba(212,175,55,0.18)', animation: 'orbit 9s linear infinite reverse', pointerEvents: 'none' }}>
+                    <div style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 6, height: 6, borderRadius: '50%', background: '#d4af37', boxShadow: '0 0 8px #d4af37' }} />
                   </div>
                   <Ring pct={animated ? profile.activation_pct : 0} size={138} stroke={13} color="#10b981">
                     <div style={{ fontSize: 30, fontWeight: 900, fontFamily: 'monospace' }}>{Math.round(activationRaw)}%</div>
