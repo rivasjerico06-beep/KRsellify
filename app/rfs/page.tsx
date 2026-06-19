@@ -7,7 +7,7 @@ interface RFSProfile {
   benefit_amount: number; activation_pct: number; deduction_pct: number
   minimized_deduction_pct: number | null; required_products: ProductInfo[]
   completed_product_ids: string[]; status: string; deadline: string | null
-  custom_message: string | null
+  custom_message: string | null; portal_texts?: Record<string, string>
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -68,6 +68,10 @@ export default function RFSPage() {
   }
 
   function signOut() { setProfile(null); setEmail('') }
+
+  // Per-profile text overrides
+  const tx = (profile?.portal_texts ?? {}) as Record<string, string>
+  const t = (key: string, def: string) => tx[key] || def
 
   const completedCount = profile?.required_products.filter(p => profile.completed_product_ids.includes(p.id)).length ?? 0
   const totalRequired  = profile?.required_products.length ?? 0
@@ -178,7 +182,7 @@ export default function RFSPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <div style={{ fontSize: 17, fontWeight: 900, letterSpacing: 3 }}>MAGA <span style={{ color: '#d4af37' }}>OFFERS</span></div>
               <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.1)' }} />
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase' }}>Rewards Portal</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase' }}>{t('topbar_label', 'Rewards Portal')}</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{ textAlign: 'right' }}>
@@ -189,7 +193,7 @@ export default function RFSPage() {
                 {profile.display_name[0]?.toUpperCase()}
               </div>
               <button onClick={signOut} style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.65)', padding: '7px 16px', borderRadius: 50, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
-                Sign Out
+                {t('signout_btn', 'Sign Out')}
               </button>
             </div>
           </div>
@@ -200,9 +204,9 @@ export default function RFSPage() {
             {/* Welcome row */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.38)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>Welcome back,</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.38)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>{t('welcome_label', 'Welcome back,')}</div>
                 <h1 style={{ fontSize: 30, fontWeight: 900, color: '#d4af37', margin: 0, letterSpacing: -0.5 }}>{profile.display_name}</h1>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.42)', marginTop: 5 }}>Here&apos;s your activation and rewards overview</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.42)', marginTop: 5 }}>{t('welcome_sub', "Here's your activation and rewards overview")}</div>
               </div>
               <div className="card" style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${sc}38`, borderRadius: 16, padding: '16px 22px', minWidth: 230, maxWidth: 340 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
@@ -210,7 +214,7 @@ export default function RFSPage() {
                   <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, color: sc }}>STATUS: {STATUS_LABEL[profile.status] ?? profile.status.toUpperCase()}</span>
                 </div>
                 <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>
-                  {profile.custom_message || 'Your account is currently being processed. You will be notified once the review is complete.'}
+                  {profile.custom_message || t('status_fallback', 'Your account is currently being processed. You will be notified once the review is complete.')}
                 </div>
               </div>
             </div>
@@ -224,27 +228,27 @@ export default function RFSPage() {
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>{profile.benefit_title}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
                   <i className="fa-solid fa-circle-info" style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)' }} />
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>Your estimated reward amount</span>
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>{t('benefit_sub', 'Your estimated reward amount')}</span>
                 </div>
                 <div style={{ fontSize: 38, fontWeight: 900, color: '#d4af37', letterSpacing: -1 }}>{benefitStr}</div>
                 <div style={{ marginTop: 18, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                   <i className="fa-solid fa-clock" style={{ fontSize: 11, color: '#d4af37', marginTop: 2, flexShrink: 0 }} />
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.42)', lineHeight: 1.6 }}>This amount will be available once your activation process is fully completed.</span>
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.42)', lineHeight: 1.6 }}>{t('benefit_note', 'This amount will be available once your activation process is fully completed.')}</span>
                 </div>
               </div>
 
               {/* Activation ring */}
               <div className="card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, padding: '26px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase' }}>Activation Completion</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase' }}>{t('activation_title', 'Activation Completion')}</div>
                 <Ring pct={profile.activation_pct} size={134} stroke={13} color="#10b981">
                   <div style={{ fontSize: 30, fontWeight: 900 }}>{profile.activation_pct}%</div>
                   <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: 1 }}>COMPLETED</div>
                 </Ring>
                 <div style={{ textAlign: 'center' }}>
                   {profile.activation_pct < 100
-                    ? <><div style={{ fontSize: 13, fontWeight: 700, color: '#10b981', marginBottom: 4 }}>You are almost there!</div>
-                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', lineHeight: 1.6 }}>Complete the remaining requirements to proceed with your activation.</div></>
-                    : <div style={{ fontSize: 13, fontWeight: 800, color: '#10b981' }}>Activation Complete!</div>
+                    ? <><div style={{ fontSize: 13, fontWeight: 700, color: '#10b981', marginBottom: 4 }}>{t('activation_msg', 'You are almost there!')}</div>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', lineHeight: 1.6 }}>{t('activation_sub', 'Complete the remaining requirements to proceed with your activation.')}</div></>
+                    : <div style={{ fontSize: 13, fontWeight: 800, color: '#10b981' }}>{t('activation_complete', 'Activation Complete!')}</div>
                   }
                 </div>
               </div>
@@ -252,16 +256,16 @@ export default function RFSPage() {
               {/* Deduction summary */}
               {profile.deduction_pct > 0 && (
                 <div className="card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(239,68,68,0.18)', borderRadius: 18, padding: '26px 24px' }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#f87171', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 18 }}>Deduction Summary (First Cash-Out)</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#f87171', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 18 }}>{t('deduction_title', 'Deduction Summary (First Cash-Out)')}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 16 }}>
                     <Ring pct={profile.deduction_pct} size={90} stroke={10} color="#ef4444">
                       <div style={{ fontSize: 17, fontWeight: 900, color: '#ef4444' }}>{profile.deduction_pct}%</div>
                       <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.35)', letterSpacing: 0.5 }}>DEDUCTION</div>
                     </Ring>
                     <div>
-                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginBottom: 2 }}>CURRENT DEDUCTION</div>
+                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginBottom: 2 }}>{t('deduction_cur_label', 'CURRENT DEDUCTION')}</div>
                       <div style={{ fontSize: 24, fontWeight: 900, color: '#ef4444', marginBottom: 10 }}>{profile.deduction_pct}%</div>
-                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginBottom: 2 }}>AMOUNT</div>
+                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginBottom: 2 }}>{t('deduction_amt_label', 'AMOUNT')}</div>
                       <div style={{ fontSize: 17, fontWeight: 800, color: '#ef4444' }}>
                         ${(Number(profile.benefit_amount) * profile.deduction_pct / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </div>
@@ -270,7 +274,7 @@ export default function RFSPage() {
                   {profile.minimized_deduction_pct !== null && pending > 0 && (
                     <div style={{ background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>
-                        Complete {pending} required product{pending > 1 ? 's' : ''} to minimize your deduction to <strong style={{ color: '#10b981' }}>{profile.minimized_deduction_pct}%</strong>
+                        {t('deduction_minimize_prefix', 'Complete')} {pending} required product{pending > 1 ? 's' : ''} {t('deduction_minimize_suffix', 'to minimize your deduction to')} <strong style={{ color: '#10b981' }}>{profile.minimized_deduction_pct}%</strong>
                       </div>
                       <div style={{ fontSize: 18, fontWeight: 900, color: '#10b981', flexShrink: 0 }}>{profile.minimized_deduction_pct}%</div>
                     </div>
@@ -285,8 +289,8 @@ export default function RFSPage() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 22 }}>
                   <i className="fa-solid fa-triangle-exclamation" style={{ color: '#d4af37', marginTop: 2, flexShrink: 0 }} />
                   <div style={{ fontSize: 14, fontWeight: 800, color: '#d4af37', lineHeight: 1.5 }}>
-                    Action Required: Complete the required product purchase to restore your account to the priority processing list.
-                    {profile.minimized_deduction_pct !== null && <span style={{ fontWeight: 400, color: 'rgba(255,255,255,0.45)', fontSize: 13 }}> Completing them reduces your deduction to only {profile.minimized_deduction_pct}%.</span>}
+                    {t('required_header', 'Action Required: Complete the required product purchase to restore your account to the priority processing list.')}
+                    {profile.minimized_deduction_pct !== null && <span style={{ fontWeight: 400, color: 'rgba(255,255,255,0.45)', fontSize: 13 }}> {t('required_deduction_note', 'Completing them reduces your deduction to only')} {profile.minimized_deduction_pct}%.</span>}
                   </div>
                 </div>
 
@@ -319,12 +323,12 @@ export default function RFSPage() {
                         </div>
                         {done ? (
                           <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 8, padding: '9px 14px', textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#10b981' }}>
-                            <i className="fa-solid fa-circle-check" style={{ marginRight: 6 }} />Completed
+                            <i className="fa-solid fa-circle-check" style={{ marginRight: 6 }} />{t('product_completed_btn', 'Completed')}
                           </div>
                         ) : (
                           <a href={`/products/${p.id}`} target="_blank" rel="noopener noreferrer" className="buy-btn"
                             style={{ background: 'linear-gradient(135deg,#d4af37,#f5d87a)', color: '#060a14', borderRadius: 8, padding: '10px 14px', textAlign: 'center', fontSize: 13, fontWeight: 800, textDecoration: 'none', display: 'block', letterSpacing: 0.5 }}>
-                            Buy Now
+                            {t('product_buy_btn', 'Buy Now')}
                           </a>
                         )}
                       </div>
@@ -335,7 +339,7 @@ export default function RFSPage() {
                 {/* Progress bar */}
                 <div style={{ marginTop: 18, padding: '15px 18px', background: 'rgba(255,255,255,0.025)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>Products Completed</span>
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>{t('progress_label', 'Products Completed')}</span>
                     <span style={{ fontSize: 12, fontWeight: 800 }}>{completedCount} / {totalRequired}</span>
                   </div>
                   <div style={{ height: 7, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden' }}>
@@ -348,13 +352,13 @@ export default function RFSPage() {
             {/* Timeline + Deadline */}
             <div style={{ display: 'grid', gridTemplateColumns: deadlineStr ? 'minmax(0,1.4fr) minmax(0,1fr)' : '1fr', gap: 18, marginBottom: 18 }}>
               <div className="card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: '24px' }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 22 }}>Activation Review Process</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 22 }}>{t('timeline_title', 'Activation Review Process')}</div>
                 {[
-                  { label: 'Request Received',   sub: 'Complete',                                          done: true },
-                  { label: 'Under Review',        sub: 'In Progress',                                       active: profile.status === 'under_review' },
-                  { label: 'Compliance Check',    sub: profile.activation_pct >= 50 ? 'Complete' : 'Pending', done: profile.activation_pct >= 50 },
-                  { label: 'Final Verification',  sub: profile.activation_pct >= 80 ? 'Complete' : 'Pending', done: profile.activation_pct >= 80 },
-                  { label: 'Activation Approval', sub: profile.status === 'completed' ? 'Complete' : 'Pending', done: profile.status === 'completed' },
+                  { label: t('step1_label', 'Request Received'),   sub: t('step1_sub', 'Complete'),      done: true },
+                  { label: t('step2_label', 'Under Review'),        sub: t('step2_sub', 'In Progress'),    active: profile.status === 'under_review' },
+                  { label: t('step3_label', 'Compliance Check'),    sub: profile.activation_pct >= 50 ? t('step_done', 'Complete') : t('step_pending', 'Pending'), done: profile.activation_pct >= 50 },
+                  { label: t('step4_label', 'Final Verification'),  sub: profile.activation_pct >= 80 ? t('step_done', 'Complete') : t('step_pending', 'Pending'), done: profile.activation_pct >= 80 },
+                  { label: t('step5_label', 'Activation Approval'), sub: profile.status === 'completed' ? t('step_done', 'Complete') : t('step_pending', 'Pending'), done: profile.status === 'completed' },
                 ].map((s, i) => (
                   <div key={i} style={{ display: 'flex', gap: 14 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -383,15 +387,15 @@ export default function RFSPage() {
                     <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <i className="fa-solid fa-calendar-xmark" style={{ color: '#ef4444', fontSize: 16 }} />
                     </div>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: '#f87171', letterSpacing: 1, textTransform: 'uppercase' }}>Requirement Deadline</div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: '#f87171', letterSpacing: 1, textTransform: 'uppercase' }}>{t('deadline_title', 'Requirement Deadline')}</div>
                   </div>
                   <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.7 }}>
-                    You must complete all required products before the deadline to avoid any delays or cancellation.
+                    {t('deadline_sub', 'You must complete all required products before the deadline to avoid any delays or cancellation.')}
                   </p>
                   <div style={{ fontSize: 26, fontWeight: 900, color: '#ef4444', letterSpacing: 0.5 }}>{deadlineStr}</div>
                   <div style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.14)', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: '#fca5a5', lineHeight: 1.6 }}>
                     <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }} />
-                    Deadline is final and non-extendable.
+                    {t('deadline_note', 'Deadline is final and non-extendable.')}
                   </div>
                 </div>
               )}
@@ -401,7 +405,7 @@ export default function RFSPage() {
             <div className="card" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.22)', borderRadius: 14, padding: '22px 26px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <i className="fa-solid fa-sack-dollar" style={{ color: '#d4af37', fontSize: 28, flexShrink: 0 }} />
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase' }}>Possible Cash-Out Amount</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase' }}>{t('cashout_label', 'Possible Cash-Out Amount')}</div>
               </div>
               <div style={{ fontSize: 36, fontWeight: 900, color: '#d4af37', letterSpacing: -1 }}>{benefitStr}</div>
             </div>

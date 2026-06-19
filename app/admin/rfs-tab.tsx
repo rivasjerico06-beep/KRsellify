@@ -10,7 +10,62 @@ interface RFSProfile {
   required_product_quantities: Record<string, number>
   completed_product_ids: string[]; status: string; deadline: string | null
   custom_message: string | null; admin_notes: string | null; created_at: string
+  portal_texts: Record<string, string>
 }
+
+const TEXT_GROUPS = [
+  { group: 'Top Bar & Header', fields: [
+    { key: 'topbar_label',   label: 'Top Bar Label',      def: 'Rewards Portal' },
+    { key: 'welcome_label',  label: 'Welcome Label',      def: 'Welcome back,' },
+    { key: 'welcome_sub',    label: 'Welcome Subtitle',   def: "Here's your activation and rewards overview" },
+    { key: 'status_fallback',label: 'Status Fallback Msg',def: 'Your account is currently being processed. You will be notified once the review is complete.' },
+    { key: 'signout_btn',    label: 'Sign Out Button',    def: 'Sign Out' },
+  ]},
+  { group: 'Benefit Card', fields: [
+    { key: 'benefit_sub',  label: 'Benefit Subtitle', def: 'Your estimated reward amount' },
+    { key: 'benefit_note', label: 'Benefit Note',     def: 'This amount will be available once your activation process is fully completed.' },
+  ]},
+  { group: 'Activation Ring', fields: [
+    { key: 'activation_title',    label: 'Ring Title',          def: 'Activation Completion' },
+    { key: 'activation_msg',      label: 'Progress Message',    def: 'You are almost there!' },
+    { key: 'activation_sub',      label: 'Progress Subtitle',   def: 'Complete the remaining requirements to proceed with your activation.' },
+    { key: 'activation_complete', label: 'Complete Message',    def: 'Activation Complete!' },
+  ]},
+  { group: 'Deduction Card', fields: [
+    { key: 'deduction_title',           label: 'Deduction Title',           def: 'Deduction Summary (First Cash-Out)' },
+    { key: 'deduction_cur_label',       label: 'Current Deduction Label',   def: 'CURRENT DEDUCTION' },
+    { key: 'deduction_amt_label',       label: 'Amount Label',              def: 'AMOUNT' },
+    { key: 'deduction_minimize_prefix', label: 'Minimize Prefix',           def: 'Complete' },
+    { key: 'deduction_minimize_suffix', label: 'Minimize Suffix',           def: 'to minimize your deduction to' },
+  ]},
+  { group: 'Required Products', fields: [
+    { key: 'required_header',       label: 'Section Header',        def: 'Action Required: Complete the required product purchase to restore your account to the priority processing list.' },
+    { key: 'required_deduction_note',label: 'Deduction Reduction Note', def: 'Completing them reduces your deduction to only' },
+    { key: 'product_buy_btn',       label: 'Buy Now Button',        def: 'Buy Now' },
+    { key: 'product_completed_btn', label: 'Completed Label',       def: 'Completed' },
+    { key: 'progress_label',        label: 'Progress Bar Label',    def: 'Products Completed' },
+  ]},
+  { group: 'Timeline Steps', fields: [
+    { key: 'timeline_title', label: 'Timeline Title',    def: 'Activation Review Process' },
+    { key: 'step1_label',    label: 'Step 1 Label',      def: 'Request Received' },
+    { key: 'step1_sub',      label: 'Step 1 Sub',        def: 'Complete' },
+    { key: 'step2_label',    label: 'Step 2 Label',      def: 'Under Review' },
+    { key: 'step2_sub',      label: 'Step 2 Sub',        def: 'In Progress' },
+    { key: 'step3_label',    label: 'Step 3 Label',      def: 'Compliance Check' },
+    { key: 'step4_label',    label: 'Step 4 Label',      def: 'Final Verification' },
+    { key: 'step5_label',    label: 'Step 5 Label',      def: 'Activation Approval' },
+    { key: 'step_done',      label: 'Step Done Sub',     def: 'Complete' },
+    { key: 'step_pending',   label: 'Step Pending Sub',  def: 'Pending' },
+  ]},
+  { group: 'Deadline Card', fields: [
+    { key: 'deadline_title', label: 'Deadline Title', def: 'Requirement Deadline' },
+    { key: 'deadline_sub',   label: 'Deadline Body',  def: 'You must complete all required products before the deadline to avoid any delays or cancellation.' },
+    { key: 'deadline_note',  label: 'Deadline Note',  def: 'Deadline is final and non-extendable.' },
+  ]},
+  { group: 'Footer', fields: [
+    { key: 'cashout_label', label: 'Cash-Out Label', def: 'Possible Cash-Out Amount' },
+  ]},
+]
 
 const STATUSES = ['under_review','active','pending','completed','suspended']
 const STATUS_COLOR: Record<string,string> = {
@@ -28,6 +83,7 @@ function empty(): Partial<RFSProfile> {
     benefit_amount:0, activation_pct:0, deduction_pct:0, minimized_deduction_pct:null,
     required_product_ids:[], required_product_quantities:{}, completed_product_ids:[],
     status:'under_review', deadline:null, custom_message:null, admin_notes:null,
+    portal_texts:{},
   }
 }
 
@@ -40,6 +96,7 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
   const [saving, setSaving]               = useState(false)
   const [flash, setFlash]                 = useState('')
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [showTexts, setShowTexts]         = useState(false)
   const { isDark } = useTheme()
   const D = {
     bg:      isDark ? '#0f1e2e' : '#f8fafc',
@@ -346,6 +403,63 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
                   </div>
                 </Field>
               )}
+
+              {/* Portal Text Labels */}
+              <div style={{ border:`1.5px solid ${D.border}`, borderRadius:10, overflow:'hidden' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowTexts(v => !v)}
+                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:D.btnBg, border:'none', cursor:'pointer', fontFamily:'inherit', color:D.text, fontSize:13, fontWeight:700 }}>
+                  <span><i className="fa-solid fa-pen-to-square" style={{ marginRight:8, color:'var(--teal)', fontSize:12 }}/>Portal Page Text Labels</span>
+                  <i className={`fa-solid fa-chevron-${showTexts?'up':'down'}`} style={{ fontSize:11, color:D.muted }}/>
+                </button>
+                {showTexts && (
+                  <div style={{ padding:'16px', display:'flex', flexDirection:'column', gap:18, background:D.bg }}>
+                    <p style={{ fontSize:11, color:D.muted, margin:0, lineHeight:1.6 }}>
+                      Override any text shown on the customer&apos;s RFS dashboard. Leave blank to use the default.
+                    </p>
+                    {TEXT_GROUPS.map(grp => (
+                      <div key={grp.group}>
+                        <div style={{ fontSize:10, fontWeight:800, color:D.muted, textTransform:'uppercase', letterSpacing:.8, marginBottom:10, paddingBottom:6, borderBottom:`1px solid ${D.border}` }}>{grp.group}</div>
+                        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                          {grp.fields.map(f => {
+                            const val = (editing.portal_texts??{})[f.key] ?? ''
+                            const isLong = f.def.length > 60
+                            return (
+                              <div key={f.key} style={{ display:'flex', flexDirection:'column', gap:4 }}>
+                                <label style={{ fontSize:11, fontWeight:700, color:D.muted, display:'flex', justifyContent:'space-between' }}>
+                                  <span>{f.label}</span>
+                                  {val && <span style={{ color:'var(--teal)', fontWeight:600 }}>custom</span>}
+                                </label>
+                                {isLong ? (
+                                  <textarea
+                                    value={val}
+                                    onChange={e => setEditing({...editing, portal_texts:{...(editing.portal_texts??{}), [f.key]: e.target.value}})}
+                                    placeholder={f.def}
+                                    rows={2}
+                                    style={{ ...inp(), resize:'vertical', height:'auto', fontSize:12 }}/>
+                                ) : (
+                                  <input
+                                    value={val}
+                                    onChange={e => setEditing({...editing, portal_texts:{...(editing.portal_texts??{}), [f.key]: e.target.value}})}
+                                    placeholder={f.def}
+                                    style={{ ...inp(), fontSize:12 }}/>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setEditing({...editing, portal_texts:{}})}
+                      style={{ alignSelf:'flex-start', background:'#fee2e2', border:'none', borderRadius:6, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600, color:'#dc2626', fontFamily:'inherit' }}>
+                      <i className="fa-solid fa-rotate-left" style={{ marginRight:5 }}/>Reset all to defaults
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Drawer footer */}
