@@ -101,6 +101,14 @@ function Ring({ pct, size, stroke, color, children }: {
 
 const BG = 'linear-gradient(145deg,#060a14 0%,#0a1020 60%,#070c18 100%)'
 
+const PARTICLES = Array.from({ length: 22 }, (_, i) => ({
+  left: `${(i * 13 + 7) % 97}%`,
+  duration: `${7 + ((i * 131) % 800) / 100}s`,
+  delay: `-${((i * 73) % 700) / 100}s`,
+  size: i % 4 === 0 ? 2.5 : 1.5,
+  color: i % 6 === 0 ? 'rgba(16,185,129,0.75)' : i % 3 === 0 ? 'rgba(59,130,246,0.5)' : 'rgba(212,175,55,0.55)',
+}))
+
 export default function RFSPage() {
   const [email, setEmail]       = useState('')
   const [loading, setLoading]   = useState(false)
@@ -173,6 +181,12 @@ export default function RFSPage() {
         @keyframes techGlow{0%,100%{text-shadow:0 0 14px rgba(212,175,55,0.35)}50%{text-shadow:0 0 32px rgba(212,175,55,0.75)}}
         @keyframes barIn{from{width:0}to{width:var(--bw)}}
         @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+        @keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes pulseRing{0%{transform:scale(1);opacity:0.7}100%{transform:scale(3.5);opacity:0}}
+        @keyframes floatUp{0%{transform:translateY(0);opacity:0}12%{opacity:0.8}80%{opacity:0.35}100%{transform:translateY(-100vh);opacity:0}}
+        @keyframes rotateBorder{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+        @keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
         .card{animation:fadeUp .45s ease both}
         .buy-btn:hover{opacity:.85;transform:translateY(-1px)}
         .buy-btn{transition:all .2s}
@@ -265,6 +279,10 @@ export default function RFSPage() {
             </svg>
             <div style={{ position: 'absolute', top: -200, right: -150, width: 700, height: 700, background: 'radial-gradient(circle,rgba(212,175,55,0.065) 0%,transparent 65%)', borderRadius: '50%' }}/>
             <div style={{ position: 'absolute', bottom: -300, left: -200, width: 600, height: 600, background: 'radial-gradient(circle,rgba(16,185,129,0.04) 0%,transparent 65%)', borderRadius: '50%' }}/>
+            {/* Floating particles */}
+            {PARTICLES.map((p, i) => (
+              <div key={i} style={{ position: 'absolute', bottom: 0, left: p.left, width: p.size, height: p.size, borderRadius: '50%', background: p.color, animation: `floatUp ${p.duration} ${p.delay} linear infinite`, pointerEvents: 'none' }} />
+            ))}
           </div>
 
           {/* Top bar */}
@@ -324,6 +342,32 @@ export default function RFSPage() {
               </div>
             </div>
 
+            {/* Scrolling data ticker */}
+            <div style={{ overflow: 'hidden', marginBottom: 18, borderRadius: 8, border: '1px solid rgba(212,175,55,0.08)', background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(6px)' }}>
+              <div style={{ display: 'inline-flex', whiteSpace: 'nowrap', animation: 'ticker 24s linear infinite' }}>
+                {[0, 1].map(rep => (
+                  <span key={rep} style={{ display: 'inline-flex', alignItems: 'center', fontFamily: 'monospace', fontSize: 11, padding: '7px 0', color: 'rgba(255,255,255,0.28)', letterSpacing: 0.5 }}>
+                    <span style={{ color: '#d4af37', margin: '0 20px' }}>◈</span>
+                    <span>BENEFIT <span style={{ color: '#d4af37' }}>${Number(profile.benefit_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></span>
+                    <span style={{ color: '#d4af37', margin: '0 20px' }}>◈</span>
+                    <span>ACTIVATION <span style={{ color: '#10b981' }}>{profile.activation_pct}%</span></span>
+                    <span style={{ color: '#d4af37', margin: '0 20px' }}>◈</span>
+                    <span>STATUS <span style={{ color: sc }}>{STATUS_LABEL[profile.status] ?? 'PROCESSING'}</span></span>
+                    <span style={{ color: '#d4af37', margin: '0 20px' }}>◈</span>
+                    <span>DEDUCTION <span style={{ color: '#ef4444' }}>{profile.deduction_pct}%</span></span>
+                    <span style={{ color: '#d4af37', margin: '0 20px' }}>◈</span>
+                    <span>CASHOUT <span style={{ color: '#d4af37' }}>${(Number(profile.benefit_amount) * (1 - profile.deduction_pct / 100)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></span>
+                    <span style={{ color: '#d4af37', margin: '0 20px' }}>◈</span>
+                    <span>ACCT <span style={{ color: 'rgba(255,255,255,0.45)' }}>#{profile.id.slice(-8).toUpperCase()}</span></span>
+                    <span style={{ color: '#d4af37', margin: '0 20px' }}>◈</span>
+                    <span>PORTAL <span style={{ color: '#10b981' }}>SECURE</span></span>
+                    <span style={{ color: '#d4af37', margin: '0 20px' }}>◈</span>
+                    <span>ENCRYPTION <span style={{ color: '#3b82f6' }}>AES-256</span></span>
+                  </span>
+                ))}
+              </div>
+            </div>
+
             {/* Welcome row */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
               <div>
@@ -333,7 +377,11 @@ export default function RFSPage() {
               </div>
               <div className="card" style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${sc}38`, borderRadius: 16, padding: '16px 22px', minWidth: 230, maxWidth: 340 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: sc, boxShadow: `0 0 10px ${sc}`, animation: 'livePulse 2s ease-in-out infinite' }} />
+                  <div style={{ position: 'relative', width: 8, height: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ position: 'absolute', width: 20, height: 20, borderRadius: '50%', border: `1.5px solid ${sc}`, animation: 'pulseRing 2s ease-out infinite' }} />
+                    <div style={{ position: 'absolute', width: 20, height: 20, borderRadius: '50%', border: `1.5px solid ${sc}`, animation: 'pulseRing 2s ease-out 0.7s infinite' }} />
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: sc, boxShadow: `0 0 10px ${sc}`, flexShrink: 0 }} />
+                  </div>
                   <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, color: sc }}>STATUS: {STATUS_LABEL[profile.status] ?? profile.status.toUpperCase()}</span>
                 </div>
                 <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>
@@ -345,8 +393,10 @@ export default function RFSPage() {
             {/* Row 1: Benefit + Activation Ring + Deduction */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(270px,1fr))', gap: 18, marginBottom: 18 }}>
 
-              {/* Benefit card */}
-              <div className="card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 18, padding: '26px 24px', position: 'relative', overflow: 'hidden' }}>
+              {/* Benefit card — rotating gradient border */}
+              <div className="card" style={{ position: 'relative', borderRadius: 19, overflow: 'hidden', padding: 1.5 }}>
+                <div style={{ position: 'absolute', inset: -80, background: 'conic-gradient(from 0deg, transparent 55%, rgba(212,175,55,0.55) 72%, rgba(245,216,122,0.25) 82%, transparent 96%)', animation: 'rotateBorder 4s linear infinite', pointerEvents: 'none', zIndex: 0 }} />
+                <div style={{ position: 'relative', zIndex: 1, background: 'rgba(5,9,18,0.97)', borderRadius: 17, padding: '26px 24px', overflow: 'hidden' }}>
                 {/* scan line animation */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg,transparent,rgba(212,175,55,0.5),transparent)', animation: 'scanH 4s linear 1s infinite', pointerEvents: 'none' }}/>
                 <div style={{ position: 'absolute', top: 0, right: 0, width: 130, height: 130, background: 'radial-gradient(circle,rgba(212,175,55,0.1) 0%,transparent 70%)', pointerEvents: 'none' }} />
@@ -365,15 +415,26 @@ export default function RFSPage() {
                   <i className="fa-solid fa-clock" style={{ fontSize: 11, color: '#d4af37', marginTop: 2, flexShrink: 0 }} />
                   <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.42)', lineHeight: 1.6 }}>{t('benefit_note', 'This amount will be available once your activation process is fully completed.')}</span>
                 </div>
-              </div>
+                </div>{/* end inner card */}
+              </div>{/* end rotating border wrapper */}
 
               {/* Activation ring */}
               <div className="card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, padding: '26px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase' }}>{t('activation_title', 'Activation Completion')}</div>
-                <Ring pct={animated ? profile.activation_pct : 0} size={138} stroke={13} color="#10b981">
-                  <div style={{ fontSize: 30, fontWeight: 900, fontFamily: 'monospace' }}>{Math.round(activationRaw)}%</div>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: 1 }}>COMPLETED</div>
-                </Ring>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {/* outer orbit ring with marker dot */}
+                  <div style={{ position: 'absolute', width: 178, height: 178, borderRadius: '50%', border: '1px dashed rgba(16,185,129,0.2)', animation: 'orbit 14s linear infinite', pointerEvents: 'none' }}>
+                    <div style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 7, height: 7, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                  </div>
+                  {/* inner counter-clockwise ring with gold dot */}
+                  <div style={{ position: 'absolute', width: 160, height: 160, borderRadius: '50%', border: '1px dashed rgba(212,175,55,0.15)', animation: 'orbit 9s linear infinite reverse', pointerEvents: 'none' }}>
+                    <div style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 6, height: 6, borderRadius: '50%', background: '#d4af37', boxShadow: '0 0 6px #d4af37' }} />
+                  </div>
+                  <Ring pct={animated ? profile.activation_pct : 0} size={138} stroke={13} color="#10b981">
+                    <div style={{ fontSize: 30, fontWeight: 900, fontFamily: 'monospace' }}>{Math.round(activationRaw)}%</div>
+                    <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: 1 }}>COMPLETED</div>
+                  </Ring>
+                </div>
                 {/* Mini tick marks around ring area */}
                 <div style={{ textAlign: 'center' }}>
                   {profile.activation_pct < 100
@@ -518,7 +579,9 @@ export default function RFSPage() {
                     <span style={{ fontSize: 12, fontWeight: 800, fontFamily: 'monospace' }}>{completedCount} / {totalRequired}</span>
                   </div>
                   <div style={{ height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
-                    <div style={{ height: '100%', width: `${animated && totalRequired > 0 ? (completedCount / totalRequired) * 100 : 0}%`, background: 'linear-gradient(90deg,#10b981,#34d399)', borderRadius: 4, transition: 'width 1.4s cubic-bezier(0.22,1,0.36,1)', boxShadow: '0 0 10px rgba(16,185,129,0.5)' }} />
+                    <div style={{ height: '100%', width: `${animated && totalRequired > 0 ? (completedCount / totalRequired) * 100 : 0}%`, background: 'linear-gradient(90deg,#10b981,#34d399)', borderRadius: 4, transition: 'width 1.4s cubic-bezier(0.22,1,0.36,1)', boxShadow: '0 0 10px rgba(16,185,129,0.5)', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.35) 50%,transparent 100%)', animation: 'shimmer 2.2s ease-in-out infinite' }} />
+                    </div>
                   </div>
                   {/* Segment markers */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
