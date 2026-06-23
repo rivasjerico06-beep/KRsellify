@@ -31,11 +31,9 @@ const TEXT_GROUPS = [
     { key: 'activation_complete', label: 'Complete Message',    def: 'Activation Complete!' },
   ]},
   { group: 'Deduction Card', fields: [
-    { key: 'deduction_title',           label: 'Deduction Title',           def: 'Deduction Summary (First Cash-Out)' },
-    { key: 'deduction_cur_label',       label: 'Current Deduction Label',   def: 'CURRENT DEDUCTION' },
-    { key: 'deduction_amt_label',       label: 'Amount Label',              def: 'AMOUNT' },
-    { key: 'deduction_minimize_prefix', label: 'Minimize Prefix',           def: 'Complete' },
-    { key: 'deduction_minimize_suffix', label: 'Minimize Suffix',           def: 'to minimize your deduction to' },
+    { key: 'deduction_title',     label: 'Deduction Title',         def: 'Deduction Summary (First Cash-Out)' },
+    { key: 'deduction_cur_label', label: 'Current Deduction Label', def: 'CURRENT DEDUCTION' },
+    { key: 'deduction_amt_label', label: 'Amount Label',            def: 'AMOUNT' },
   ]},
   { group: 'Required Products', fields: [
     { key: 'required_deduction_note',label: 'Deduction Reduction Note', def: 'Completing them reduces your deduction to only' },
@@ -378,6 +376,27 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
                   rows={2}
                   style={{ ...inp(), resize:'vertical', height:'auto' }}/>
               </Field>
+
+              {/* Deduction minimize hint */}
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
+                <Field label="Deduction Hint — Prefix" color={D.muted}>
+                  <input
+                    value={(editing.portal_texts??{})['deduction_minimize_prefix'] ?? ''}
+                    onChange={e => setEditing({...editing, portal_texts:{...(editing.portal_texts??{}), deduction_minimize_prefix: e.target.value}})}
+                    placeholder="Complete"
+                    style={inp()}/>
+                </Field>
+                <Field label="Deduction Hint — Suffix" color={D.muted}>
+                  <input
+                    value={(editing.portal_texts??{})['deduction_minimize_suffix'] ?? ''}
+                    onChange={e => setEditing({...editing, portal_texts:{...(editing.portal_texts??{}), deduction_minimize_suffix: e.target.value}})}
+                    placeholder="to minimize your deduction"
+                    style={inp()}/>
+                </Field>
+              </div>
+              <p style={{ fontSize:11, color:D.muted, margin:'-10px 0 0', lineHeight:1.5 }}>
+                Shown as: <em>[Prefix] N required product(s) [Suffix]</em> — e.g. &ldquo;Complete 1 required product to minimize your deduction&rdquo;
+              </p>
 
               {/* Required products */}
               <Field label={`Required Products (${(editing.required_product_ids??[]).length} selected)`} color={D.muted}>
