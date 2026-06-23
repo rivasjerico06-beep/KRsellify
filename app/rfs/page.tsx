@@ -115,6 +115,7 @@ export default function RFSPage() {
   const [error, setError]       = useState('')
   const [profile, setProfile]   = useState<RFSProfile | null>(null)
   const [animated, setAnimated] = useState(false)
+  const [activeTab, setActiveTab] = useState<'dashboard'|'cashout'|'wallets'|'transactions'|'history'>('dashboard')
 
   const benefitRaw    = useCountUp(profile ? Number(profile.benefit_amount) : 0, 2400)
   const activationRaw = useCountUp(profile ? profile.activation_pct : 0, 1800)
@@ -153,7 +154,7 @@ export default function RFSPage() {
     }
   }
 
-  function signOut() { setProfile(null); setEmail('') }
+  function signOut() { setProfile(null); setEmail(''); setActiveTab('dashboard') }
 
   const tx = (profile?.portal_texts ?? {}) as Record<string, string>
   const t = (key: string, def: string) => tx[key] || def
@@ -192,6 +193,7 @@ export default function RFSPage() {
         @keyframes rotateBorder{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
         @keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+        @media(max-width:600px){.rfs-nav-lbl{display:none!important}.rfs-sidebar{width:62px!important}}
         .card{animation:fadeUp .45s ease both}
         .buy-btn:hover{opacity:.85;transform:translateY(-1px)}
         .buy-btn{transition:all .2s}
@@ -280,7 +282,7 @@ export default function RFSPage() {
         </div>
       ) : (
         /* ── DASHBOARD ─────────────────────────────── */
-        <div style={{ minHeight: '100vh', background: BG, fontFamily: 'system-ui,sans-serif', color: 'white', position: 'relative' }}>
+        <div style={{ height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: BG, fontFamily: 'system-ui,sans-serif', color: 'white', position: 'relative' }}>
 
           {/* Technical grid background */}
           <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
@@ -305,7 +307,7 @@ export default function RFSPage() {
           </div>
 
           {/* Top bar */}
-          <div style={{ zIndex: 20, background: 'rgba(6,10,20,0.94)', borderBottom: '1px solid rgba(212,175,55,0.12)', padding: '13px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, backdropFilter: 'blur(16px)' }}>
+          <div style={{ zIndex: 20, background: 'rgba(6,10,20,0.94)', borderBottom: '1px solid rgba(212,175,55,0.12)', padding: '13px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, backdropFilter: 'blur(16px)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <div style={{ fontSize: 17, fontWeight: 900, letterSpacing: 3 }}>MAGA <span style={{ color: '#d4af37' }}>OFFERS</span></div>
               <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.1)' }} />
@@ -325,8 +327,31 @@ export default function RFSPage() {
             </div>
           </div>
 
-          {/* Content */}
-          <div style={{ position: 'relative', zIndex: 1, maxWidth: 1180, margin: '0 auto', padding: '24px 20px 48px' }}>
+          {/* Body: sidebar + main */}
+          <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
+
+            {/* Sidebar nav */}
+            <div className="rfs-sidebar" style={{ width: 200, flexShrink: 0, borderRight: '1px solid rgba(212,175,55,0.12)', background: 'rgba(5,9,18,0.96)', backdropFilter: 'blur(16px)', display: 'flex', flexDirection: 'column', paddingTop: 16, overflowY: 'auto' }}>
+              {([
+                { id: 'dashboard',    label: 'Dashboard',    icon: 'fa-house' },
+                { id: 'cashout',      label: 'Cash Out',     icon: 'fa-sack-dollar' },
+                { id: 'wallets',      label: 'Wallets',      icon: 'fa-wallet' },
+                { id: 'transactions', label: 'Transactions', icon: 'fa-right-left' },
+                { id: 'history',      label: 'History',      icon: 'fa-clock-rotate-left' },
+              ] as const).map(item => (
+                <button key={item.id} onClick={() => setActiveTab(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '13px 22px', border: 'none', background: activeTab === item.id ? 'rgba(212,175,55,0.1)' : 'none', cursor: 'pointer', color: activeTab === item.id ? '#d4af37' : 'rgba(255,255,255,0.38)', fontFamily: 'inherit', fontSize: 14, fontWeight: activeTab === item.id ? 700 : 400, borderLeft: `3px solid ${activeTab === item.id ? '#d4af37' : 'transparent'}`, transition: 'all 0.18s', textAlign: 'left', width: '100%', whiteSpace: 'nowrap' }}>
+                  <i className={`fa-solid ${item.icon}`} style={{ width: 18, textAlign: 'center', fontSize: 15, flexShrink: 0 }} />
+                  <span className="rfs-nav-lbl">{item.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Main content area */}
+            <div style={{ flex: 1, overflowY: 'auto', minWidth: 0 }}>
+
+              {/* Dashboard tab */}
+              {activeTab === 'dashboard' && (
+                <div style={{ maxWidth: 1180, margin: '0 auto', padding: '24px 20px 48px' }}>
 
             {/* Terminal metrics bar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 22, padding: '9px 18px', background: 'rgba(0,0,0,0.45)', borderRadius: 10, border: '1px solid rgba(212,175,55,0.08)', flexWrap: 'wrap', fontFamily: 'monospace', fontSize: 11, letterSpacing: 0.5, backdropFilter: 'blur(8px)' }}>
@@ -706,7 +731,99 @@ export default function RFSPage() {
                 <div style={{ fontSize: 36, fontWeight: 900, color: '#d4af37', letterSpacing: -1, fontFamily: 'monospace', animation: 'techGlow 3s ease-in-out infinite' }}>{benefitStr}</div>
               </div>
             </div>
-          </div>
+                </div>
+              )}
+
+              {/* Cash Out — locked */}
+              {activeTab === 'cashout' && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: 32 }}>
+                  <div style={{ textAlign: 'center', maxWidth: 360 }}>
+                    <div style={{ width: 76, height: 76, borderRadius: '50%', background: 'rgba(212,175,55,0.08)', border: '1.5px solid rgba(212,175,55,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', boxShadow: '0 0 40px rgba(212,175,55,0.1)', animation: 'glow 2.5s infinite' }}>
+                      <i className="fa-solid fa-lock" style={{ fontSize: 26, color: '#d4af37' }} />
+                    </div>
+                    <h2 style={{ fontSize: 20, fontWeight: 800, color: 'white', margin: '0 0 10px' }}>Cash Out</h2>
+                    <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.42)', lineHeight: 1.7, margin: '0 0 24px' }}>This feature will be available once your activation process is fully completed.</p>
+                    <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '14px 20px', marginBottom: 20 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
+                        <span>Activation Progress</span><span style={{ color: '#10b981', fontWeight: 700 }}>{profile.activation_pct}%</span>
+                      </div>
+                      <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${profile.activation_pct}%`, background: 'linear-gradient(90deg,#10b981,#34d399)', borderRadius: 3 }} />
+                      </div>
+                    </div>
+                    <button onClick={() => setActiveTab('dashboard')} style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#d4af37', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Back to Dashboard</button>
+                  </div>
+                </div>
+              )}
+
+              {/* Wallets — locked */}
+              {activeTab === 'wallets' && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: 32 }}>
+                  <div style={{ textAlign: 'center', maxWidth: 360 }}>
+                    <div style={{ width: 76, height: 76, borderRadius: '50%', background: 'rgba(212,175,55,0.08)', border: '1.5px solid rgba(212,175,55,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', boxShadow: '0 0 40px rgba(212,175,55,0.1)', animation: 'glow 2.5s infinite' }}>
+                      <i className="fa-solid fa-lock" style={{ fontSize: 26, color: '#d4af37' }} />
+                    </div>
+                    <h2 style={{ fontSize: 20, fontWeight: 800, color: 'white', margin: '0 0 10px' }}>Wallets</h2>
+                    <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.42)', lineHeight: 1.7, margin: '0 0 24px' }}>This feature will be available once your activation process is fully completed.</p>
+                    <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '14px 20px', marginBottom: 20 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
+                        <span>Activation Progress</span><span style={{ color: '#10b981', fontWeight: 700 }}>{profile.activation_pct}%</span>
+                      </div>
+                      <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${profile.activation_pct}%`, background: 'linear-gradient(90deg,#10b981,#34d399)', borderRadius: 3 }} />
+                      </div>
+                    </div>
+                    <button onClick={() => setActiveTab('dashboard')} style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#d4af37', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Back to Dashboard</button>
+                  </div>
+                </div>
+              )}
+
+              {/* Transactions — empty state */}
+              {activeTab === 'transactions' && (
+                <div style={{ padding: '28px 24px', maxWidth: 900 }}>
+                  <div style={{ marginBottom: 24 }}>
+                    <h2 style={{ fontSize: 20, fontWeight: 800, color: 'white', margin: '0 0 4px' }}>Transactions</h2>
+                    <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.38)', margin: 0 }}>Your cashout and reward transaction history</p>
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, overflow: 'hidden' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 120px 100px', padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: 1, textTransform: 'uppercase' }}>
+                      <span>Date</span><span>Type</span><span>Amount</span><span>Status</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '72px 24px', gap: 14, textAlign: 'center' }}>
+                      <div style={{ width: 58, height: 58, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <i className="fa-solid fa-receipt" style={{ fontSize: 22, color: 'rgba(255,255,255,0.18)' }} />
+                      </div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.45)' }}>No cashout history yet</div>
+                      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.25)', lineHeight: 1.6 }}>Your completed cashouts and rewards will appear here once processed.</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* History — locked */}
+              {activeTab === 'history' && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: 32 }}>
+                  <div style={{ textAlign: 'center', maxWidth: 360 }}>
+                    <div style={{ width: 76, height: 76, borderRadius: '50%', background: 'rgba(212,175,55,0.08)', border: '1.5px solid rgba(212,175,55,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', boxShadow: '0 0 40px rgba(212,175,55,0.1)', animation: 'glow 2.5s infinite' }}>
+                      <i className="fa-solid fa-lock" style={{ fontSize: 26, color: '#d4af37' }} />
+                    </div>
+                    <h2 style={{ fontSize: 20, fontWeight: 800, color: 'white', margin: '0 0 10px' }}>History</h2>
+                    <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.42)', lineHeight: 1.7, margin: '0 0 24px' }}>This feature will be available once your activation process is fully completed.</p>
+                    <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '14px 20px', marginBottom: 20 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
+                        <span>Activation Progress</span><span style={{ color: '#10b981', fontWeight: 700 }}>{profile.activation_pct}%</span>
+                      </div>
+                      <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${profile.activation_pct}%`, background: 'linear-gradient(90deg,#10b981,#34d399)', borderRadius: 3 }} />
+                      </div>
+                    </div>
+                    <button onClick={() => setActiveTab('dashboard')} style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#d4af37', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Back to Dashboard</button>
+                  </div>
+                </div>
+              )}
+
+            </div>{/* end main content */}
+          </div>{/* end body row */}
         </div>
       )}
     </>
