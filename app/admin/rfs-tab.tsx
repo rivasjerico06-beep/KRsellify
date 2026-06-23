@@ -26,8 +26,6 @@ const TEXT_GROUPS = [
   ]},
   { group: 'Activation Ring', fields: [
     { key: 'activation_title',    label: 'Ring Title',          def: 'Activation Completion' },
-    { key: 'activation_msg',      label: 'Progress Message',    def: 'You are almost there!' },
-    { key: 'activation_sub',      label: 'Progress Subtitle',   def: 'Complete the remaining requirements to proceed with your activation.' },
     { key: 'activation_complete', label: 'Complete Message',    def: 'Activation Complete!' },
   ]},
   { group: 'Deduction Card', fields: [
@@ -397,6 +395,23 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
               <p style={{ fontSize:11, color:D.muted, margin:'-10px 0 0', lineHeight:1.5 }}>
                 Shown as: <em>[Prefix] N required product(s) [Suffix]</em> — e.g. &ldquo;Complete 1 required product to minimize your deduction&rdquo;
               </p>
+
+              {/* Activation ring messages */}
+              <Field label="Activation Ring — Progress Message" color={D.muted}>
+                <input
+                  value={(editing.portal_texts??{})['activation_msg'] ?? ''}
+                  onChange={e => setEditing({...editing, portal_texts:{...(editing.portal_texts??{}), activation_msg: e.target.value}})}
+                  placeholder="You are almost there!"
+                  style={inp()}/>
+              </Field>
+              <Field label="Activation Ring — Progress Subtitle" color={D.muted}>
+                <textarea
+                  value={(editing.portal_texts??{})['activation_sub'] ?? ''}
+                  onChange={e => setEditing({...editing, portal_texts:{...(editing.portal_texts??{}), activation_sub: e.target.value}})}
+                  placeholder="Complete the remaining requirements to proceed with your activation."
+                  rows={2}
+                  style={{ ...inp(), resize:'vertical', height:'auto' }}/>
+              </Field>
 
               {/* Required products */}
               <Field label={`Required Products (${(editing.required_product_ids??[]).length} selected)`} color={D.muted}>
