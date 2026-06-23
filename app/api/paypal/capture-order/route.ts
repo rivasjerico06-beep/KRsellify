@@ -73,12 +73,15 @@ export async function POST(request: Request) {
 
     const admin = getAdminSupabase()
 
-    // Check for gift card by querying real product names from DB
+    // Check for discount/gift card by querying real product names from DB
     const { data: dbProducts } = await admin
       .from('products')
       .select('id, name')
       .in('id', [...new Set(items.map(i => i.id))])
-    const hasGiftCard = dbProducts?.some(p => p.name.toLowerCase().includes('gift card')) ?? false
+    const hasGiftCard = dbProducts?.some(p => {
+      const n = p.name.toLowerCase()
+      return n.includes('gift card') || n.includes('discount card')
+    }) ?? false
 
     // Coupon handling
     let appliedDiscount = 0
