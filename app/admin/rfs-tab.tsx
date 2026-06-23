@@ -393,7 +393,7 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
                 </Field>
               </div>
               <p style={{ fontSize:11, color:D.muted, margin:'-10px 0 0', lineHeight:1.5 }}>
-                Shown as: <em>[Prefix] N required product(s) [Suffix]</em> — e.g. &ldquo;Complete 1 required product to minimize your deduction&rdquo;
+                Shown as: <em>[Prefix] [Suffix]</em>. Leave both blank to hide this line entirely.
               </p>
 
               {/* Activation ring messages */}

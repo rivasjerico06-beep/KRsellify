@@ -519,18 +519,20 @@ export default function RFSPage() {
                       </div>
                       {/* Savings callout */}
                       <div style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 10, padding: '9px 13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5 }}>
-                          {t('deduction_minimize_prefix', 'Complete')} {pending} item{pending !== 1 ? 's' : ''} {t('deduction_minimize_suffix', 'to minimize deduction to')} <strong style={{ color: '#10b981' }}>{profile.minimized_deduction_pct}%</strong>
-                        </div>
-                        <div style={{ fontSize: 12, fontWeight: 800, color: '#10b981', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+                        {(tx['deduction_minimize_prefix'] || tx['deduction_minimize_suffix']) && (
+                          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5 }}>
+                            {tx['deduction_minimize_prefix']} {tx['deduction_minimize_suffix']}
+                          </div>
+                        )}
+                        <div style={{ fontSize: 12, fontWeight: 800, color: '#10b981', fontFamily: 'monospace', whiteSpace: 'nowrap', marginLeft: 'auto' }}>
                           +${(benefitNum * (profile.deduction_pct - profile.minimized_deduction_pct!) / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} saved
                         </div>
                       </div>
                     </div>
-                  ) : pending > 0 && (
+                  ) : (tx['deduction_minimize_prefix'] || tx['deduction_minimize_suffix']) && (
                     <div style={{ background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 10, padding: '10px 14px' }}>
                       <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>
-                        {t('deduction_minimize_prefix', 'Complete')} {pending} required product{pending > 1 ? 's' : ''} {t('deduction_minimize_suffix', 'to minimize your deduction')}
+                        {tx['deduction_minimize_prefix']} {tx['deduction_minimize_suffix']}
                       </div>
                     </div>
                   )}
