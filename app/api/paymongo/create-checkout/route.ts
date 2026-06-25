@@ -62,6 +62,7 @@ export async function POST(request: Request) {
       discount_amount: discount_amount ?? 0,
       coupon_code: coupon_code ?? null,
       status: 'pending_payment',
+      order_number: Math.floor(10000 + Math.random() * 90000),
     })
     .select()
     .single()

@@ -134,6 +134,7 @@ export async function POST(request: Request) {
         coupon_code: coupon_code ?? null,
         status: 'paid',
         paypal_order_id: orderID,
+        order_number: Math.floor(10000 + Math.random() * 90000),
       })
       .select()
       .single()

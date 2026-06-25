@@ -914,7 +914,7 @@ function AdminContent() {
                               style={{ borderBottom: '1px solid var(--gray)', cursor: 'pointer', transition: 'background 0.15s' }}
                               onMouseEnter={e => (e.currentTarget.style.background = 'var(--off-white)')}
                               onMouseLeave={e => (e.currentTarget.style.background = '')}>
-                              <td style={{ padding: '12px 14px', fontFamily: 'monospace', fontSize: 12, color: 'var(--text-mid)' }}>{o.id?.slice(0, 8)}…</td>
+                              <td style={{ padding: '12px 14px', fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: 'var(--heading)' }}>#{o.order_number ?? o.id?.slice(0, 5).toUpperCase()}</td>
                               <td style={{ padding: '12px 14px' }}>
                                 <p style={{ fontWeight: 600, fontSize: 13 }}>{o.customer_name ?? 'Guest'}</p>
                                 {o.customer_email && <p style={{ fontSize: 11, color: 'var(--text-light)' }}>{o.customer_email}</p>}
