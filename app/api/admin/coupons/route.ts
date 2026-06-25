@@ -47,6 +47,26 @@ export async function POST(request: Request) {
   return NextResponse.json(data, { status: 201 })
 }
 
+export async function PATCH(request: Request) {
+  const auth = await requireAdmin(request)
+  if (isNextResponse(auth)) return auth
+
+  const { id, is_active } = await request.json()
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+
+  const admin = getAdminSupabase()
+  const { data, error } = await admin
+    .from('coupons')
+    .update({ is_used: !is_active })
+    .eq('id', id)
+    .is('user_id', null)
+    .select()
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data)
+}
+
 export async function DELETE(request: Request) {
   const auth = await requireAdmin(request)
   if (isNextResponse(auth)) return auth

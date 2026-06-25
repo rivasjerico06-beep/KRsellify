@@ -110,6 +110,7 @@ export async function POST(request: Request) {
           .select('id, discount_pct, min_spend')
           .eq('code', code)
           .is('user_id', null)
+          .eq('is_used', false)
           .maybeSingle()
         if (globalCoupon && Number(globalCoupon.min_spend ?? 0) <= capturedAmount) {
           appliedDiscount = capturedAmount * (globalCoupon.discount_pct / 100)

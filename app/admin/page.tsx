@@ -372,7 +372,7 @@ function AdminContent() {
   const [creatingLead, setCreatingLead]     = useState(false)
 
   // Coupons
-  const [coupons, setCoupons]             = useState<{ id: string; code: string; discount_pct: number; min_spend: number }[]>([])
+  const [coupons, setCoupons]             = useState<{ id: string; code: string; discount_pct: number; min_spend: number; is_used: boolean }[]>([])
   const [newCouponCode, setNewCouponCode] = useState('')
   const [newCouponPct, setNewCouponPct]   = useState('')
   const [newCouponMin, setNewCouponMin]   = useState('')
@@ -1579,7 +1579,7 @@ function AdminContent() {
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ background: 'var(--gray)' }}>
-                          {['Code', 'Discount', 'Min. Spend', 'Usage', ''].map(h => (
+                          {['Code', 'Discount', 'Min. Spend', 'Availability', ''].map(h => (
                             <th key={h} style={{ padding: '12px 20px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-mid)', textAlign: 'left' }}>{h}</th>
                           ))}
                         </tr>
@@ -1600,7 +1600,22 @@ function AdminContent() {
                               {Number(c.min_spend) > 0 ? `$${Number(c.min_spend).toFixed(2)} minimum` : 'No minimum'}
                             </td>
                             <td style={{ padding: '14px 20px' }}>
-                              <span style={{ fontSize: 12, fontWeight: 700, background: '#d1fae5', color: '#065f46', padding: '3px 10px', borderRadius: 20 }}>Unlimited</span>
+                              <button onClick={async () => {
+                                const newActive = c.is_used // currently disabled → toggle ON
+                                const r = await fetch('/api/admin/coupons', {
+                                  method: 'PATCH', headers: authHeaders(),
+                                  body: JSON.stringify({ id: c.id, is_active: newActive }),
+                                })
+                                if (r.ok) {
+                                  setCoupons(prev => prev.map(x => x.id === c.id ? { ...x, is_used: !newActive } : x))
+                                  flash(`Coupon ${c.code} ${newActive ? 'enabled' : 'disabled'}`)
+                                }
+                              }} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>
+                                <div style={{ width: 40, height: 22, borderRadius: 11, background: c.is_used ? '#e5e7eb' : '#10b981', transition: 'background 0.2s', position: 'relative', flexShrink: 0 }}>
+                                  <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'white', position: 'absolute', top: 3, left: c.is_used ? 3 : 21, transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                                </div>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: c.is_used ? '#6b7280' : '#059669' }}>{c.is_used ? 'Disabled' : 'Active'}</span>
+                              </button>
                             </td>
                             <td style={{ padding: '14px 20px', textAlign: 'right' }}>
                               <button onClick={async () => {
