@@ -62,12 +62,13 @@ export async function POST(request: Request) {
 
   if (!order) return NextResponse.json({ received: true })
 
-  // Mark coupon as used if applicable
+  // Mark user-specific coupons as used (global promo codes stay reusable)
   if (order.coupon_code) {
     await admin
       .from('coupons')
       .update({ is_used: true, used_at: new Date().toISOString() })
       .eq('code', (order.coupon_code as string).toUpperCase())
+      .not('user_id', 'is', null)
       .eq('is_used', false)
   }
 

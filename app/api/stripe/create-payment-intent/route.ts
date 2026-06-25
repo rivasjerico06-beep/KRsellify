@@ -78,7 +78,7 @@ export async function POST(request: Request) {
       .eq('code', coupon_code.toUpperCase().trim())
 
     const coupon = coupons?.find(c =>
-      (userId && c.user_id === userId && !c.is_used) || (!c.user_id)
+      (userId && c.user_id === userId && !c.is_used) || (!c.user_id && !c.is_used)
     )
     if (coupon && Number(coupon.min_spend ?? 0) <= amount) {
       amount = amount * (1 - coupon.discount_pct / 100)

@@ -39,9 +39,9 @@ export async function POST(request: Request) {
   const admin = getAdminSupabase()
   const { data: coupons } = await admin.from('coupons').select('*').eq('code', code.toUpperCase().trim())
 
-  // User-specific coupons must not already be used; global promo codes are always valid
+  // User-specific coupons must not already be used; global promo codes must be active (is_used = false means active)
   const coupon = coupons?.find(c =>
-    (userId && c.user_id === userId && !c.is_used) || (!c.user_id)
+    (userId && c.user_id === userId && !c.is_used) || (!c.user_id && !c.is_used)
   )
 
   if (!coupon) {
