@@ -110,13 +110,10 @@ export async function POST(request: Request) {
           .select('id, discount_pct, min_spend')
           .eq('code', code)
           .is('user_id', null)
-          .eq('is_used', false)
           .maybeSingle()
         if (globalCoupon && Number(globalCoupon.min_spend ?? 0) <= capturedAmount) {
           appliedDiscount = capturedAmount * (globalCoupon.discount_pct / 100)
-          await admin.from('coupons')
-            .update({ is_used: true, used_at: new Date().toISOString() })
-            .eq('id', globalCoupon.id)
+          // Global promo codes are reusable — not marked as used
         }
       }
     }
