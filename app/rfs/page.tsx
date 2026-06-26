@@ -159,6 +159,31 @@ export default function RFSPage() {
   const tx = (profile?.portal_texts ?? {}) as Record<string, string>
   const t = (key: string, def: string) => tx[key] || def
 
+  function resolveStep(n: number): { label: string; sub: string; done: boolean; active: boolean } {
+    const stateKey = `step${n}_state`
+    const override = tx[stateKey] ?? ''
+    let done = false, active = false
+    if (override === 'done')    { done = true }
+    else if (override === 'active')  { active = true }
+    else if (override === 'pending') { /* pending */ }
+    else {
+      if (n === 1) done = true
+      else if (n === 2) active = profile?.status === 'under_review'
+      else if (n === 3) done = (profile?.activation_pct ?? 0) >= 50
+      else if (n === 4) done = (profile?.activation_pct ?? 0) >= 80
+      else if (n === 5) done = profile?.status === 'completed'
+    }
+    const defaultLabels = ['Request Received','Under Review','Compliance Check','Final Verification','Activation Approval']
+    const label = t(`step${n}_label`, defaultLabels[n - 1])
+    let sub: string
+    if (n === 1 && !override) sub = t('step1_sub', 'Complete')
+    else if (n === 2 && !override) sub = t('step2_sub', 'In Progress')
+    else if (done)   sub = t('step_done', 'Complete')
+    else if (active) sub = t('step2_sub', 'In Progress')
+    else             sub = t('step_pending', 'Pending')
+    return { label, sub, done, active }
+  }
+
   const completedCount = profile?.required_products.filter(p => profile.completed_product_ids.includes(p.id)).length ?? 0
   const totalRequired  = profile?.required_products.length ?? 0
   const pending        = totalRequired - completedCount
@@ -645,13 +670,7 @@ export default function RFSPage() {
             <div style={{ display: 'grid', gridTemplateColumns: deadlineStr ? 'minmax(0,1.4fr) minmax(0,1fr)' : '1fr', gap: 18, marginBottom: 18 }}>
               <div className="card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: '24px' }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 22 }}>{t('timeline_title', 'Activation Review Process')}</div>
-                {[
-                  { label: t('step1_label', 'Request Received'),   sub: t('step1_sub', 'Complete'),      done: true },
-                  { label: t('step2_label', 'Under Review'),        sub: t('step2_sub', 'In Progress'),    active: profile.status === 'under_review' },
-                  { label: t('step3_label', 'Compliance Check'),    sub: profile.activation_pct >= 50 ? t('step_done', 'Complete') : t('step_pending', 'Pending'), done: profile.activation_pct >= 50 },
-                  { label: t('step4_label', 'Final Verification'),  sub: profile.activation_pct >= 80 ? t('step_done', 'Complete') : t('step_pending', 'Pending'), done: profile.activation_pct >= 80 },
-                  { label: t('step5_label', 'Activation Approval'), sub: profile.status === 'completed' ? t('step_done', 'Complete') : t('step_pending', 'Pending'), done: profile.status === 'completed' },
-                ].map((s, i) => (
+                {[1, 2, 3, 4, 5].map(resolveStep).map((s, i) => (
                   <div key={i} style={{ display: 'flex', gap: 14 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <div style={{
