@@ -414,12 +414,12 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
               </Field>
 
               {/* Timeline Step States */}
-              <div style={{ border:'2px solid var(--teal)', borderRadius:10, overflow:'hidden' }}>
-                <div style={{ padding:'12px 16px', background:'var(--teal)', fontSize:13, fontWeight:700, color:'#fff', display:'flex', alignItems:'center', gap:8 }}>
+              <div style={{ border:'2px solid var(--teal)', borderRadius:10, flexShrink:0 }}>
+                <div style={{ padding:'12px 16px', background:'var(--teal)', fontSize:13, fontWeight:700, color:'#fff', display:'flex', alignItems:'center', gap:8, borderRadius:'8px 8px 0 0' }}>
                   <i className="fa-solid fa-list-check" style={{ fontSize:12 }}/>
                   Timeline Step States
                 </div>
-                <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:10, background:D.card }}>
+                <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:10, background:D.card, borderRadius:'0 0 8px 8px' }}>
                   <p style={{ fontSize:11, color:D.muted, margin:'0 0 4px', lineHeight:1.5 }}>
                     Override each step state. Leave on Auto to use profile status and activation %.
                   </p>
