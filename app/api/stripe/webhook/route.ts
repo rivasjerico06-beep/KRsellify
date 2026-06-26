@@ -39,7 +39,7 @@ export async function POST(request: Request) {
         await admin
           .from('vip_subscriptions')
           .update({ status: 'cancelled' })
-          .eq('paypal_subscription_id', sub.id)
+          .eq('stripe_subscription_id', sub.id)
         console.log(`[stripe/webhook] VIP cancelled for subscription ${sub.id}`)
         break
       }
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
           await admin
             .from('vip_subscriptions')
             .update({ status })
-            .eq('paypal_subscription_id', sub.id)
+            .eq('stripe_subscription_id', sub.id)
           console.log(`[stripe/webhook] VIP status → ${status} for subscription ${sub.id}`)
         }
         break
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
           await admin
             .from('vip_subscriptions')
             .update({ status: 'past_due' })
-            .eq('paypal_subscription_id', subId)
+            .eq('stripe_subscription_id', subId)
           console.log(`[stripe/webhook] VIP set past_due for subscription ${subId}`)
         }
         break
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
             await admin
               .from('vip_subscriptions')
               .update({ status: 'active' })
-              .eq('paypal_subscription_id', subId)
+              .eq('stripe_subscription_id', subId)
             console.log(`[stripe/webhook] VIP reactivated for subscription ${subId}`)
           }
         }
