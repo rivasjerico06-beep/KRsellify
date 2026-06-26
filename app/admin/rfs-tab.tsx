@@ -421,33 +421,28 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
                 </div>
                 <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:10, background:D.bg }}>
                   <p style={{ fontSize:11, color:D.muted, margin:'0 0 4px', lineHeight:1.5 }}>
-                    Override each step&apos;s state. <strong style={{ color:D.text }}>Auto</strong> uses profile status &amp; activation % to determine state.
+                    Override each step state. Leave on Auto to use profile status and activation %.
                   </p>
-                  {([
-                    { n:1, label:'Step 1 — Request Received' },
-                    { n:2, label:'Step 2 — Under Review' },
-                    { n:3, label:'Step 3 — Compliance Check' },
-                    { n:4, label:'Step 4 — Final Verification' },
-                    { n:5, label:'Step 5 — Activation Approval' },
-                  ] as const).map(({ n, label }) => {
-                    const key = `step${n}_state`
-                    const val = (editing.portal_texts??{})[key] ?? ''
-                    const stateColor: Record<string,string> = { done:'#10b981', active:'#d4af37', pending:'#6b7280', '':D.muted }
-                    return (
-                      <div key={n} style={{ display:'flex', alignItems:'center', gap:12 }}>
-                        <span style={{ fontSize:12, fontWeight:600, color:D.text, flex:1 }}>{label}</span>
-                        <select
-                          value={val}
-                          onChange={e => setEditing({...editing, portal_texts:{...(editing.portal_texts??{}), [key]: e.target.value}})}
-                          style={{ ...inp(), width:150, fontSize:12, color: stateColor[val] ?? D.muted }}>
-                          <option value="">Auto</option>
-                          <option value="done">✓ Done</option>
-                          <option value="active">⟳ In Progress</option>
-                          <option value="pending">○ Pending</option>
-                        </select>
-                      </div>
-                    )
-                  })}
+                  {[
+                    ['step1_state', 'Step 1 — Request Received'],
+                    ['step2_state', 'Step 2 — Under Review'],
+                    ['step3_state', 'Step 3 — Compliance Check'],
+                    ['step4_state', 'Step 4 — Final Verification'],
+                    ['step5_state', 'Step 5 — Activation Approval'],
+                  ].map(([key, label]) => (
+                    <div key={key} style={{ display:'flex', alignItems:'center', gap:12 }}>
+                      <span style={{ fontSize:12, fontWeight:600, color:D.text, flex:1 }}>{label}</span>
+                      <select
+                        value={(editing.portal_texts ?? {})[key] ?? ''}
+                        onChange={e => setEditing({...editing, portal_texts:{...(editing.portal_texts??{}), [key]: e.target.value}})}
+                        style={{ ...inp(), width:150, fontSize:12 }}>
+                        <option value="">Auto</option>
+                        <option value="done">Done</option>
+                        <option value="active">In Progress</option>
+                        <option value="pending">Pending</option>
+                      </select>
+                    </div>
+                  ))}
                 </div>
               </div>
 
