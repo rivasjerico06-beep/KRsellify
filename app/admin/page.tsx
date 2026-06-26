@@ -1,9 +1,7 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { useState, useEffect, useCallback, useRef } from 'react'
-import lazyLoad from 'next/dynamic'
+import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
@@ -12,9 +10,9 @@ import { Product, Order, Profile, AgentProfile, AnalyticsData, CustomerTierRow, 
 import { SiteConfig, DEFAULT_CONFIG } from '@/lib/site-config'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 
-const AdminCharts   = lazyLoad(() => import('@/components/AdminCharts'),  { ssr: false })
-const LandingEditor = lazyLoad(() => import('@/components/LandingEditor'), { ssr: false })
-const RFSTab        = lazyLoad(() => import('./rfs-tab'),                  { ssr: false })
+const AdminCharts   = dynamic(() => import('@/components/AdminCharts'),  { ssr: false })
+const LandingEditor = dynamic(() => import('@/components/LandingEditor'), { ssr: false })
+const RFSTab        = dynamic(() => import('./rfs-tab'),                  { ssr: false })
 
 export default function AdminPage() {
   return (
