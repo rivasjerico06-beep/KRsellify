@@ -23,11 +23,10 @@ async function getPayPalToken() {
 
 export async function POST(request: Request) {
   try {
-    const { items, coupon_code, email, tip_amount } = await request.json() as {
+    const { items, coupon_code, email } = await request.json() as {
       items: { id: string; qty: number; bundle_label?: string }[]
       coupon_code?: string
       email: string
-      tip_amount?: number
     }
 
     if (!Array.isArray(items) || items.length === 0)
@@ -91,10 +90,6 @@ export async function POST(request: Request) {
       if (coupon && Number(coupon.min_spend ?? 0) <= amount) {
         amount = amount * (1 - coupon.discount_pct / 100)
       }
-    }
-
-    if (tip_amount && isFinite(tip_amount) && tip_amount > 0) {
-      amount += tip_amount
     }
 
     if (!isFinite(amount) || amount <= 0)

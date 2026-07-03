@@ -17,8 +17,6 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState('')
   const [editingEmail, setEditingEmail] = useState(false)
   const [isVip, setIsVip] = useState(false)
-  const [tipAmount, setTipAmount] = useState(0)
-  const [customTipInput, setCustomTipInput] = useState('')
   const vipCheckRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [couponCode, setCouponCode] = useState('')
   const [couponDiscount, setCouponDiscount] = useState(0)
@@ -74,19 +72,6 @@ export default function CheckoutPage() {
   const couponDiscountAmount = couponDiscount > 0 ? afterVipTotal * (couponDiscount / 100) : 0
   const discountAmount = vipDiscountAmount + couponDiscountAmount
   const finalTotal = cartTotal - discountAmount
-  const grandTotal = finalTotal + tipAmount
-
-  function selectTip(amt: number) {
-    const next = tipAmount === amt ? 0 : amt
-    setTipAmount(next)
-    setCustomTipInput(next === 0 ? '' : String(amt))
-  }
-
-  function handleCustomTip(val: string) {
-    setCustomTipInput(val)
-    const parsed = parseFloat(val)
-    setTipAmount(!isNaN(parsed) && parsed > 0 ? Math.round(parsed * 100) / 100 : 0)
-  }
 
   async function validateCoupon() {
     if (!couponCode.trim()) return
@@ -239,14 +224,8 @@ export default function CheckoutPage() {
                     Coupon −${couponDiscountAmount.toFixed(2)}
                   </div>
                 )}
-                {tipAmount > 0 && (
-                  <div style={{ fontSize: 14, color: '#e11d48', fontWeight: 700, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <i className="fa-solid fa-heart" style={{ fontSize: 12 }} />
-                    Tip +${tipAmount.toFixed(2)}
-                  </div>
-                )}
                 <span style={{ fontSize: 32, fontWeight: 900, color: 'var(--text-dark)' }}>
-                  ${grandTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  ${finalTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                 </span>
               </div>
             </div>
@@ -274,53 +253,6 @@ export default function CheckoutPage() {
                 <span style={{ fontSize: 18, color: '#059669', fontWeight: 900 }}>{cart.reduce((s, i) => s + (i.bundle_qty ?? 1) * i.qty, 0)} pcs</span>
               </div>
 
-              {/* Tip Agent */}
-              <div style={{ borderTop: '1px solid var(--gray)', paddingTop: 16, marginTop: 12 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-dark)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 7 }}>
-                  <i className="fa-solid fa-heart" style={{ color: '#e11d48', fontSize: 14 }} />
-                  Tip your agent
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-light)' }}>(Optional)</span>
-                </div>
-                {/* Preset buttons */}
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-                  {[5, 10, 15, 20, 30].map(amt => {
-                    const active = tipAmount === amt && customTipInput === String(amt)
-                    return (
-                      <button key={amt} onClick={() => selectTip(amt)}
-                        style={{ border: `2px solid ${active ? 'var(--teal)' : 'var(--gray)'}`, borderRadius: 8, padding: '9px 16px', fontSize: 14, fontWeight: 700, cursor: 'pointer', background: active ? 'var(--teal)' : 'var(--white)', color: active ? 'white' : 'var(--text-dark)', transition: 'all 0.15s' }}>
-                        ${amt}
-                      </button>
-                    )
-                  })}
-                </div>
-                {/* Custom amount */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-mid)', whiteSpace: 'nowrap' }}>Custom amount:</span>
-                  <div style={{ position: 'relative', flex: 1 }}>
-                    <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 15, fontWeight: 700, color: 'var(--text-mid)', pointerEvents: 'none' }}>$</span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={customTipInput}
-                      onChange={e => handleCustomTip(e.target.value)}
-                      placeholder="0.00"
-                      style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 8, padding: '10px 14px 10px 28px', fontSize: 15, color: 'var(--text-dark)', background: 'var(--white)', outline: 'none', boxSizing: 'border-box' }}
-                    />
-                  </div>
-                  {tipAmount > 0 && (
-                    <button onClick={() => { setTipAmount(0); setCustomTipInput('') }}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light)', fontSize: 22, padding: '0 4px', lineHeight: 1, flexShrink: 0 }}
-                      title="Remove tip">×</button>
-                  )}
-                </div>
-                {tipAmount > 0 && (
-                  <div style={{ marginTop: 10, fontSize: 14, color: '#059669', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <i className="fa-solid fa-circle-check" style={{ fontSize: 12 }} />
-                    +${tipAmount.toFixed(2)} tip added — thank you!
-                  </div>
-                )}
-              </div>
             </div>
           </div>
 
@@ -430,7 +362,7 @@ export default function CheckoutPage() {
             >
               <PayPalButtons
                 style={{ layout: 'vertical', color: 'gold', shape: 'rect', label: 'pay', height: 55 }}
-                forceReRender={[email, couponCode, couponDiscount, finalTotal, tipAmount]}
+                forceReRender={[email, couponCode, couponDiscount, finalTotal]}
                 createOrder={async () => {
                   if (!requireEmail()) throw new Error('Email required')
                   const res = await fetch('/api/paypal/create-order', {
@@ -443,7 +375,6 @@ export default function CheckoutPage() {
                       items: cart.map(i => ({ id: i.id, qty: i.qty, bundle_label: i.bundle_label })),
                       coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
                       email: email.trim(),
-                      tip_amount: tipAmount > 0 ? tipAmount : undefined,
                     }),
                   })
                   const data = await res.json()
@@ -473,7 +404,7 @@ export default function CheckoutPage() {
                     localStorage.setItem('themaga_last_order', JSON.stringify({
                       id: order.id ?? '',
                       order_number: order.order_number ?? null,
-                      total: grandTotal,
+                      total: finalTotal,
                       discount: discountAmount,
                       itemCount: cart.reduce((s, i) => s + i.qty, 0),
                       items: cart.map(i => ({ name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img })),
