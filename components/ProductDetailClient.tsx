@@ -12,11 +12,11 @@ import ProductCard from './ProductCard'
 import BuyNowModal from './BuyNowModal'
 
 const FEATURES: Record<string, string[]> = {
-  medallions:   ['Premium gold-tone alloy finish', 'Limited edition — numbered mint', 'Arrives in collector\'s gift box', 'Certificate of authenticity included', 'Ships worldwide in 3–7 business days'],
-  collectibles: ['Museum-quality craftsmanship', 'Limited edition collectible', 'Premium display packaging', 'Certificate of authenticity included', 'Ships worldwide in 3–7 business days'],
-  crypto:       ['Crypto-themed commemorative piece', 'Collector-grade detailing', 'Premium metal alloy construction', 'Arrives in luxury gift packaging', 'Ships worldwide in 3–7 business days'],
-  apparel:      ['Premium quality fabric', 'Limited edition design', 'Comfortable everyday wear', 'Available in multiple sizes', 'Ships worldwide in 3–7 business days'],
-  accessories:  ['Premium materials throughout', 'Unique collector\'s item', 'Elegant gift packaging', 'Certificate of authenticity included', 'Ships worldwide in 3–7 business days'],
+  medallions:   ['Premium gold-tone alloy finish', 'Limited edition — numbered mint', 'Arrives in collector\'s gift box', 'Certificate of authenticity included', 'Ships worldwide in 10–15 days'],
+  collectibles: ['Museum-quality craftsmanship', 'Limited edition collectible', 'Premium display packaging', 'Certificate of authenticity included', 'Ships worldwide in 10–15 days'],
+  crypto:       ['Crypto-themed commemorative piece', 'Collector-grade detailing', 'Premium metal alloy construction', 'Arrives in luxury gift packaging', 'Ships worldwide in 10–15 days'],
+  apparel:      ['Premium quality fabric', 'Limited edition design', 'Comfortable everyday wear', 'Available in multiple sizes', 'Ships worldwide in 10–15 days'],
+  accessories:  ['Premium materials throughout', 'Unique collector\'s item', 'Elegant gift packaging', 'Certificate of authenticity included', 'Ships worldwide in 10–15 days'],
 }
 
 function Stars({ rating, large }: { rating: number; large?: boolean }) {

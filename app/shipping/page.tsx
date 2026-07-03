@@ -19,14 +19,14 @@ export default function ShippingPage() {
             <tbody>
               <tr style={{ borderBottom: '1px solid var(--gray)' }}>
                 <td style={{ padding: '12px 14px', fontWeight: 600, color: 'var(--heading)' }}>United States</td>
-                <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>3–5 business days</td>
-                <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>1–2 business days</td>
+                <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>10–15 days</td>
+                <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>10–15 days</td>
                 <td style={{ padding: '12px 14px', color: 'var(--teal)', fontWeight: 600 }}>Orders over $2,000</td>
               </tr>
               <tr>
                 <td style={{ padding: '12px 14px', fontWeight: 600, color: 'var(--heading)' }}>International</td>
-                <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>3–14 business days</td>
-                <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>3–7 business days <span style={{ fontSize: 11, color: 'var(--teal)', fontWeight: 700 }}>(orders $2,000+)</span></td>
+                <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>10–15 days</td>
+                <td style={{ padding: '12px 14px', color: 'var(--text-mid)' }}>10–15 days <span style={{ fontSize: 11, color: 'var(--teal)', fontWeight: 700 }}>(orders $2,000+)</span></td>
                 <td style={{ padding: '12px 14px', color: 'var(--teal)', fontWeight: 600 }}>Orders over $2,000</td>
               </tr>
             </tbody>

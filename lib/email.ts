@@ -90,7 +90,7 @@ export async function sendOrderConfirmation({
 
       <div style="background:linear-gradient(135deg,#093459,#b45309);border-radius:14px;padding:20px 24px;margin-top:24px;text-align:center">
         <p style="font-size:13px;color:rgba(255,255,255,0.8);margin:0 0 6px">Your order is being processed</p>
-        <p style="font-size:12px;color:rgba(255,255,255,0.55);margin:0">Estimated delivery: <strong style="color:rgba(255,255,255,0.85)">5–15 business days</strong></p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.55);margin:0">Estimated delivery: <strong style="color:rgba(255,255,255,0.85)">10–15 days</strong></p>
       </div>
 
       <p style="font-size:13px;color:#8ba0aa;margin:24px 0 0;text-align:center;line-height:1.6">
@@ -144,7 +144,7 @@ const STATUS_META: Record<string, { label: string; color: string; bg: string; bo
   shipped: {
     label: 'Order Shipped',
     color: '#065f46', bg: '#d1fae5',
-    body: `Your order has been dispatched and is currently on its way to you. Please allow 5 to 15 business days for delivery. If you have any concerns regarding delivery, do not hesitate to contact our support team.`,
+    body: `Your order has been dispatched and is currently on its way to you. Please allow 10 to 15 days for delivery. If you have any concerns regarding delivery, do not hesitate to contact our support team.`,
   },
   delivered: {
     label: 'Order Delivered',

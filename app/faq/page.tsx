@@ -11,7 +11,7 @@ const FAQS = [
   },
   {
     q: 'How long does shipping take?',
-    a: 'Standard orders ship within 1–2 business days and arrive in 3–7 business days domestically. International shipping may take 7–21 business days depending on location.',
+    a: 'Standard orders ship within 1–2 business days and arrive in 10–15 days. International shipping may also take 10–15 days depending on location.',
   },
   {
     q: 'Do you ship internationally?',
