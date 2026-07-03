@@ -14,6 +14,7 @@ UPDATE orders
 
 -- ── 2. leads: add missing columns ────────────────────────────
 ALTER TABLE leads
+  ADD COLUMN IF NOT EXISTS customer_email      TEXT,
   ADD COLUMN IF NOT EXISTS claimed_by          UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS claimed_at          TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS disposition         TEXT,

@@ -107,6 +107,7 @@ export interface Lead {
   claimed_at?: string | null
   created_at?: string
   updated_at?: string
+  customer_email?: string | null
   lineitem_price?: number | null
   billing_address?: string | null
   billing_city?: string | null

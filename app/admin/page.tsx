@@ -193,23 +193,36 @@ function ImportModal({
     border:  isDark ? '#273d52' : '#e2e8f0',
   }
 
+  function isXlsxFile(f: File) { return /\.(xlsx|xls)$/i.test(f.name) }
+
   function detectDelimiter(text: string) {
     const firstLine = text.split('\n')[0] ?? ''
     return firstLine.includes('\t') ? '\t' : ','
   }
 
-  function handleFileChange(selected: File | null) {
+  async function handleFileChange(selected: File | null) {
     if (!selected) return
     setFile(selected)
     setError('')
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const text = e.target?.result as string
-      const delimiter = detectDelimiter(text)
-      const rows = text.trim().split('\n').filter(l => l.trim()).length - 1
-      setPreview({ rows: Math.max(0, rows), delimiter })
+    if (isXlsxFile(selected)) {
+      try {
+        const XLSX = await import('xlsx')
+        const buffer = await selected.arrayBuffer()
+        const wb = XLSX.read(buffer, { type: 'array' })
+        const ws = wb.Sheets[wb.SheetNames[0]]
+        const rows = (XLSX.utils.sheet_to_json(ws) as unknown[]).length
+        setPreview({ rows, delimiter: 'xlsx' })
+      } catch { setPreview(null) }
+    } else {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const text = e.target?.result as string
+        const delimiter = detectDelimiter(text)
+        const rows = text.trim().split('\n').filter(l => l.trim()).length - 1
+        setPreview({ rows: Math.max(0, rows), delimiter })
+      }
+      reader.readAsText(selected)
     }
-    reader.readAsText(selected)
   }
 
   async function handleImport() {
@@ -217,12 +230,23 @@ function ImportModal({
     setLoading(true)
     setError('')
     try {
-      const text = await file.text()
-      const delimiter = detectDelimiter(text)
+      let bodyStr: string
+      if (isXlsxFile(file)) {
+        const XLSX = await import('xlsx')
+        const buffer = await file.arrayBuffer()
+        const wb = XLSX.read(buffer, { type: 'array' })
+        const ws = wb.Sheets[wb.SheetNames[0]]
+        const rows = XLSX.utils.sheet_to_json(ws)
+        bodyStr = JSON.stringify({ rows })
+      } else {
+        const text = await file.text()
+        const delimiter = detectDelimiter(text)
+        bodyStr = JSON.stringify({ content: text, delimiter })
+      }
       const res = await fetch('/api/admin/leads/import', {
         method: 'POST',
         headers: authHeaders,
-        body: JSON.stringify({ content: text, delimiter }),
+        body: bodyStr,
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Import failed')
@@ -260,7 +284,7 @@ function ImportModal({
         </div>
 
         <p style={{ fontSize: 13, color: M.muted, marginBottom: 20, lineHeight: 1.6 }}>
-          Upload a <strong>.csv</strong> or <strong>.tsv</strong> file exported from your spreadsheet. The first row must be the header row.
+          Upload an <strong>.xlsx</strong>, <strong>.csv</strong>, or <strong>.tsv</strong> file. Existing leads (matched by phone) get their address updated without losing status or notes.
         </p>
 
         <div
@@ -281,17 +305,17 @@ function ImportModal({
           <input
             ref={inputRef}
             type="file"
-            accept=".csv,.tsv,.txt"
+            accept=".xlsx,.xls,.csv,.tsv,.txt"
             style={{ display: 'none' }}
             onChange={e => handleFileChange(e.target.files?.[0] ?? null)}
           />
           {file ? (
             <>
-              <i className="fa-solid fa-file-csv" style={{ fontSize: 36, color: '#059669', marginBottom: 10, display: 'block' }} />
+              <i className={`fa-solid ${isXlsxFile(file) ? 'fa-file-excel' : 'fa-file-csv'}`} style={{ fontSize: 36, color: '#059669', marginBottom: 10, display: 'block' }} />
               <p style={{ fontWeight: 700, fontSize: 15, color: '#065f46', marginBottom: 4 }}>{file.name}</p>
               {preview && (
                 <p style={{ fontSize: 13, color: '#059669' }}>
-                  {preview.rows} lead{preview.rows !== 1 ? 's' : ''} detected · {preview.delimiter === '\t' ? 'Tab' : 'Comma'}-separated
+                  {preview.rows} lead{preview.rows !== 1 ? 's' : ''} detected · {preview.delimiter === 'xlsx' ? 'Excel file' : preview.delimiter === '\t' ? 'Tab-separated' : 'Comma-separated'}
                 </p>
               )}
               <p style={{ fontSize: 12, color: M.muted, marginTop: 8 }}>Click to choose a different file</p>
@@ -302,7 +326,7 @@ function ImportModal({
               <p style={{ fontWeight: 700, fontSize: 15, color: M.text, marginBottom: 4 }}>
                 Drop your file here or click to browse
               </p>
-              <p style={{ fontSize: 13, color: M.muted }}>Supports .csv and .tsv files</p>
+              <p style={{ fontSize: 13, color: M.muted }}>Supports .xlsx, .csv, and .tsv files</p>
             </>
           )}
         </div>
@@ -386,6 +410,9 @@ function AdminContent() {
   const [leadNoteText, setLeadNoteText]       = useState('')
   const [leadFollowUpDate, setLeadFollowUpDate] = useState('')
   const [updatingLead, setUpdatingLead]       = useState(false)
+  const [callHistory, setCallHistory]         = useState<{ id: string; agent_name: string | null; disposition: string; notes: string | null; created_at: string }[]>([])
+  const [callHistoryLoading, setCallHistoryLoading] = useState(false)
+  const [leadStatusFilter, setLeadStatusFilter] = useState<string>('all')
 
   // Clear all leads
   const [clearingLeads, setClearingLeads] = useState(false)
@@ -485,6 +512,17 @@ function AdminContent() {
   useEffect(() => {
     return () => stopDialerPolling()
   }, [dialerIdx])
+
+  // Load call history when a lead detail panel is opened
+  useEffect(() => {
+    if (!selectedLead) { setCallHistory([]); return }
+    setCallHistoryLoading(true)
+    fetch(`/api/admin/dialer/call-logs?lead_id=${selectedLead.id}`, { headers: authHeaders() })
+      .then(r => r.json())
+      .then(d => setCallHistory(Array.isArray(d) ? d : []))
+      .catch(() => setCallHistory([]))
+      .finally(() => setCallHistoryLoading(false))
+  }, [selectedLead?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Supabase Realtime: live order alerts
   useEffect(() => {
@@ -1348,6 +1386,24 @@ function AdminContent() {
                     <StatCard label="Unassigned"     value={leads.filter(l => !l.agent_id).length}                          icon="fa-user-slash"   color="#d97706"      delay={0.2} />
                   </div>
 
+                  {/* Status filter bar */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                    <button onClick={() => setLeadStatusFilter('all')}
+                      style={{ padding: '7px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', border: leadStatusFilter === 'all' ? '2px solid var(--navy)' : `2px solid ${D.border}`, background: leadStatusFilter === 'all' ? 'var(--navy)' : D.btnBg, color: leadStatusFilter === 'all' ? 'white' : D.text }}>
+                      All ({leads.length})
+                    </button>
+                    {Object.entries(STATUS_COLORS).map(([k, v]) => {
+                      const count = leads.filter(l => l.status === k).length
+                      if (count === 0) return null
+                      return (
+                        <button key={k} onClick={() => setLeadStatusFilter(k)}
+                          style={{ padding: '7px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', border: leadStatusFilter === k ? `2px solid ${v.text}` : `2px solid ${D.border}`, background: leadStatusFilter === k ? v.bg : D.btnBg, color: leadStatusFilter === k ? v.text : D.text }}>
+                          {v.label} ({count})
+                        </button>
+                      )
+                    })}
+                  </div>
+
                   <div style={{ background: 'var(--white)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(9,52,89,0.06)', overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 800 }}>
                       <thead>
@@ -1359,7 +1415,10 @@ function AdminContent() {
                       </thead>
                       <tbody>
                         {leads.length === 0 && <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No leads yet. Click &quot;New Lead&quot; to create one.</td></tr>}
-                        {leads.map(l => {
+                        {leads.filter(l => leadStatusFilter === 'all' || l.status === leadStatusFilter).length === 0 && leads.length > 0 && (
+                          <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No leads with status &quot;{STATUS_COLORS[leadStatusFilter]?.label}&quot;.</td></tr>
+                        )}
+                        {leads.filter(l => leadStatusFilter === 'all' || l.status === leadStatusFilter).map(l => {
                           const ss = STATUS_COLORS[l.status] ?? STATUS_COLORS.new
                           return (
                             <tr key={l.id}
@@ -1919,6 +1978,88 @@ function AdminContent() {
                     )}
                   </div>
                 )}
+
+                {/* Contact & Location */}
+                {(selectedLead.customer_email || selectedLead.billing_address || selectedLead.billing_city) && (
+                  <div style={{ background: D.card, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <p style={{ fontSize: 11, fontWeight: 800, color: D.text, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      <i className="fa-solid fa-address-card" style={{ marginRight: 6, color: 'var(--teal)' }} />
+                      Contact &amp; Location
+                    </p>
+                    {selectedLead.customer_email && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <i className="fa-solid fa-envelope" style={{ fontSize: 12, color: D.muted, width: 14 }} />
+                        <span style={{ fontSize: 13, color: D.text, fontFamily: 'monospace' }}>{selectedLead.customer_email}</span>
+                      </div>
+                    )}
+                    {(selectedLead.billing_address || selectedLead.billing_city) && (
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                        <i className="fa-solid fa-location-dot" style={{ fontSize: 12, color: D.muted, width: 14, marginTop: 2 }} />
+                        <div>
+                          {selectedLead.billing_address && <p style={{ fontSize: 13, color: D.text, margin: 0 }}>{selectedLead.billing_address}</p>}
+                          {(selectedLead.billing_city || selectedLead.billing_province || selectedLead.billing_zip) && (
+                            <p style={{ fontSize: 13, color: D.muted, margin: '2px 0 0' }}>
+                              {[selectedLead.billing_city, selectedLead.billing_province, selectedLead.billing_zip].filter(Boolean).join(', ')}
+                              {selectedLead.billing_country ? ` · ${selectedLead.billing_country}` : ''}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Call History */}
+                <div style={{ background: D.card, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, color: D.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+                    <i className="fa-solid fa-phone-volume" style={{ marginRight: 6, color: '#7c3aed' }} />
+                    Call History ({callHistory.length})
+                  </p>
+                  {callHistoryLoading ? (
+                    <p style={{ fontSize: 13, color: D.muted }}>Loading…</p>
+                  ) : callHistory.length === 0 ? (
+                    <p style={{ fontSize: 13, color: D.muted }}>No calls logged yet.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {callHistory.map(log => {
+                        const disp = DISPOSITIONS.find(d => d.value === log.disposition)
+                        return (
+                          <div key={log.id} style={{ borderRadius: 10, border: `1.5px solid ${D.border}`, padding: '11px 14px', background: D.drawerBg }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: log.notes ? 8 : 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                {disp && (
+                                  <span style={{ background: disp.bg, color: disp.color, borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+                                    <i className={`fa-solid ${disp.icon}`} style={{ fontSize: 10 }} />
+                                    {disp.label}
+                                  </span>
+                                )}
+                                {!disp && (
+                                  <span style={{ background: D.btnBg, color: D.muted, borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>
+                                    {log.disposition.replace(/_/g, ' ')}
+                                  </span>
+                                )}
+                              </div>
+                              <span style={{ fontSize: 11, color: D.muted, whiteSpace: 'nowrap' }}>
+                                {new Date(log.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
+                              <i className="fa-solid fa-user-headset" style={{ fontSize: 11, color: D.muted }} />
+                              <span style={{ fontSize: 12, fontWeight: 700, color: log.agent_name ? 'var(--teal)' : D.muted }}>
+                                {log.agent_name || 'Unknown caller'}
+                              </span>
+                            </div>
+                            {log.notes && (
+                              <p style={{ fontSize: 12, color: D.muted, marginTop: 6, lineHeight: 1.5, paddingTop: 6, borderTop: `1px solid ${D.border}` }}>
+                                {log.notes}
+                              </p>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
 
                 <p style={{ fontSize: 12, color: D.muted, padding: '4px 6px', display: 'flex', alignItems: 'center', gap: 6 }}>
                   <i className="fa-solid fa-clock" />
