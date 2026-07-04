@@ -76,6 +76,7 @@ const DISPOSITIONS = [
   { value: 'wrong_number',   label: 'Wrong Number',          icon: 'fa-triangle-exclamation', color: '#b45309', bg: '#fef9c3' },
   { value: 'converted',      label: 'Converted / Ordered',   icon: 'fa-circle-check',         color: '#065f46', bg: '#a7f3d0' },
   { value: 'do_not_call',    label: 'Do Not Call',           icon: 'fa-ban',                  color: '#991b1b', bg: '#fee2e2' },
+  { value: 'status_updated', label: 'Status Updated',        icon: 'fa-pen-to-square',        color: '#64748b', bg: '#f1f5f9' },
 ]
 
 function DispositionModal({
@@ -413,6 +414,7 @@ function AdminContent() {
   const [callHistory, setCallHistory]         = useState<{ id: string; agent_name: string | null; disposition: string; notes: string | null; created_at: string }[]>([])
   const [callHistoryLoading, setCallHistoryLoading] = useState(false)
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>('all')
+  const [leadAgentFilter,  setLeadAgentFilter]  = useState<string>('all')
 
   // Clear all leads
   const [clearingLeads, setClearingLeads] = useState(false)
@@ -1386,22 +1388,50 @@ function AdminContent() {
                     <StatCard label="Unassigned"     value={leads.filter(l => !l.agent_id).length}                          icon="fa-user-slash"   color="#d97706"      delay={0.2} />
                   </div>
 
-                  {/* Status filter bar */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-                    <button onClick={() => setLeadStatusFilter('all')}
-                      style={{ padding: '7px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', border: leadStatusFilter === 'all' ? '2px solid var(--navy)' : `2px solid ${D.border}`, background: leadStatusFilter === 'all' ? 'var(--navy)' : D.btnBg, color: leadStatusFilter === 'all' ? 'white' : D.text }}>
-                      All ({leads.length})
-                    </button>
-                    {Object.entries(STATUS_COLORS).map(([k, v]) => {
-                      const count = leads.filter(l => l.status === k).length
-                      if (count === 0) return null
-                      return (
-                        <button key={k} onClick={() => setLeadStatusFilter(k)}
-                          style={{ padding: '7px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', border: leadStatusFilter === k ? `2px solid ${v.text}` : `2px solid ${D.border}`, background: leadStatusFilter === k ? v.bg : D.btnBg, color: leadStatusFilter === k ? v.text : D.text }}>
-                          {v.label} ({count})
-                        </button>
-                      )
-                    })}
+                  {/* Filter row: Status + Agent */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+                    {/* Status filter bar */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: D.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginRight: 4 }}>Status:</span>
+                      <button onClick={() => setLeadStatusFilter('all')}
+                        style={{ padding: '7px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', border: leadStatusFilter === 'all' ? '2px solid var(--navy)' : `2px solid ${D.border}`, background: leadStatusFilter === 'all' ? 'var(--navy)' : D.btnBg, color: leadStatusFilter === 'all' ? 'white' : D.text }}>
+                        All ({leads.length})
+                      </button>
+                      {Object.entries(STATUS_COLORS).map(([k, v]) => {
+                        const count = leads.filter(l => l.status === k).length
+                        if (count === 0) return null
+                        return (
+                          <button key={k} onClick={() => setLeadStatusFilter(k)}
+                            style={{ padding: '7px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', border: leadStatusFilter === k ? `2px solid ${v.text}` : `2px solid ${D.border}`, background: leadStatusFilter === k ? v.bg : D.btnBg, color: leadStatusFilter === k ? v.text : D.text }}>
+                            {v.label} ({count})
+                          </button>
+                        )
+                      })}
+                    </div>
+                    {/* Agent filter bar */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: D.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginRight: 4 }}>Agent:</span>
+                      <button onClick={() => setLeadAgentFilter('all')}
+                        style={{ padding: '7px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', border: leadAgentFilter === 'all' ? '2px solid var(--teal)' : `2px solid ${D.border}`, background: leadAgentFilter === 'all' ? 'var(--teal)' : D.btnBg, color: leadAgentFilter === 'all' ? 'white' : D.text }}>
+                        All Agents
+                      </button>
+                      <button onClick={() => setLeadAgentFilter('unassigned')}
+                        style={{ padding: '7px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', border: leadAgentFilter === 'unassigned' ? '2px solid #d97706' : `2px solid ${D.border}`, background: leadAgentFilter === 'unassigned' ? '#fef3c7' : D.btnBg, color: leadAgentFilter === 'unassigned' ? '#92400e' : D.text }}>
+                        Unassigned ({leads.filter(l => !l.agent_id).length})
+                      </button>
+                      {approvedAgents.map(a => {
+                        const count = leads.filter(l => l.agent_id === a.user_id).length
+                        if (count === 0) return null
+                        const active = leadAgentFilter === a.user_id
+                        return (
+                          <button key={a.user_id} onClick={() => setLeadAgentFilter(a.user_id)}
+                            style={{ padding: '7px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', border: active ? '2px solid #7c3aed' : `2px solid ${D.border}`, background: active ? '#ede9fe' : D.btnBg, color: active ? '#5b21b6' : D.text }}>
+                            <i className="fa-solid fa-user-headset" style={{ marginRight: 5, fontSize: 10 }} />
+                            {a.display_name} ({count})
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
 
                   <div style={{ background: 'var(--white)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(9,52,89,0.06)', overflowX: 'auto' }}>
@@ -1415,10 +1445,20 @@ function AdminContent() {
                       </thead>
                       <tbody>
                         {leads.length === 0 && <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No leads yet. Click &quot;New Lead&quot; to create one.</td></tr>}
-                        {leads.filter(l => leadStatusFilter === 'all' || l.status === leadStatusFilter).length === 0 && leads.length > 0 && (
-                          <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No leads with status &quot;{STATUS_COLORS[leadStatusFilter]?.label}&quot;.</td></tr>
-                        )}
-                        {leads.filter(l => leadStatusFilter === 'all' || l.status === leadStatusFilter).map(l => {
+                        {(() => {
+                          const filtered = leads.filter(l =>
+                            (leadStatusFilter === 'all' || l.status === leadStatusFilter) &&
+                            (leadAgentFilter === 'all' || (leadAgentFilter === 'unassigned' ? !l.agent_id : l.agent_id === leadAgentFilter))
+                          )
+                          if (filtered.length === 0 && leads.length > 0) {
+                            return <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No leads match the selected filters.</td></tr>
+                          }
+                          return null
+                        })()}
+                        {leads.filter(l =>
+                          (leadStatusFilter === 'all' || l.status === leadStatusFilter) &&
+                          (leadAgentFilter === 'all' || (leadAgentFilter === 'unassigned' ? !l.agent_id : l.agent_id === leadAgentFilter))
+                        ).map(l => {
                           const ss = STATUS_COLORS[l.status] ?? STATUS_COLORS.new
                           return (
                             <tr key={l.id}

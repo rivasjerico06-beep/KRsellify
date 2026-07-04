@@ -46,12 +46,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Lead not claimed by you' }, { status: 403 })
   }
 
+  // Resolve display name so call logs show a real name, not a UUID
+  const { data: profile } = await admin
+    .from('agent_profiles')
+    .select('display_name')
+    .eq('user_id', auth.userId)
+    .single()
+  const agentDisplayName = profile?.display_name ?? auth.userId
+
   await admin.from('call_logs').insert({
     lead_id,
-    agent_name: auth.userId,
+    agent_name: agentDisplayName,
     disposition,
     notes: notes || null,
   })
+
+  // Keep the denormalised name on the lead itself so admin can filter by it
+  await admin.from('leads').update({ assigned_agent_name: agentDisplayName }).eq('id', lead_id)
 
   const { error } = await admin.from('leads').update({
     disposition,

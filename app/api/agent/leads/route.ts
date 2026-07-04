@@ -38,8 +38,20 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
   }
 
+  const admin = getAdminSupabase()
+
+  // Resolve agent display name for audit log
+  const { data: profile } = await admin
+    .from('agent_profiles')
+    .select('display_name')
+    .eq('user_id', auth.userId)
+    .single()
+  const agentDisplayName = profile?.display_name ?? auth.userId
+
+  if (status !== undefined) updates.assigned_agent_name = agentDisplayName
+
   // Enforce: agent can only update leads assigned to them
-  const { data, error } = await getAdminSupabase()
+  const { data, error } = await admin
     .from('leads')
     .update(updates)
     .eq('id', id)
@@ -48,5 +60,16 @@ export async function PATCH(request: Request) {
     .single()
 
   if (error || !data) return NextResponse.json({ error: 'Lead not found or access denied' }, { status: 404 })
+
+  // Log status change to call history
+  if (status !== undefined) {
+    await admin.from('call_logs').insert({
+      lead_id: id,
+      agent_name: agentDisplayName,
+      disposition: 'status_updated',
+      notes: `Status set to: ${status.replace(/_/g, ' ')}`,
+    })
+  }
+
   return NextResponse.json(data)
 }

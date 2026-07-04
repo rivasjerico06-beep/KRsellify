@@ -98,6 +98,17 @@ export async function PATCH(request: Request) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Log status changes made by admin to call history
+  if (updates.status) {
+    await admin.from('call_logs').insert({
+      lead_id: id,
+      agent_name: 'Admin',
+      disposition: 'status_updated',
+      notes: `Status set to: ${(updates.status as string).replace(/_/g, ' ')}`,
+    })
+  }
+
   return NextResponse.json(data)
 }
 
