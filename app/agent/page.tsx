@@ -157,6 +157,8 @@ function AgentContent() {
   const [selected, setSelected]   = useState<Lead | null>(null)
   const [noteText, setNoteText]   = useState('')
   const [followUpDate, setFollowUpDate] = useState('')
+  const [editEmail, setEditEmail] = useState('')
+  const [editPhone, setEditPhone] = useState('')
   const [updating, setUpdating]   = useState(false)
 
   // ── Call-pool / dialer state ──
@@ -799,7 +801,7 @@ function AgentContent() {
             </div>
           ) : filtered.map(lead => (
             <motion.div key={lead.id} layout whileHover={{ background: 'var(--off-white)' }}
-              onClick={() => { setSelected(lead); setNoteText(lead.notes ?? ''); setFollowUpDate(lead.follow_up_date ?? '') }}
+              onClick={() => { setSelected(lead); setNoteText(lead.notes ?? ''); setFollowUpDate(lead.follow_up_date ?? ''); setEditEmail(lead.customer_email ?? ''); setEditPhone(lead.customer_phone ?? '') }}
               style={{ padding: '16px 24px', borderBottom: '1px solid var(--gray)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }}>
               <div style={{ flex: 1 }}>
                 <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-dark)' }}>{lead.customer_name}</p>
@@ -883,6 +885,42 @@ function AgentContent() {
                         {v.label}
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* Contact Info — editable so attribution stays accurate */}
+                <div style={{ background: D.card, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', border: '1.5px solid #fde68a' }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
+                    <i className="fa-solid fa-address-card" style={{ marginRight: 6, color: '#d97706' }} />
+                    Contact Info
+                  </p>
+                  <p style={{ fontSize: 11, color: '#b45309', marginBottom: 10 }}>
+                    Update if customer gives you a different phone or email — this is how your sale gets credited to you.
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: D.muted, marginBottom: 4 }}>Phone</p>
+                      <input
+                        value={editPhone} onChange={e => setEditPhone(e.target.value)}
+                        placeholder="Customer phone number"
+                        style={{ width: '100%', border: `2px solid ${D.border}`, borderRadius: 10, padding: '9px 12px', fontSize: 13, fontFamily: 'inherit', outline: 'none', background: D.inputBg, color: D.text, boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: D.muted, marginBottom: 4 }}>Email</p>
+                      <input
+                        value={editEmail} onChange={e => setEditEmail(e.target.value)}
+                        placeholder="Customer email address"
+                        style={{ width: '100%', border: `2px solid ${D.border}`, borderRadius: 10, padding: '9px 12px', fontSize: 13, fontFamily: 'inherit', outline: 'none', background: D.inputBg, color: D.text, boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <button
+                      onClick={() => updateLead(selected.id, { customer_phone: editPhone || selected.customer_phone, customer_email: editEmail || undefined })}
+                      disabled={updating}
+                      style={{ background: '#d97706', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start' }}>
+                      <i className="fa-solid fa-floppy-disk" />
+                      {updating ? 'Saving…' : 'Save Contact Info'}
+                    </button>
                   </div>
                 </div>
 

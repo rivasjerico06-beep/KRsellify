@@ -10,7 +10,8 @@ export async function GET(request: Request) {
     .from('leads')
     .select('id, customer_name, customer_phone, product_interest, status, created_at')
     .is('claimed_by', null)
-    .in('status', ['new', 'assigned', 'attempted', 'follow_up', 'interested'])
+    .is('agent_id', null)
+    .in('status', ['new', 'attempted', 'follow_up', 'interested'])
     .order('created_at', { ascending: true })
     .limit(200)
 

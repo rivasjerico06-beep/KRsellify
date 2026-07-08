@@ -33,7 +33,7 @@ export async function GET(request: Request) {
     admin.from('agent_profiles').select('user_id,display_name,referral_code,status').eq('status', 'approved'),
     admin.from('profiles').select('id,full_name,role,phone').eq('role', 'customer'),
     admin.from('leads').select('id,agent_id,status,customer_email,customer_phone'),
-    admin.from('call_logs').select('lead_id,agent_name,created_at'),
+    admin.from('call_logs').select('lead_id,agent_name,disposition,created_at'),
     admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ])
 
@@ -123,7 +123,10 @@ export async function GET(request: Request) {
   for (const log of allLogs) {
     const agentId = leadIdToAgent[log.lead_id]
     if (!agentId) continue
-    callsMadeMap[agentId]  = (callsMadeMap[agentId] ?? 0) + 1
+    // Only count actual dialer calls, not manual status changes
+    if ((log as { disposition?: string }).disposition !== 'status_updated') {
+      callsMadeMap[agentId] = (callsMadeMap[agentId] ?? 0) + 1
+    }
     if (!lastActiveMap[agentId] || log.created_at > lastActiveMap[agentId])
       lastActiveMap[agentId] = log.created_at
   }
