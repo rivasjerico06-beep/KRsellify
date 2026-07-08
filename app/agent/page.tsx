@@ -500,16 +500,15 @@ function AgentContent() {
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
                         {[
-                          { n: 1, text: 'Go to themagaoffers.net/agent-login and sign in' },
-                          { n: 2, text: 'Look at the "Call Next Lead" box at the top — it shows the next customer' },
-                          { n: 3, text: 'Click "Claim & Call" — this locks the lead to YOU so no other agent can take it', bold: true },
-                          { n: 4, text: 'The dialer (HelloAirDial) opens automatically. The phone number is already copied to your clipboard' },
-                          { n: 5, text: 'Paste the number into HelloAirDial and make the call on your phone' },
-                          { n: 6, text: 'When done, come back here and click "Done Calling — Log Outcome"', bold: true },
-                          { n: 7, text: 'Pick the correct outcome from the list (see the guide below)' },
-                          { n: 8, text: 'Add notes if the customer said something important — especially a new phone number or email', bold: true },
-                          { n: 9, text: 'Click "Submit & Next Lead" — the lead is saved and you move to the next one' },
-                          { n: 10, text: 'Repeat steps 2–9 for every call during your session' },
+                          { n: 1, text: 'Look at the "Call Next Lead" box at the top — it shows the next customer' },
+                          { n: 2, text: 'Click "Claim & Call" — this locks the lead to YOU so no other agent can take it', bold: true },
+                          { n: 3, text: 'The dialer (HelloAirDial) opens automatically. The phone number is already copied to your clipboard' },
+                          { n: 4, text: 'Paste the number into HelloAirDial and make the call on your phone' },
+                          { n: 5, text: 'When done, come back here and click "Done Calling — Log Outcome"', bold: true },
+                          { n: 6, text: 'Pick the correct outcome from the list (see the guide below)' },
+                          { n: 7, text: 'Add notes if the customer said something important — especially a new phone number or email', bold: true },
+                          { n: 8, text: 'Click "Submit & Next Lead" — the lead is saved and you move to the next one' },
+                          { n: 9, text: 'Repeat steps 1–8 for every call during your session' },
                         ].map(s => (
                           <div key={s.n} style={{
                             display: 'flex', gap: 12, alignItems: 'flex-start',
