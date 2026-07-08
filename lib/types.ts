@@ -162,6 +162,10 @@ export interface AgentStat {
   total_leads?: number
   converted_leads?: number
   lead_conversion_rate?: number
+  calls_made?: number
+  last_active?: string | null
+  attributed_orders?: number
+  attributed_revenue?: number
 }
 
 export interface CustomerTierRow {

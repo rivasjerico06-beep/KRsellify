@@ -1154,11 +1154,11 @@ function AdminContent() {
                 <div>
                   <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--heading)', marginBottom: 24 }}>Agent Performance</h2>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 16, marginBottom: 28 }}>
-                    <StatCard label="Active Agents"        value={analytics.agentStats.length}                                             icon="fa-headset"      color="var(--teal)" />
-                    <StatCard label="Total Referred Orders" value={analytics.agentStats.reduce((s, a) => s + a.orders, 0)}                  icon="fa-receipt"      color="var(--navy)" />
-                    <StatCard label="Referred Revenue"     value={`$${analytics.agentStats.reduce((s, a) => s + a.revenue, 0).toFixed(0)}`} icon="fa-dollar-sign"  color="#059669" />
-                    <StatCard label="Total Leads"          value={analytics.agentStats.reduce((s, a) => s + (a.total_leads ?? 0), 0)}       icon="fa-users"        color="#7c3aed" delay={0.05} />
-                    <StatCard label="Converted Leads"      value={analytics.agentStats.reduce((s, a) => s + (a.converted_leads ?? 0), 0)}   icon="fa-circle-check" color="#059669" delay={0.1} />
+                    <StatCard label="Active Agents"      value={analytics.agentStats.length}                                                          icon="fa-headset"      color="var(--teal)" />
+                    <StatCard label="Total Calls Made"   value={analytics.agentStats.reduce((s, a) => s + (a.calls_made ?? 0), 0)}                      icon="fa-phone"        color="var(--navy)" />
+                    <StatCard label="Attributed Revenue" value={`$${analytics.agentStats.reduce((s, a) => s + (a.attributed_revenue ?? 0), 0).toFixed(0)}`} icon="fa-dollar-sign"  color="#059669" />
+                    <StatCard label="Total Leads"        value={analytics.agentStats.reduce((s, a) => s + (a.total_leads ?? 0), 0)}                      icon="fa-users"        color="#7c3aed" delay={0.05} />
+                    <StatCard label="Converted Leads"    value={analytics.agentStats.reduce((s, a) => s + (a.converted_leads ?? 0), 0)}                  icon="fa-circle-check" color="#059669" delay={0.1} />
                   </div>
 
                   {analytics.agentStats.length > 0 && (
@@ -1171,31 +1171,63 @@ function AdminContent() {
                     <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
                       <thead>
                         <tr style={{ background: 'var(--gray)' }}>
-                          {['Agent', 'Total Leads', 'Converted', 'Lead Rate', 'Orders', 'Revenue', 'Avg. Order'].map(h => (
+                          {['Agent', 'Calls Made', 'Total Leads', 'Converted', 'Conv. Rate', 'Attributed Orders', 'Attributed Revenue', 'Last Active'].map(h => (
                             <th key={h} style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-mid)', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
-                        {analytics.agentStats.map(a => (
-                          <tr key={a.user_id} style={{ borderBottom: '1px solid var(--gray)' }}>
-                            <td style={{ padding: '12px 14px', fontWeight: 600, fontSize: 14 }}>{a.display_name}</td>
-                            <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 600 }}>{a.total_leads ?? 0}</td>
-                            <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 600, color: '#059669' }}>{a.converted_leads ?? 0}</td>
-                            <td style={{ padding: '12px 14px' }}>
-                              <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
-                                background: (a.lead_conversion_rate ?? 0) >= 50 ? '#d1fae5' : (a.lead_conversion_rate ?? 0) >= 20 ? '#fef9c3' : 'var(--gray)',
-                                color: (a.lead_conversion_rate ?? 0) >= 50 ? '#065f46' : (a.lead_conversion_rate ?? 0) >= 20 ? '#854d0e' : 'var(--text-mid)' }}>
-                                {a.lead_conversion_rate ?? 0}%
-                              </span>
-                            </td>
-                            <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 600 }}>{a.orders}</td>
-                            <td style={{ padding: '12px 14px', fontWeight: 700, color: '#059669' }}>${a.revenue.toFixed(2)}</td>
-                            <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-mid)' }}>{a.orders > 0 ? `$${(a.revenue / a.orders).toFixed(2)}` : '—'}</td>
-                          </tr>
-                        ))}
+                        {analytics.agentStats.map(a => {
+                          const rate = a.lead_conversion_rate ?? 0
+                          const lastActive = a.last_active ? new Date(a.last_active) : null
+                          const daysSince  = lastActive ? Math.floor((Date.now() - lastActive.getTime()) / 86400000) : null
+                          return (
+                            <tr key={a.user_id} style={{ borderBottom: '1px solid var(--gray)' }}>
+                              <td style={{ padding: '12px 14px', fontWeight: 700, fontSize: 14 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--teal)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
+                                    {a.display_name.charAt(0).toUpperCase()}
+                                  </div>
+                                  {a.display_name}
+                                </div>
+                              </td>
+                              <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 600 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                  <i className="fa-solid fa-phone" style={{ fontSize: 10, color: 'var(--teal)' }} />
+                                  {a.calls_made ?? 0}
+                                </div>
+                              </td>
+                              <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 600 }}>{a.total_leads ?? 0}</td>
+                              <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 600, color: '#059669' }}>{a.converted_leads ?? 0}</td>
+                              <td style={{ padding: '12px 14px' }}>
+                                <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
+                                  background: rate >= 50 ? '#d1fae5' : rate >= 20 ? '#fef9c3' : 'var(--gray)',
+                                  color: rate >= 50 ? '#065f46' : rate >= 20 ? '#854d0e' : 'var(--text-mid)' }}>
+                                  {rate}%
+                                </span>
+                              </td>
+                              <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 600 }}>
+                                {(a.attributed_orders ?? 0) > 0
+                                  ? <span style={{ color: '#059669', fontWeight: 700 }}>{a.attributed_orders}</span>
+                                  : <span style={{ color: 'var(--text-light)' }}>0</span>}
+                              </td>
+                              <td style={{ padding: '12px 14px', fontWeight: 700, color: '#059669' }}>
+                                {(a.attributed_revenue ?? 0) > 0 ? `$${(a.attributed_revenue ?? 0).toFixed(2)}` : <span style={{ color: 'var(--text-light)', fontWeight: 400 }}>—</span>}
+                              </td>
+                              <td style={{ padding: '12px 14px', fontSize: 12 }}>
+                                {daysSince === null
+                                  ? <span style={{ color: 'var(--text-light)' }}>No activity</span>
+                                  : daysSince === 0
+                                    ? <span style={{ color: '#059669', fontWeight: 700 }}>Today</span>
+                                    : daysSince === 1
+                                      ? <span style={{ color: '#0369a1', fontWeight: 600 }}>Yesterday</span>
+                                      : <span style={{ color: 'var(--text-mid)' }}>{daysSince}d ago</span>}
+                              </td>
+                            </tr>
+                          )
+                        })}
                         {analytics.agentStats.length === 0 && (
-                          <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No approved agents yet.</td></tr>
+                          <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>No approved agents yet.</td></tr>
                         )}
                       </tbody>
                     </table>

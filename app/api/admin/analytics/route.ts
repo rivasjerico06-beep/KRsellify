@@ -28,16 +28,38 @@ export async function GET(request: Request) {
   const thirtyAgo  = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
 
-  const [ordersRes, agentsRes, profilesRes, leadsRes] = await Promise.all([
-    admin.from('orders').select('id,total,discount_amount,status,items,referral_code,user_id,created_at').neq('status', 'pending_payment').order('created_at', { ascending: false }),
+  const [ordersRes, agentsRes, profilesRes, leadsRes, callLogsRes, authUsersRes] = await Promise.all([
+    admin.from('orders').select('id,total,discount_amount,status,items,referral_code,user_id,guest_email,created_at').neq('status', 'pending_payment').order('created_at', { ascending: false }),
     admin.from('agent_profiles').select('user_id,display_name,referral_code,status').eq('status', 'approved'),
-    admin.from('profiles').select('id,full_name,role').eq('role', 'customer'),
-    admin.from('leads').select('agent_id,status'),
+    admin.from('profiles').select('id,full_name,role,phone').eq('role', 'customer'),
+    admin.from('leads').select('id,agent_id,status,customer_email,customer_phone'),
+    admin.from('call_logs').select('lead_id,agent_name,created_at'),
+    admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ])
 
-  const allOrders = ordersRes.data ?? []
-  const agents    = agentsRes.data ?? []
-  const profiles  = profilesRes.data ?? []
+  const allOrders  = ordersRes.data ?? []
+  const agents     = agentsRes.data ?? []
+  const profiles   = profilesRes.data ?? []
+  const allLeads   = leadsRes.data ?? []
+  const allLogs    = callLogsRes.data ?? []
+  const authUsers  = authUsersRes.data?.users ?? []
+
+  // Build email → userId map from auth (for logged-in order matching)
+  const authEmailToUserId: Record<string, string> = {}
+  for (const u of authUsers) if (u.email) authEmailToUserId[u.email.toLowerCase()] = u.id
+
+  // Build userId → profile.phone map
+  const profilePhoneMap: Record<string, string> = {}
+  for (const p of profiles) if ((p as { phone?: string | null }).phone) profilePhoneMap[p.id] = ((p as { phone?: string }).phone ?? '').replace(/\D/g, '')
+
+  // Build lookup: email → agentId, phone → agentId (from leads)
+  const emailToAgent: Record<string, string> = {}
+  const phoneToAgent: Record<string, string> = {}
+  for (const l of allLeads) {
+    if (!l.agent_id) continue
+    if (l.customer_email) emailToAgent[l.customer_email.toLowerCase()] = l.agent_id
+    if (l.customer_phone) phoneToAgent[String(l.customer_phone).replace(/\D/g, '')] = l.agent_id
+  }
 
   const active = allOrders.filter(o => o.status !== 'cancelled')
   const recent = active.filter(o => o.created_at >= thirtyAgo)
@@ -86,27 +108,75 @@ export async function GET(request: Request) {
   // ── Lead stats per agent ────────────────────────────────────
   const leadTotalMap: Record<string, number> = {}
   const leadConvertedMap: Record<string, number> = {}
-  for (const l of leadsRes.data ?? []) {
+  const leadIdToAgent: Record<string, string> = {}
+  for (const l of allLeads) {
     if (!l.agent_id) continue
-    leadTotalMap[l.agent_id]     = (leadTotalMap[l.agent_id] ?? 0) + 1
+    leadIdToAgent[l.id]           = l.agent_id
+    leadTotalMap[l.agent_id]      = (leadTotalMap[l.agent_id] ?? 0) + 1
     if (l.status === 'converted')
       leadConvertedMap[l.agent_id] = (leadConvertedMap[l.agent_id] ?? 0) + 1
   }
 
+  // ── Calls made + last active per agent (via call_logs joined through leads) ──
+  const callsMadeMap: Record<string, number> = {}
+  const lastActiveMap: Record<string, string> = {}
+  for (const log of allLogs) {
+    const agentId = leadIdToAgent[log.lead_id]
+    if (!agentId) continue
+    callsMadeMap[agentId]  = (callsMadeMap[agentId] ?? 0) + 1
+    if (!lastActiveMap[agentId] || log.created_at > lastActiveMap[agentId])
+      lastActiveMap[agentId] = log.created_at
+  }
+
+  // ── Email/phone attributed orders per agent ─────────────────
+  const attributedOrdersMap: Record<string, number> = {}
+  const attributedRevenueMap: Record<string, number> = {}
+  for (const o of active) {
+    let agentId: string | undefined
+
+    // Guest order: match by guest_email
+    if (o.guest_email) agentId = emailToAgent[o.guest_email.toLowerCase()]
+
+    // Logged-in order: match by email via auth users
+    if (!agentId && o.user_id) {
+      const userEmail = authUsers.find(u => u.id === o.user_id)?.email
+      if (userEmail) agentId = emailToAgent[userEmail.toLowerCase()]
+    }
+
+    // Logged-in order: match by phone via profiles
+    if (!agentId && o.user_id) {
+      const phone = profilePhoneMap[o.user_id]
+      if (phone) agentId = phoneToAgent[phone]
+    }
+
+    if (!agentId) continue
+    attributedOrdersMap[agentId]  = (attributedOrdersMap[agentId] ?? 0) + 1
+    attributedRevenueMap[agentId] = (attributedRevenueMap[agentId] ?? 0) + Number(o.total)
+  }
+
   // ── Agent performance ───────────────────────────────────────
   const agentStats: AgentStat[] = agents.map(a => {
-    const referred      = active.filter(o => o.referral_code === a.referral_code)
-    const total_leads   = leadTotalMap[a.user_id] ?? 0
+    const referred        = active.filter(o => o.referral_code === a.referral_code)
+    const total_leads     = leadTotalMap[a.user_id] ?? 0
     const converted_leads = leadConvertedMap[a.user_id] ?? 0
+    const attr_orders     = attributedOrdersMap[a.user_id] ?? 0
+    const attr_revenue    = attributedRevenueMap[a.user_id] ?? 0
+    // Combined: referral orders + email/phone attributed (dedupe by taking the higher count)
+    const combined_orders  = Math.max(referred.length, attr_orders)
+    const combined_revenue = Math.max(referred.reduce((s, o) => s + Number(o.total), 0), attr_revenue)
     return {
       user_id:              a.user_id,
       display_name:         a.display_name,
       referral_code:        a.referral_code ?? '',
-      orders:               referred.length,
-      revenue:              referred.reduce((s, o) => s + Number(o.total), 0),
+      orders:               combined_orders,
+      revenue:              combined_revenue,
       total_leads,
       converted_leads,
       lead_conversion_rate: total_leads > 0 ? Math.round(converted_leads / total_leads * 100) : 0,
+      calls_made:           callsMadeMap[a.user_id] ?? 0,
+      last_active:          lastActiveMap[a.user_id] ?? null,
+      attributed_orders:    attr_orders,
+      attributed_revenue:   attr_revenue,
     }
   }).sort((a, b) => b.revenue - a.revenue)
 
