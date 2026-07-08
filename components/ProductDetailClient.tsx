@@ -19,6 +19,10 @@ const FEATURES: Record<string, string[]> = {
   accessories:  ['Premium materials throughout', 'Unique collector\'s item', 'Elegant gift packaging', 'Certificate of authenticity included', 'Ships worldwide in 10–15 days'],
 }
 
+const PRODUCT_FEATURE_OVERRIDES: Record<string, string[]> = {
+  'maga offers priority pass': [],
+}
+
 function Stars({ rating, large }: { rating: number; large?: boolean }) {
   return (
     <div style={{ display: 'flex', gap: large ? 4 : 3 }}>
@@ -46,7 +50,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
 
   const images = product.images?.length ? product.images : [product.img]
   const savings = product.old_price ? Math.round((1 - product.price / product.old_price) * 100) : 0
-  const features = FEATURES[product.category] ?? FEATURES.collectibles
+  const features = PRODUCT_FEATURE_OVERRIDES[product.name.toLowerCase()] ?? FEATURES[product.category] ?? FEATURES.collectibles
 
   function handleAddToCart() {
     if (selectedTier) {
