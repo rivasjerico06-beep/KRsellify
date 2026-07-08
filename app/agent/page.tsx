@@ -356,6 +356,7 @@ function AgentContent() {
 
   const [copied, setCopied] = useState(false)
   const [phoneCopied, setPhoneCopied] = useState(false)
+  const [showRules, setShowRules] = useState(false)
 
   function copyCode() {
     if (!agentProfile?.referral_code) return
@@ -434,7 +435,7 @@ function AgentContent() {
               <i className="fa-solid fa-phone" style={{ marginRight: 8, color: 'var(--teal)' }} />
               Call Next Lead
             </h2>
-            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ fontSize: 13, color: 'var(--text-mid)' }}>
                 <i className="fa-solid fa-users" style={{ marginRight: 5, color: 'var(--teal)' }} />
                 {poolQueue.length} in shared pool
@@ -446,8 +447,134 @@ function AgentContent() {
               <button onClick={loadPoolQueue} style={{ background: 'var(--gray)', border: 'none', color: 'var(--text-mid)', padding: '6px 14px', borderRadius: 50, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
                 <i className="fa-solid fa-rotate" style={{ marginRight: 5 }} />Refresh
               </button>
+              <button
+                onClick={() => setShowRules(v => !v)}
+                style={{
+                  background: showRules ? 'var(--navy)' : '#fef9c3',
+                  color: showRules ? 'white' : '#854d0e',
+                  border: showRules ? 'none' : '2px solid #fde68a',
+                  padding: '6px 16px', borderRadius: 50, fontSize: 12, fontWeight: 700,
+                  cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6,
+                }}>
+                <i className={`fa-solid ${showRules ? 'fa-xmark' : 'fa-circle-info'}`} />
+                {showRules ? 'Close Rules' : 'View Rules'}
+              </button>
             </div>
           </div>
+
+          {/* ── Rules & How-to Panel ── */}
+          <AnimatePresence>
+            {showRules && (
+              <motion.div
+                key="rules-panel"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                style={{ overflow: 'hidden', marginBottom: 16 }}>
+                <div style={{
+                  background: D.card, borderRadius: 16, border: `2px solid #fde68a`,
+                  boxShadow: '0 4px 20px rgba(9,52,89,0.08)', overflow: 'hidden',
+                }}>
+                  {/* Header */}
+                  <div style={{ background: 'var(--navy)', padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <i className="fa-solid fa-book-open" style={{ color: '#fbbf24', fontSize: 18 }} />
+                    <div>
+                      <p style={{ fontWeight: 800, fontSize: 16, color: 'white' }}>Agent Rules & How to Use the Dialer</p>
+                      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', marginTop: 2 }}>Read and follow all rules below. Every call must be logged. No exceptions.</p>
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
+
+                    {/* Step-by-step */}
+                    <div>
+                      <p style={{ fontSize: 12, fontWeight: 800, color: 'var(--teal)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <i className="fa-solid fa-list-ol" /> Step-by-Step — Every Call
+                      </p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {[
+                          { n: 1, text: 'Log in to the Agent Dashboard at themagaoffers.net/agent-login' },
+                          { n: 2, text: 'Find the "Call Next Lead" section at the top of this page' },
+                          { n: 3, text: 'Click "Claim & Call" — this locks the lead to you so no one else can take it' },
+                          { n: 4, text: 'The HelloAirDial dialer will open automatically and the phone number is copied to your clipboard' },
+                          { n: 5, text: 'Paste the number into HelloAirDial and call the customer' },
+                          { n: 6, text: 'After the call, click "Done Calling — Log Outcome" on this page' },
+                          { n: 7, text: 'Pick the correct outcome (see Disposition Guide →)' },
+                          { n: 8, text: 'Add notes if the customer said something important (especially a different phone or email)' },
+                          { n: 9, text: 'Click "Submit & Next Lead" and move on to the next lead' },
+                          { n: 10, text: 'Repeat steps 2–9 for every single call in your session' },
+                        ].map(s => (
+                          <div key={s.n} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                            <span style={{
+                              minWidth: 22, height: 22, borderRadius: '50%', background: 'var(--navy)',
+                              color: 'white', fontSize: 11, fontWeight: 800,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1,
+                            }}>{s.n}</span>
+                            <p style={{ fontSize: 13, color: D.text, lineHeight: 1.5 }}>{s.text}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                      {/* Disposition guide */}
+                      <div>
+                        <p style={{ fontSize: 12, fontWeight: 800, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <i className="fa-solid fa-clipboard-list" /> Disposition Guide — What to Select
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                          {[
+                            { situation: 'Customer did not answer', pick: 'No Answer', color: '#d97706' },
+                            { situation: 'You left a voicemail message', pick: 'Left Voicemail', color: '#7c3aed' },
+                            { situation: 'Customer answered but hung up quickly', pick: 'Hung Up', color: '#ea580c' },
+                            { situation: 'Customer says they\'re not interested', pick: 'Not Interested', color: '#64748b' },
+                            { situation: 'Customer wants you to call back another time', pick: 'Follow Up / Call Back', color: '#0369a1' },
+                            { situation: 'Customer is interested but hasn\'t decided yet', pick: 'Interested', color: '#059669' },
+                            { situation: 'Wrong phone number / not the right person', pick: 'Wrong Number', color: '#b45309' },
+                            { situation: 'Customer agreed to buy OR already purchased', pick: '⭐ Converted / Ordered', color: '#065f46', highlight: true },
+                            { situation: 'Customer says never call again', pick: 'Do Not Call', color: '#991b1b' },
+                          ].map(d => (
+                            <div key={d.pick} style={{
+                              display: 'flex', alignItems: 'center', gap: 8,
+                              padding: '7px 10px', borderRadius: 8,
+                              background: d.highlight ? '#d1fae5' : (isDark ? '#0b1622' : '#f8fafc'),
+                              border: d.highlight ? '1.5px solid #059669' : `1px solid ${D.border}`,
+                            }}>
+                              <p style={{ fontSize: 12, color: D.muted, flex: 1 }}>{d.situation}</p>
+                              <span style={{ fontSize: 11, fontWeight: 800, color: d.color, whiteSpace: 'nowrap' }}>→ {d.pick}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Hard rules */}
+                      <div>
+                        <p style={{ fontSize: 12, fontWeight: 800, color: '#dc2626', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <i className="fa-solid fa-triangle-exclamation" /> Rules You Must Follow
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {[
+                            { icon: 'fa-ban', text: 'NEVER call a lead without clicking "Claim & Call" first. Calling without claiming means the call will NOT be recorded to you.' },
+                            { icon: 'fa-clipboard-check', text: 'ALWAYS log the outcome after every single call — even if nobody answered. Every call needs a disposition.' },
+                            { icon: 'fa-star', text: 'If a customer buys or says they will buy, mark "Converted / Ordered" IMMEDIATELY. This is how your sale gets credited to you.' },
+                            { icon: 'fa-pen', text: 'If the customer gives you a different phone number or email than what\'s in the system, write it in the Notes field before submitting.' },
+                            { icon: 'fa-forward', text: 'Do not skip leads without a reason. If a number is invalid, log "Wrong Number". Only skip if you genuinely cannot identify the lead.' },
+                            { icon: 'fa-chart-line', text: 'Sales are auto-attributed to you by matching customer email or phone to your leads. Accurate contact info = your sales get counted.' },
+                          ].map((r, i) => (
+                            <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '8px 10px', background: isDark ? '#1a0f0f' : '#fff5f5', borderRadius: 8, border: `1px solid ${isDark ? '#3b1616' : '#fecaca'}` }}>
+                              <i className={`fa-solid ${r.icon}`} style={{ color: '#dc2626', marginTop: 2, flexShrink: 0, fontSize: 13 }} />
+                              <p style={{ fontSize: 12, color: D.text, lineHeight: 1.5 }}>{r.text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {poolLoading ? (
             <div style={{ background: 'var(--white)', borderRadius: 16, padding: 40, textAlign: 'center', color: 'var(--text-light)', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
