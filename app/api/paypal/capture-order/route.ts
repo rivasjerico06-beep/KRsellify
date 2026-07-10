@@ -31,11 +31,12 @@ const TIERS = [
 
 export async function POST(request: Request) {
   try {
-    const { orderID, items, coupon_code, email } = await request.json() as {
+    const { orderID, items, coupon_code, email, shipping_address } = await request.json() as {
       orderID: string
       items: CartItem[]
       coupon_code?: string
       email: string
+      shipping_address?: Record<string, string>
     }
 
     if (!orderID)
@@ -119,25 +120,30 @@ export async function POST(request: Request) {
       }
     }
 
-    // Create order in DB
-    const { data: order, error: orderError } = await admin
-      .from('orders')
-      .insert({
-        user_id: userId,
-        guest_email: !userId ? (email?.toLowerCase().trim() ?? null) : null,
-        items: items.map(i => ({
-          id: i.id, name: i.name, price: i.price, qty: i.qty,
-          img: i.img, via: i.via, category: i.category,
-        })),
-        total: capturedAmount,
-        discount_amount: appliedDiscount,
-        coupon_code: coupon_code ?? null,
-        status: 'paid',
-        paypal_order_id: orderID,
-        order_number: Math.floor(10000 + Math.random() * 90000),
-      })
-      .select()
-      .single()
+    // Create order in DB — try with shipping_address, fall back without if column not yet added
+    const orderPayload = {
+      user_id: userId,
+      guest_email: !userId ? (email?.toLowerCase().trim() ?? null) : null,
+      items: items.map(i => ({
+        id: i.id, name: i.name, price: i.price, qty: i.qty,
+        img: i.img, via: i.via, category: i.category,
+      })),
+      total: capturedAmount,
+      discount_amount: appliedDiscount,
+      coupon_code: coupon_code ?? null,
+      status: 'paid',
+      paypal_order_id: orderID,
+      order_number: Math.floor(10000 + Math.random() * 90000),
+      shipping_address: shipping_address ?? null,
+    }
+
+    let { data: order, error: orderError } = await admin.from('orders').insert(orderPayload).select().single()
+
+    // Column may not exist yet — retry without it
+    if (orderError?.code === '42703') {
+      const { shipping_address: _sa, ...payloadWithout } = orderPayload
+      ;({ data: order, error: orderError } = await admin.from('orders').insert(payloadWithout).select().single())
+    }
 
     if (orderError || !order)
       return NextResponse.json({ error: 'Failed to save order' }, { status: 500 })
@@ -210,6 +216,7 @@ export async function POST(request: Request) {
         items,
         total: capturedAmount,
         discountAmount: appliedDiscount > 0 ? appliedDiscount : undefined,
+        shippingAddress: shipping_address,
       }).catch(() => {})
     }
 

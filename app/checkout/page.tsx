@@ -9,6 +9,14 @@ import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 
+const COUNTRIES = [
+  'United States','Philippines','Canada','United Kingdom','Australia','New Zealand',
+  'Germany','France','Italy','Spain','Netherlands','Belgium','Switzerland','Austria',
+  'Sweden','Norway','Denmark','Finland','Japan','South Korea','Singapore','Malaysia',
+  'Thailand','Indonesia','Vietnam','India','UAE','Saudi Arabia','Mexico','Brazil',
+  'Argentina','Colombia','Chile','South Africa','Nigeria','Other',
+]
+
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart, updateQty, removeFromCart, changeBundleTier, showToast } = useCart()
   const { user, session } = useAuth()
@@ -17,6 +25,25 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState('')
   const [editingEmail, setEditingEmail] = useState(false)
   const [isVip, setIsVip] = useState(false)
+
+  const [ship, setShip] = useState({
+    country: 'United States', firstName: '', lastName: '',
+    address: '', apartment: '', postalCode: '', city: '', region: '', phone: '',
+  })
+  const [shipTouched, setShipTouched] = useState(false)
+  const SHIP_REQUIRED = ['firstName','lastName','address','postalCode','city','region','phone'] as const
+  const shipMissing = SHIP_REQUIRED.some(k => !ship[k].trim())
+
+  function setField(k: keyof typeof ship, v: string) { setShip(prev => ({ ...prev, [k]: v })) }
+
+  function requireShipping() {
+    setShipTouched(true)
+    if (shipMissing) {
+      document.getElementById('ship-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return false
+    }
+    return true
+  }
   const vipCheckRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [couponCode, setCouponCode] = useState('')
   const [couponDiscount, setCouponDiscount] = useState(0)
@@ -343,6 +370,93 @@ export default function CheckoutPage() {
             </>
           )}
 
+          {/* ── Shipping Address ── */}
+          <div id="ship-form" style={{ marginBottom: 24 }}>
+            <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--text-mid)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <i className="fa-solid fa-location-dot" style={{ marginRight: 7, color: 'var(--teal)' }} />
+              Shipping Address
+            </label>
+
+            {/* Country */}
+            <div style={{ marginBottom: 10 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', display: 'block', marginBottom: 5 }}>Country / Region</label>
+              <select value={ship.country} onChange={e => setField('country', e.target.value)}
+                style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 8, padding: '13px 16px', fontSize: 15, color: 'var(--text-dark)', background: 'var(--white)', fontFamily: 'inherit', outline: 'none', cursor: 'pointer', boxSizing: 'border-box' }}>
+                {COUNTRIES.map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+
+            {/* First + Last Name */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+              {([
+                { key: 'firstName', label: 'First Name' },
+                { key: 'lastName',  label: 'Last Name' },
+              ] as { key: keyof typeof ship; label: string }[]).map(f => {
+                const err = shipTouched && !ship[f.key].trim()
+                return (
+                  <div key={f.key}>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: err ? '#dc2626' : 'var(--text-mid)', display: 'block', marginBottom: 5 }}>{f.label}</label>
+                    <input value={ship[f.key]} onChange={e => setField(f.key, e.target.value)} placeholder={f.label}
+                      style={{ width: '100%', border: `2px solid ${err ? '#ef4444' : 'var(--gray)'}`, borderRadius: 8, padding: '13px 16px', fontSize: 15, color: 'var(--text-dark)', background: err ? '#fff5f5' : 'var(--white)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Address */}
+            {([
+              { key: 'address',   label: 'Address',            placeholder: 'Street address', required: true },
+              { key: 'apartment', label: 'Apartment, suite, etc. (optional)', placeholder: 'Apt, suite, unit…', required: false },
+            ] as { key: keyof typeof ship; label: string; placeholder: string; required: boolean }[]).map(f => {
+              const err = f.required && shipTouched && !ship[f.key].trim()
+              return (
+                <div key={f.key} style={{ marginBottom: 10 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: err ? '#dc2626' : 'var(--text-mid)', display: 'block', marginBottom: 5 }}>{f.label}</label>
+                  <input value={ship[f.key]} onChange={e => setField(f.key, e.target.value)} placeholder={f.placeholder}
+                    style={{ width: '100%', border: `2px solid ${err ? '#ef4444' : 'var(--gray)'}`, borderRadius: 8, padding: '13px 16px', fontSize: 15, color: 'var(--text-dark)', background: err ? '#fff5f5' : 'var(--white)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+              )
+            })}
+
+            {/* Postal Code + City */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+              {([
+                { key: 'postalCode', label: 'Postal Code', placeholder: 'ZIP / Postal code' },
+                { key: 'city',       label: 'City',        placeholder: 'City' },
+              ] as { key: keyof typeof ship; label: string; placeholder: string }[]).map(f => {
+                const err = shipTouched && !ship[f.key].trim()
+                return (
+                  <div key={f.key}>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: err ? '#dc2626' : 'var(--text-mid)', display: 'block', marginBottom: 5 }}>{f.label}</label>
+                    <input value={ship[f.key]} onChange={e => setField(f.key, e.target.value)} placeholder={f.placeholder}
+                      style={{ width: '100%', border: `2px solid ${err ? '#ef4444' : 'var(--gray)'}`, borderRadius: 8, padding: '13px 16px', fontSize: 15, color: 'var(--text-dark)', background: err ? '#fff5f5' : 'var(--white)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Region + Phone */}
+            {([
+              { key: 'region', label: 'State / Province / Region', placeholder: 'State or province' },
+              { key: 'phone',  label: 'Phone Number',              placeholder: '+1 (555) 000-0000' },
+            ] as { key: keyof typeof ship; label: string; placeholder: string }[]).map(f => {
+              const err = shipTouched && !ship[f.key].trim()
+              return (
+                <div key={f.key} style={{ marginBottom: 10 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: err ? '#dc2626' : 'var(--text-mid)', display: 'block', marginBottom: 5 }}>{f.label}</label>
+                  <input value={ship[f.key]} onChange={e => setField(f.key, e.target.value)} placeholder={f.placeholder}
+                    style={{ width: '100%', border: `2px solid ${err ? '#ef4444' : 'var(--gray)'}`, borderRadius: 8, padding: '13px 16px', fontSize: 15, color: 'var(--text-dark)', background: err ? '#fff5f5' : 'var(--white)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+              )
+            })}
+
+            {shipTouched && shipMissing && (
+              <p style={{ fontSize: 13, color: '#dc2626', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                <i className="fa-solid fa-circle-exclamation" /> Please fill in all required shipping fields.
+              </p>
+            )}
+          </div>
+
           {/* PayPal payment */}
           <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--text-mid)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Payment
@@ -365,6 +479,7 @@ export default function CheckoutPage() {
                 forceReRender={[email, couponCode, couponDiscount, finalTotal]}
                 createOrder={async () => {
                   if (!requireEmail()) throw new Error('Email required')
+                  if (!requireShipping()) throw new Error('Shipping required')
                   const res = await fetch('/api/paypal/create-order', {
                     method: 'POST',
                     headers: {
@@ -393,6 +508,7 @@ export default function CheckoutPage() {
                       items: cart,
                       coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
                       email: email.trim(),
+                      shipping_address: ship,
                     }),
                   })
                   const order = await res.json()
@@ -409,6 +525,7 @@ export default function CheckoutPage() {
                       itemCount: cart.reduce((s, i) => s + i.qty, 0),
                       items: cart.map(i => ({ name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img })),
                       guest_email: email.trim(),
+                      shipping_address: ship,
                     }))
                     if (order.has_gift_card) {
                       localStorage.setItem('themaga_gift_card_bonus', 'true')

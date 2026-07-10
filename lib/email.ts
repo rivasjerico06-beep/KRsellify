@@ -17,6 +17,7 @@ export async function sendOrderConfirmation({
   items,
   total,
   discountAmount,
+  shippingAddress,
 }: {
   to: string
   name: string
@@ -25,6 +26,7 @@ export async function sendOrderConfirmation({
   items: CartItem[]
   total: number
   discountAmount?: number
+  shippingAddress?: Record<string, string> | null
 }) {
   if (!process.env.RESEND_API_KEY) return
 
@@ -88,6 +90,18 @@ export async function sendOrderConfirmation({
         <span style="font-size:20px;font-weight:900;color:#093459">$${total.toFixed(2)}</span>
       </div>
 
+      ${shippingAddress ? `
+      <div style="background:#f4f8f8;border-radius:12px;padding:16px 20px;margin-top:20px">
+        <p style="font-size:11px;font-weight:700;color:#8ba0aa;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 8px">Shipping To</p>
+        <p style="font-size:14px;color:#0d1f2d;margin:0;line-height:1.7">
+          ${[shippingAddress.firstName, shippingAddress.lastName].filter(Boolean).join(' ')}<br>
+          ${shippingAddress.address}${shippingAddress.apartment ? ', ' + shippingAddress.apartment : ''}<br>
+          ${[shippingAddress.city, shippingAddress.region, shippingAddress.postalCode].filter(Boolean).join(', ')}<br>
+          ${shippingAddress.country ?? ''}
+          ${shippingAddress.phone ? `<br><span style="color:#4a6170">${shippingAddress.phone}</span>` : ''}
+        </p>
+      </div>` : ''}
+
       <div style="background:linear-gradient(135deg,#093459,#b45309);border-radius:14px;padding:20px 24px;margin-top:24px;text-align:center">
         <p style="font-size:13px;color:rgba(255,255,255,0.8);margin:0 0 6px">Your order is being processed</p>
         <p style="font-size:12px;color:rgba(255,255,255,0.55);margin:0">Estimated delivery: <strong style="color:rgba(255,255,255,0.85)">10–15 days</strong></p>
@@ -126,6 +140,7 @@ export async function sendOrderConfirmation({
       Order #: <code>${orderNumber ?? orderId.slice(0, 8).toUpperCase()}</code><br>
       Total: <strong>$${total.toFixed(2)}</strong><br>
       Items: ${items.map(i => `${i.name} ×${i.qty}`).join(', ')}
+      ${shippingAddress ? `<br><br>Ship to: ${[shippingAddress.firstName, shippingAddress.lastName].filter(Boolean).join(' ')}, ${shippingAddress.address}${shippingAddress.apartment ? ' ' + shippingAddress.apartment : ''}, ${[shippingAddress.city, shippingAddress.region, shippingAddress.postalCode, shippingAddress.country].filter(Boolean).join(', ')} — ${shippingAddress.phone ?? ''}` : ''}
     </p>`,
   })
 }
