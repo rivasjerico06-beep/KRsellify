@@ -22,7 +22,7 @@ export async function PATCH(request: Request) {
   const auth = await requireAgent(request)
   if (isNextResponse(auth)) return auth
 
-  const { id, status, notes, follow_up_date } = await request.json()
+  const { id, status, notes, follow_up_date, customer_phone, customer_email } = await request.json()
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   if (status !== undefined && !VALID_STATUSES.includes(status)) {
@@ -33,6 +33,8 @@ export async function PATCH(request: Request) {
   if (status !== undefined) updates.status = status
   if (notes !== undefined) updates.notes = notes
   if (follow_up_date !== undefined) updates.follow_up_date = follow_up_date
+  if (customer_phone !== undefined) updates.customer_phone = customer_phone || null
+  if (customer_email !== undefined) updates.customer_email = customer_email ? customer_email.trim().toLowerCase() : null
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'No fields to update' }, { status: 400 })

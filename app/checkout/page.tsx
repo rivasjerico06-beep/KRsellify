@@ -53,6 +53,7 @@ export default function CheckoutPage() {
   const [productOptions, setProductOptions] = useState<Record<string, { label: string; qty: number; bundle_total: number }[]>>({})
   const emailRef = useRef<HTMLInputElement>(null)
   const paypalSucceeded = useRef(false)
+  const isValidationError = useRef(false)
 
   useEffect(() => {
     fetch('/api/products')
@@ -478,8 +479,9 @@ export default function CheckoutPage() {
                 style={{ layout: 'vertical', color: 'gold', shape: 'rect', label: 'pay', height: 55 }}
                 forceReRender={[email, couponCode, couponDiscount, finalTotal]}
                 createOrder={async () => {
-                  if (!requireEmail()) throw new Error('Email required')
-                  if (!requireShipping()) throw new Error('Shipping required')
+                  isValidationError.current = false
+                  if (!requireEmail()) { isValidationError.current = true; throw new Error('Email required') }
+                  if (!requireShipping()) { isValidationError.current = true; throw new Error('Shipping required') }
                   const res = await fetch('/api/paypal/create-order', {
                     method: 'POST',
                     headers: {
@@ -536,7 +538,8 @@ export default function CheckoutPage() {
                   router.push('/order-success')
                 }}
                 onError={() => {
-                  showToast('Payment error. Please try again.')
+                  if (!isValidationError.current) showToast('Payment error. Please try again.')
+                  isValidationError.current = false
                 }}
                 onCancel={() => {
                   showToast('Payment cancelled.')
@@ -564,11 +567,18 @@ export default function CheckoutPage() {
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--navy)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>1</div>
               <div>
                 <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Enter your email</p>
-                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Order status updates and shipping info will be sent here.</p>
+                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Order confirmation and shipping updates will be sent here.</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--navy)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>2</div>
+              <div>
+                <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Fill in your shipping address</p>
+                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Tell us where to deliver your order.</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--navy)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>3</div>
               <div>
                 <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Pay with PayPal</p>
                 <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Log in to your PayPal account to complete your purchase securely.</p>
@@ -578,7 +588,7 @@ export default function CheckoutPage() {
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#059669', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>✓</div>
               <div>
                 <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Order confirmed!</p>
-                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Order status updates will be sent to your email.</p>
+                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>We&apos;ll email you updates and ship your order in 10–15 days.</p>
               </div>
             </div>
           </div>
