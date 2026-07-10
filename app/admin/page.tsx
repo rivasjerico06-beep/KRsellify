@@ -1876,6 +1876,40 @@ function AdminContent() {
                   </div>
                 </div>
 
+                {/* Shipping Address */}
+                {selectedOrder.shipping_address && (
+                  <div>
+                    <p style={{ ...SECTION_LABEL, color: D.muted }}>Shipping Address</p>
+                    <div style={{ background: D.card, borderRadius: 12, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      {(selectedOrder.shipping_address.firstName || selectedOrder.shipping_address.lastName) && (
+                        <p style={{ fontWeight: 700, fontSize: 14, color: D.text }}>
+                          {[selectedOrder.shipping_address.firstName, selectedOrder.shipping_address.lastName].filter(Boolean).join(' ')}
+                        </p>
+                      )}
+                      {selectedOrder.shipping_address.address && (
+                        <p style={{ fontSize: 13, color: D.muted }}>
+                          {selectedOrder.shipping_address.address}
+                          {selectedOrder.shipping_address.apartment ? `, ${selectedOrder.shipping_address.apartment}` : ''}
+                        </p>
+                      )}
+                      {(selectedOrder.shipping_address.city || selectedOrder.shipping_address.region || selectedOrder.shipping_address.postalCode) && (
+                        <p style={{ fontSize: 13, color: D.muted }}>
+                          {[selectedOrder.shipping_address.city, selectedOrder.shipping_address.region, selectedOrder.shipping_address.postalCode].filter(Boolean).join(', ')}
+                        </p>
+                      )}
+                      {selectedOrder.shipping_address.country && (
+                        <p style={{ fontSize: 13, color: D.muted }}>{selectedOrder.shipping_address.country}</p>
+                      )}
+                      {selectedOrder.shipping_address.phone && (
+                        <p style={{ fontSize: 13, color: D.muted }}>
+                          <i className="fa-solid fa-phone" style={{ marginRight: 6, opacity: 0.5 }} />
+                          {selectedOrder.shipping_address.phone}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Items */}
                 <div>
                   <p style={{ ...SECTION_LABEL, color: D.muted }}>Items ({Array.isArray(selectedOrder.items) ? selectedOrder.items.length : 0})</p>

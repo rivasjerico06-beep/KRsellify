@@ -49,6 +49,17 @@ export interface Order {
   customer_phone?: string | null
   customer_address?: string | null
   customer_city?: string | null
+  shipping_address?: {
+    country?: string
+    firstName?: string
+    lastName?: string
+    address?: string
+    apartment?: string
+    postalCode?: string
+    city?: string
+    region?: string
+    phone?: string
+  } | null
 }
 
 export interface NewsletterSubscriber {
