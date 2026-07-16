@@ -8,7 +8,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await getAdminSupabase()
     .from('leads')
-    .select('id, customer_name, customer_phone, product_interest, status, created_at')
+    .select('id, customer_name, customer_phone, customer_email, product_interest, status, created_at, billing_address, billing_city, billing_province, billing_zip, billing_country')
     .is('claimed_by', null)
     .is('agent_id', null)
     .in('status', ['new', 'attempted', 'follow_up', 'interested'])

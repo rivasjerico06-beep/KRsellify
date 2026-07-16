@@ -43,8 +43,14 @@ interface PoolLead {
   id: string
   customer_name: string
   customer_phone: string
+  customer_email?: string | null
   product_interest: string | null
   status: string
+  billing_address?: string | null
+  billing_city?: string | null
+  billing_province?: string | null
+  billing_zip?: string | null
+  billing_country?: string | null
 }
 
 function DispositionModal({ lead, onSubmit, onClose, submitting }: {
@@ -706,6 +712,18 @@ function AgentContent() {
                   {currentPoolLead.product_interest && (
                     <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 8 }}>
                       <i className="fa-solid fa-tag" style={{ marginRight: 6 }} />{currentPoolLead.product_interest}
+                    </p>
+                  )}
+                  {(currentPoolLead.billing_address || currentPoolLead.billing_city) && (
+                    <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 6, display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                      <i className="fa-solid fa-location-dot" style={{ marginTop: 3, flexShrink: 0 }} />
+                      <span>
+                        {currentPoolLead.billing_address}
+                        {(currentPoolLead.billing_city || currentPoolLead.billing_province || currentPoolLead.billing_zip) && (
+                          <>{currentPoolLead.billing_address ? ', ' : ''}{[currentPoolLead.billing_city, currentPoolLead.billing_province, currentPoolLead.billing_zip].filter(Boolean).join(', ')}</>
+                        )}
+                        {currentPoolLead.billing_country ? ` · ${currentPoolLead.billing_country}` : ''}
+                      </span>
                     </p>
                   )}
                 </div>
