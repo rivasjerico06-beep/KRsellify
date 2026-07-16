@@ -924,6 +924,36 @@ function AgentContent() {
                   </div>
                 </div>
 
+                {/* Contact & Location — read-only, mirrors the admin view so agents see the customer's email + shipping address */}
+                {(selected.customer_email || selected.billing_address || selected.billing_city) && (
+                  <div style={{ background: D.card, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <p style={{ fontSize: 11, fontWeight: 800, color: D.text, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      <i className="fa-solid fa-address-card" style={{ marginRight: 6, color: 'var(--teal)' }} />
+                      Contact &amp; Location
+                    </p>
+                    {selected.customer_email && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <i className="fa-solid fa-envelope" style={{ fontSize: 12, color: D.muted, width: 14 }} />
+                        <span style={{ fontSize: 13, color: D.text, fontFamily: 'monospace' }}>{selected.customer_email}</span>
+                      </div>
+                    )}
+                    {(selected.billing_address || selected.billing_city) && (
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                        <i className="fa-solid fa-location-dot" style={{ fontSize: 12, color: D.muted, width: 14, marginTop: 2 }} />
+                        <div>
+                          {selected.billing_address && <p style={{ fontSize: 13, color: D.text, margin: 0 }}>{selected.billing_address}</p>}
+                          {(selected.billing_city || selected.billing_province || selected.billing_zip) && (
+                            <p style={{ fontSize: 13, color: D.muted, margin: '2px 0 0' }}>
+                              {[selected.billing_city, selected.billing_province, selected.billing_zip].filter(Boolean).join(', ')}
+                              {selected.billing_country ? ` · ${selected.billing_country}` : ''}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Notes */}
                 <div style={{ background: D.card, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
                   <p style={{ fontSize: 11, fontWeight: 800, color: D.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
