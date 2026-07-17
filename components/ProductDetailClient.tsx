@@ -36,7 +36,7 @@ function Stars({ rating, large }: { rating: number; large?: boolean }) {
 
 export default function ProductDetailClient({ product, related }: { product: Product; related: Product[] }) {
   const { cart, addToCart, addBundle, heartToggle, showToast, setCartOpen } = useCart()
-  const { user } = useAuth()
+  const { user, isApprovedAgent, agentProfile } = useAuth()
   const { flyToCart } = useFlyToCart()
   const addBtnRef = useRef<HTMLButtonElement>(null)
   const [qty, setQty] = useState(1)
@@ -44,9 +44,13 @@ export default function ProductDetailClient({ product, related }: { product: Pro
   const [activeImg, setActiveImg] = useState(0)
   const [justAdded, setJustAdded] = useState(false)
   const [showBuyNowModal, setShowBuyNowModal] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+  const [showLink, setShowLink] = useState(false)
   const inCart = cart.some(i => i.id === product.id && i.via === 'heart')
   const hasTiers = !!(product.quantity_options && product.quantity_options.length > 0)
   const selectedTier = hasTiers ? product.quantity_options![selectedTierIdx] : null
+  const agentCode = agentProfile?.agent_code ?? null
+  const isAgentMode = !!isApprovedAgent && !!agentCode
 
   const images = product.images?.length ? product.images : [product.img]
   const savings = product.old_price ? Math.round((1 - product.price / product.old_price) * 100) : 0
@@ -76,6 +80,21 @@ export default function ProductDetailClient({ product, related }: { product: Pro
   function handleHeart() {
     heartToggle(product)
     showToast(inCart ? 'Removed from wishlist' : `❤️ ${product.name} added to wishlist!`)
+  }
+
+  function buildAgentLink() {
+    const base = typeof window !== 'undefined' ? window.location.origin : ''
+    const p = new URLSearchParams({ ref: agentCode ?? '', add: String(product.id) })
+    if (hasTiers) p.set('tier', String(selectedTierIdx))
+    else p.set('qty', String(qty))
+    return `${base}/r?${p.toString()}`
+  }
+
+  function copyAgentLink() {
+    navigator.clipboard.writeText(buildAgentLink()).catch(() => {})
+    setShowLink(true)
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 2500)
   }
 
   return (
@@ -255,7 +274,33 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           </div>
           )}
 
-          {/* CTA buttons */}
+          {/* CTA — agents generate a customer link; shoppers add/buy */}
+          {isAgentMode ? (
+            <div style={{ marginBottom: 28, background: 'var(--white)', border: '2px solid var(--teal)', borderRadius: 16, padding: '20px 22px', boxShadow: '0 4px 20px rgba(9,52,89,0.08)' }}>
+              <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--teal)', marginBottom: 6 }}>
+                <i className="fa-solid fa-link" style={{ marginRight: 7 }} />Agent — Generate Customer Link
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 14, lineHeight: 1.5 }}>
+                Choose the quantity above, then generate a link to send your customer. Their purchase is credited to <strong style={{ color: 'var(--heading)' }}>Agent {agentCode}</strong>.
+              </p>
+              <button onClick={copyAgentLink}
+                disabled={!product.in_stock}
+                style={{ width: '100%', background: 'linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%)', color: 'white', border: 'none', padding: '16px 24px', borderRadius: 50, fontSize: 15, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', cursor: product.in_stock ? 'pointer' : 'not-allowed', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, opacity: product.in_stock ? 1 : 0.5 }}>
+                <i className={`fa-solid ${linkCopied ? 'fa-check' : 'fa-link'}`} />
+                {linkCopied ? 'Link Copied!' : 'Generate & Copy Link'}
+              </button>
+              {showLink && (
+                <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
+                  <input readOnly value={buildAgentLink()} onFocus={e => e.currentTarget.select()}
+                    style={{ flex: 1, border: '1.5px solid var(--gray)', borderRadius: 10, padding: '10px 12px', fontSize: 12, fontFamily: 'monospace', color: 'var(--text-dark)', background: 'var(--off-white)', outline: 'none', minWidth: 0 }} />
+                  <button onClick={copyAgentLink}
+                    style={{ background: 'var(--gray)', border: 'none', borderRadius: 10, padding: '10px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', color: 'var(--text-mid)', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                    Copy
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
           <div style={{ display: 'flex', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>
             <AnimatePresence mode="wait">
               <motion.button
@@ -283,6 +328,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
               <i className="fa-solid fa-bolt" /> Buy Now
             </motion.button>
           </div>
+          )}
 
           {/* Trust mini-bar */}
           <div className="mo-detail-trust">
