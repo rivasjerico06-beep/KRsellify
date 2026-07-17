@@ -53,6 +53,82 @@ interface PoolLead {
   billing_country?: string | null
 }
 
+interface SalesOrder {
+  id: string
+  order_number: number | null
+  total: number
+  discount_amount: number | null
+  items: { name?: string; qty?: number }[]
+  status: string
+  created_at: string
+  guest_email: string | null
+}
+
+function SalesPanel({ sales, loading, onRefresh }: {
+  sales: { revenue: number; count: number; units: number; orders: SalesOrder[] } | null
+  loading: boolean
+  onRefresh: () => void
+}) {
+  const fmt = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  const cards = [
+    { label: 'Total Sales', value: sales ? fmt(sales.revenue) : '—', icon: 'fa-sack-dollar', color: '#059669' },
+    { label: 'Orders',      value: sales ? sales.count : '—',        icon: 'fa-bag-shopping', color: 'var(--teal)' },
+    { label: 'Units Sold',  value: sales ? sales.units : '—',        icon: 'fa-boxes-stacked', color: '#7c3aed' },
+  ]
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--heading)' }}>
+          <i className="fa-solid fa-chart-line" style={{ marginRight: 8, color: 'var(--teal)' }} />My Sales
+        </h2>
+        <button onClick={onRefresh} style={{ background: 'var(--gray)', border: 'none', color: 'var(--text-mid)', padding: '6px 14px', borderRadius: 50, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <i className="fa-solid fa-rotate" style={{ marginRight: 5 }} />Refresh
+        </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 16, marginBottom: 28 }}>
+        {cards.map(c => (
+          <div key={c.label} style={{ background: 'var(--white)', borderRadius: 16, padding: 20, boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <p style={{ fontSize: 12, color: 'var(--text-light)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{c.label}</p>
+                <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 900, color: 'var(--heading)' }}>{c.value}</p>
+              </div>
+              <i className={`fa-solid ${c.icon}`} style={{ fontSize: 20, color: c.color, opacity: 0.7 }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ background: 'var(--white)', borderRadius: 16, boxShadow: '0 2px 12px rgba(9,52,89,0.06)', overflow: 'hidden' }}>
+        {loading ? (
+          <div style={{ padding: 60, textAlign: 'center', color: 'var(--text-light)' }}><i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 24 }} /></div>
+        ) : !sales || sales.orders.length === 0 ? (
+          <div style={{ padding: 60, textAlign: 'center', color: 'var(--text-light)' }}>
+            <i className="fa-solid fa-link" style={{ fontSize: 40, marginBottom: 12, display: 'block', opacity: 0.4 }} />
+            No sales yet. Generate a product link from the store and share it — purchases from your links show up here.
+          </div>
+        ) : sales.orders.map(o => {
+          const units = Array.isArray(o.items) ? o.items.reduce((a, it) => a + (Number(it.qty) || 0), 0) : 0
+          const names = Array.isArray(o.items) ? o.items.map(it => it.name).filter(Boolean).join(', ') : ''
+          return (
+            <div key={o.id} style={{ padding: '16px 24px', borderBottom: '1px solid var(--gray)', display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-dark)' }}>Order #{o.order_number ?? '—'} · {units} item{units === 1 ? '' : 's'}</p>
+                <p style={{ fontSize: 13, color: 'var(--text-mid)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{names || o.guest_email || ''}</p>
+              </div>
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <p style={{ fontWeight: 800, fontSize: 15, color: '#059669' }}>${Number(o.total).toFixed(2)}</p>
+                <p style={{ fontSize: 11, color: 'var(--text-light)' }}>{new Date(o.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function DispositionModal({ lead, onSubmit, onClose, submitting }: {
   lead: PoolLead
   onSubmit: (disposition: string, notes: string) => void
@@ -179,6 +255,9 @@ function AgentContent() {
   const [popupBlocked, setPopupBlocked] = useState(false)
   const [toast, setToast] = useState('')
   const [calledCount, setCalledCount] = useState(0)
+  const [view, setView] = useState<'leads' | 'sales'>('leads')
+  const [sales, setSales] = useState<{ revenue: number; count: number; units: number; orders: SalesOrder[] } | null>(null)
+  const [salesLoading, setSalesLoading] = useState(false)
   const toastRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const dialerWindowRef = useRef<Window | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -361,6 +440,19 @@ function AgentContent() {
     converted,
   }
 
+  const fetchSales = useCallback(async () => {
+    setSalesLoading(true)
+    const { data: { session: s } } = await supabase.auth.getSession()
+    try {
+      const res = await fetch('/api/agent/sales', { headers: { Authorization: `Bearer ${s?.access_token}` } })
+      const data = await res.json()
+      if (res.ok) setSales(data)
+    } catch { /* ignore */ }
+    setSalesLoading(false)
+  }, [supabase])
+
+  useEffect(() => { if (view === 'sales' && !sales) fetchSales() }, [view, sales, fetchSales])
+
   const [copied, setCopied] = useState(false)
   const [phoneCopied, setPhoneCopied] = useState(false)
   const [showRules, setShowRules] = useState(false)
@@ -437,6 +529,22 @@ function AgentContent() {
           )}
         </div>
 
+        {/* Tab switcher */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 24, borderBottom: '2px solid var(--gray)' }}>
+          {([['leads', 'Leads & Calls', 'fa-headset'], ['sales', 'My Sales', 'fa-chart-line']] as const).map(([key, label, icon]) => (
+            <button key={key} onClick={() => setView(key)}
+              style={{ background: 'none', border: 'none', borderBottom: view === key ? '3px solid var(--teal)' : '3px solid transparent', color: view === key ? 'var(--heading)' : 'var(--text-light)', fontWeight: view === key ? 800 : 600, fontSize: 15, padding: '10px 16px', marginBottom: -2, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className={`fa-solid ${icon}`} /> {label}
+            </button>
+          ))}
+        </div>
+
+        {view === 'sales' && (
+          <SalesPanel sales={sales} loading={salesLoading} onRefresh={fetchSales} />
+        )}
+
+        {view === 'leads' && (
+        <>
         {/* ── Call Next Lead (merged dialer) ── */}
         <div style={{ marginBottom: 32 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
@@ -841,6 +949,8 @@ function AgentContent() {
             </motion.div>
           ))}
         </div>
+        </>
+        )}
       </div>
 
       {/* lead detail drawer */}
