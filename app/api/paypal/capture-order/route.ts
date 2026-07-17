@@ -31,13 +31,17 @@ const TIERS = [
 
 export async function POST(request: Request) {
   try {
-    const { orderID, items, coupon_code, email, shipping_address } = await request.json() as {
+    const { orderID, items, coupon_code, email, shipping_address, agent_code } = await request.json() as {
       orderID: string
       items: CartItem[]
       coupon_code?: string
       email: string
       shipping_address?: Record<string, string>
+      agent_code?: string
     }
+
+    // Only accept a clean 4–6 digit agent ID (from an agent's generated link)
+    const attributedAgent = typeof agent_code === 'string' && /^\d{4,6}$/.test(agent_code) ? agent_code : null
 
     if (!orderID)
       return NextResponse.json({ error: 'Missing PayPal order ID' }, { status: 400 })
@@ -135,13 +139,14 @@ export async function POST(request: Request) {
       paypal_order_id: orderID,
       order_number: Math.floor(10000 + Math.random() * 90000),
       shipping_address: shipping_address ?? null,
+      agent_code: attributedAgent,
     }
 
     let { data: order, error: orderError } = await admin.from('orders').insert(orderPayload).select().single()
 
-    // Column may not exist yet — retry without it
+    // A column may not exist yet — retry without the optional ones
     if (orderError?.code === '42703') {
-      const { shipping_address: _sa, ...payloadWithout } = orderPayload
+      const { shipping_address: _sa, agent_code: _ac, ...payloadWithout } = orderPayload
       ;({ data: order, error: orderError } = await admin.from('orders').insert(payloadWithout).select().single())
     }
 

@@ -17,6 +17,17 @@ const COUNTRIES = [
   'Argentina','Colombia','Chile','South Africa','Nigeria','Other',
 ]
 
+// Agent ID saved when the shopper arrived via an agent's generated link (/r).
+function readAgentRef(): string | undefined {
+  try {
+    const raw = localStorage.getItem('themaga_agent_ref')
+    if (!raw) return undefined
+    const parsed = JSON.parse(raw)
+    const code = typeof parsed === 'string' ? parsed : parsed?.code
+    return typeof code === 'string' && /^\d{4,6}$/.test(code) ? code : undefined
+  } catch { return undefined }
+}
+
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart, updateQty, removeFromCart, changeBundleTier, showToast } = useCart()
   const { user, session } = useAuth()
@@ -511,6 +522,7 @@ export default function CheckoutPage() {
                       coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
                       email: email.trim(),
                       shipping_address: ship,
+                      agent_code: readAgentRef(),
                     }),
                   })
                   const order = await res.json()
