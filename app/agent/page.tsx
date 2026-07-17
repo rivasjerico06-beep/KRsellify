@@ -359,16 +359,17 @@ function AgentContent() {
     ready:          leads.filter(l => ['new', 'assigned'].includes(l.status)).length,
     followUp:       leads.filter(l => l.status === 'follow_up').length,
     converted,
-    conversionRate: leads.length > 0 ? Math.round(converted / leads.length * 100) : 0,
   }
 
   const [copied, setCopied] = useState(false)
   const [phoneCopied, setPhoneCopied] = useState(false)
   const [showRules, setShowRules] = useState(false)
 
+  const agentId = agentProfile?.agent_code ?? agentProfile?.referral_code ?? null
+
   function copyCode() {
-    if (!agentProfile?.referral_code) return
-    navigator.clipboard.writeText(agentProfile.referral_code)
+    if (!agentId) return
+    navigator.clipboard.writeText(agentId)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -414,24 +415,24 @@ function AgentContent() {
             <p style={{ color: 'var(--text-mid)' }}>Welcome back, {agentProfile?.display_name}</p>
           </div>
 
-          {/* Referral code card */}
-          {agentProfile?.referral_code && (
+          {/* Agent ID card */}
+          {agentId && (
             <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
               style={{ background: 'var(--white)', borderRadius: 16, padding: '16px 24px', boxShadow: '0 4px 20px rgba(9,52,89,0.10)', border: '2px solid var(--teal)', minWidth: 240 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                <i className="fa-solid fa-share-nodes" style={{ marginRight: 6, color: 'var(--teal)' }} />
-                Your Referral Code
+                <i className="fa-solid fa-id-badge" style={{ marginRight: 6, color: 'var(--teal)' }} />
+                Your Agent ID
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontFamily: 'monospace', fontSize: 22, fontWeight: 900, color: 'var(--heading)', letterSpacing: '0.1em' }}>
-                  {agentProfile.referral_code}
+                <span style={{ fontFamily: 'monospace', fontSize: 26, fontWeight: 900, color: 'var(--heading)', letterSpacing: '0.14em' }}>
+                  {agentId}
                 </span>
                 <button onClick={copyCode}
                   style={{ background: copied ? '#d1fae5' : 'var(--gray)', border: 'none', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', color: copied ? '#065f46' : 'var(--text-mid)', fontFamily: 'inherit', transition: 'all 0.2s' }}>
                   {copied ? '✓ Copied!' : 'Copy'}
                 </button>
               </div>
-              <p style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 6 }}>Share this code with customers you guide to the store</p>
+              <p style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 6 }}>Every link you generate ties its sales back to this ID</p>
             </motion.div>
           )}
         </div>
@@ -782,7 +783,6 @@ function AgentContent() {
             { label: 'Ready to Call',    value: stats.ready,          icon: 'fa-phone',        color: 'var(--teal)' },
             { label: 'Follow Ups',       value: stats.followUp,       icon: 'fa-clock',        color: '#7c3aed' },
             { label: 'Converted',        value: stats.converted,      icon: 'fa-check-circle', color: '#059669' },
-            { label: 'Conversion Rate',  value: `${stats.conversionRate}%`, icon: 'fa-percent',color: '#d97706' },
           ].map((s, i) => (
             <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
               style={{ background: 'var(--white)', borderRadius: 16, padding: 20, boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>

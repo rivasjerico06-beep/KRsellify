@@ -31,19 +31,42 @@ export async function POST(request: Request) {
     role: 'agent',
   })
 
+  // Next sequential 5-digit agent code (10001, 10002, …)
+  let agent_code: string | null = null
+  const { data: existingCodes } = await admin
+    .from('agent_profiles')
+    .select('agent_code')
+    .not('agent_code', 'is', null)
+  let maxCode = 10000
+  for (const row of existingCodes ?? []) {
+    const n = parseInt((row as { agent_code?: string }).agent_code ?? '', 10)
+    if (!Number.isNaN(n) && n > maxCode) maxCode = n
+  }
+  agent_code = String(maxCode + 1)
+
   // Create approved agent_profile
   const referral_code = `KRS-${randomBytes(6).toString('hex').toUpperCase()}`
-  const { data: agentProfile, error: profileError } = await admin
+  const basePayload = {
+    user_id: userId,
+    display_name: display_name?.trim() || email.split('@')[0],
+    status: 'approved',
+    referral_code,
+    phone: '',
+  }
+
+  // Try with agent_code; if the column doesn't exist yet (migration not run), retry without it
+  let { data: agentProfile, error: profileError } = await admin
     .from('agent_profiles')
-    .insert({
-      user_id: userId,
-      display_name: display_name?.trim() || email.split('@')[0],
-      status: 'approved',
-      referral_code,
-      phone: '',
-    })
+    .insert({ ...basePayload, agent_code })
     .select()
     .single()
+  if (profileError) {
+    ;({ data: agentProfile, error: profileError } = await admin
+      .from('agent_profiles')
+      .insert(basePayload)
+      .select()
+      .single())
+  }
 
   if (profileError) return NextResponse.json({ error: profileError.message }, { status: 500 })
 

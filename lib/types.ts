@@ -95,6 +95,7 @@ export interface AgentProfile {
   notes?: string | null
   status: 'pending' | 'approved' | 'rejected' | 'suspended'
   referral_code?: string | null
+  agent_code?: string | null   // 5-digit public ID used in generate-link attribution
   max_leads?: number
   created_at?: string
   updated_at?: string
