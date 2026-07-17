@@ -18,8 +18,11 @@ const COUNTRIES = [
 ]
 
 // Agent ID saved when the shopper arrived via an agent's generated link (/r).
+// Prefer the durable 60-day cookie; fall back to localStorage.
 function readAgentRef(): string | undefined {
   try {
+    const m = document.cookie.match(/(?:^|;\s*)themaga_ref=(\d{4,6})(?:;|$)/)
+    if (m) return m[1]
     const raw = localStorage.getItem('themaga_agent_ref')
     if (!raw) return undefined
     const parsed = JSON.parse(raw)

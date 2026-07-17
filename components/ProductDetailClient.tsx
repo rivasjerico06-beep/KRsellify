@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -51,6 +51,19 @@ export default function ProductDetailClient({ product, related }: { product: Pro
   const selectedTier = hasTiers ? product.quantity_options![selectedTierIdx] : null
   const agentCode = agentProfile?.agent_code ?? null
   const isAgentMode = !!isApprovedAgent && !!agentCode
+
+  // Pre-select the quantity/tier passed in from an agent's generated link
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search)
+    const t = parseInt(sp.get('tier') ?? '', 10)
+    const q = parseInt(sp.get('qty') ?? '', 10)
+    if (hasTiers && product.quantity_options && !Number.isNaN(t) && t >= 0 && t < product.quantity_options.length) {
+      setSelectedTierIdx(t)
+    } else if (!hasTiers && !Number.isNaN(q) && q >= 1) {
+      setQty(Math.min(99, q))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const images = product.images?.length ? product.images : [product.img]
   const savings = product.old_price ? Math.round((1 - product.price / product.old_price) * 100) : 0
