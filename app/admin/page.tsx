@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -837,8 +838,9 @@ function AdminContent() {
                     <StatCard label="Pending Agents"      value={pendingAgents}                   icon="fa-headset"      color="var(--sale-red)" delay={0.2} />
                     {analytics && (
                       <>
-                        <StatCard label="This Month Revenue" value={`$${analytics.revenueThisMonth.toFixed(0)}`} icon="fa-chart-line" color="#d97706" delay={0.25} />
-                        <StatCard label="This Month Orders"  value={analytics.ordersThisMonth}                   icon="fa-calendar"   color="#0369a1" delay={0.3} />
+                        <StatCard label="This Week Revenue"  value={`$${analytics.revenueThisWeek.toFixed(0)}`}  icon="fa-calendar-week" color="#0891b2" delay={0.25} />
+                        <StatCard label="This Month Revenue" value={`$${analytics.revenueThisMonth.toFixed(0)}`} icon="fa-chart-line"    color="#d97706" delay={0.3} />
+                        <StatCard label="This Month Orders"  value={analytics.ordersThisMonth}                   icon="fa-calendar"      color="#0369a1" delay={0.35} />
                       </>
                     )}
                   </div>

@@ -27,6 +27,8 @@ export async function GET(request: Request) {
 
   const thirtyAgo  = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+  const _wk        = new Date()
+  const weekStart  = new Date(_wk.getFullYear(), _wk.getMonth(), _wk.getDate() - _wk.getDay()).toISOString() // Sunday 00:00
 
   const [ordersRes, agentsRes, profilesRes, leadsRes, callLogsRes, authUsersRes] = await Promise.all([
     admin.from('orders').select('id,total,discount_amount,status,items,referral_code,user_id,guest_email,created_at').neq('status', 'pending_payment').order('created_at', { ascending: false }),
@@ -222,11 +224,14 @@ export async function GET(request: Request) {
   const monthOrders      = active.filter(o => o.created_at >= monthStart)
   const revenueThisMonth = monthOrders.reduce((s, o) => s + Number(o.total), 0)
   const ordersThisMonth  = monthOrders.length
+  const weekOrders       = active.filter(o => o.created_at >= weekStart)
+  const revenueThisWeek  = weekOrders.reduce((s, o) => s + Number(o.total), 0)
+  const ordersThisWeek   = weekOrders.length
 
   const result: AnalyticsData = {
     dailyRevenue, categoryRevenue, orderStatusCounts, agentStats,
     customerTiers, topProducts, totalRevenue, totalOrders,
-    revenueThisMonth, ordersThisMonth,
+    revenueThisMonth, ordersThisMonth, revenueThisWeek, ordersThisWeek,
   }
 
   return NextResponse.json(result)

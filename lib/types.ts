@@ -199,4 +199,6 @@ export interface AnalyticsData {
   totalOrders: number
   revenueThisMonth: number
   ordersThisMonth: number
+  revenueThisWeek: number
+  ordersThisWeek: number
 }
