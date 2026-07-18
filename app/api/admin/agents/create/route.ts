@@ -31,18 +31,17 @@ export async function POST(request: Request) {
     role: 'agent',
   })
 
-  // Next sequential 5-digit agent code (10001, 10002, …)
+  // Unique random 5-digit agent code (10000–99999)
   let agent_code: string | null = null
   const { data: existingCodes } = await admin
     .from('agent_profiles')
     .select('agent_code')
     .not('agent_code', 'is', null)
-  let maxCode = 10000
-  for (const row of existingCodes ?? []) {
-    const n = parseInt((row as { agent_code?: string }).agent_code ?? '', 10)
-    if (!Number.isNaN(n) && n > maxCode) maxCode = n
+  const taken = new Set((existingCodes ?? []).map(r => (r as { agent_code?: string }).agent_code))
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const candidate = String(Math.floor(10000 + Math.random() * 90000))
+    if (!taken.has(candidate)) { agent_code = candidate; break }
   }
-  agent_code = String(maxCode + 1)
 
   // Create approved agent_profile
   const referral_code = `KRS-${randomBytes(6).toString('hex').toUpperCase()}`
