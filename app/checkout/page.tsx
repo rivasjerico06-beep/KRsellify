@@ -8,6 +8,8 @@ import { motion } from 'framer-motion'
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
+import { PAYMENTS_UNDER_MAINTENANCE } from '@/lib/payments-maintenance'
+import PaymentMaintenanceNotice from '@/components/PaymentMaintenanceNotice'
 
 const COUNTRIES = [
   'United States','Philippines','Canada','United Kingdom','Australia','New Zealand',
@@ -477,7 +479,9 @@ export default function CheckoutPage() {
             Payment
           </label>
 
-          {emailMissing ? (
+          {PAYMENTS_UNDER_MAINTENANCE ? (
+            <PaymentMaintenanceNotice />
+          ) : emailMissing ? (
             <div style={{ textAlign: 'center', padding: '18px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)', marginBottom: 4 }}>
               <p style={{ fontSize: 14, color: 'var(--text-light)', fontWeight: 600 }}>Enter your email above to continue</p>
             </div>

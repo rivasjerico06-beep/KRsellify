@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
+import { PAYMENTS_UNDER_MAINTENANCE } from '@/lib/payments-maintenance'
+import PaymentMaintenanceNotice from '@/components/PaymentMaintenanceNotice'
 
 const BENEFITS = [
   { icon: 'fa-tag', title: '30% Off Every Order', desc: 'Automatically applied at checkout on every purchase, forever.' },
@@ -169,40 +171,44 @@ export default function VipPage() {
                 </div>
               )}
 
-              <button
-                onClick={handleStripeSubscribe}
-                disabled={subscribing}
-                style={{
-                  width: '100%',
-                  background: '#1c1e21',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 4,
-                  height: 55,
-                  fontSize: 15,
-                  fontWeight: 700,
-                  cursor: subscribing ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 10,
-                  opacity: subscribing ? 0.7 : 1,
-                  transition: 'opacity 0.2s',
-                  letterSpacing: '0.01em',
-                }}
-              >
-                {subscribing ? (
-                  <>
-                    <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 14 }} />
-                    Redirecting…
-                  </>
-                ) : (
-                  <>
-                    <i className="fa-solid fa-credit-card" style={{ fontSize: 16 }} />
-                    Debit or Credit Card
-                  </>
-                )}
-              </button>
+              {PAYMENTS_UNDER_MAINTENANCE ? (
+                <PaymentMaintenanceNotice />
+              ) : (
+                <button
+                  onClick={handleStripeSubscribe}
+                  disabled={subscribing}
+                  style={{
+                    width: '100%',
+                    background: '#1c1e21',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 4,
+                    height: 55,
+                    fontSize: 15,
+                    fontWeight: 700,
+                    cursor: subscribing ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 10,
+                    opacity: subscribing ? 0.7 : 1,
+                    transition: 'opacity 0.2s',
+                    letterSpacing: '0.01em',
+                  }}
+                >
+                  {subscribing ? (
+                    <>
+                      <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 14 }} />
+                      Redirecting…
+                    </>
+                  ) : (
+                    <>
+                      <i className="fa-solid fa-credit-card" style={{ fontSize: 16 }} />
+                      Debit or Credit Card
+                    </>
+                  )}
+                </button>
+              )}
 
               <button
                 onClick={() => { setEmailReady(false); setError('') }}
