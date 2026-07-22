@@ -82,7 +82,12 @@ export default function CheckoutPage() {
       .then(r => r.json())
       .then((rows: { key: string; value: unknown }[]) => {
         const row = Array.isArray(rows) ? rows.find(x => x.key === 'wire_config') : null
-        if (row) setWireCfg(normalizeWireConfig(row.value))
+        if (row) {
+          const cfg = normalizeWireConfig(row.value)
+          setWireCfg(cfg)
+          // Bank transfer is the only payment method offered — force it when enabled
+          if (cfg.enabled) setPayMethod('wire')
+        }
       })
       .catch(() => {})
   }, [])
@@ -546,24 +551,6 @@ export default function CheckoutPage() {
           <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--text-mid)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Payment
           </label>
-
-          {/* Payment method selector — only shown when wire transfer is enabled */}
-          {wireCfg?.enabled && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-              {([
-                { key: 'paypal', label: 'PayPal / Card', icon: 'fa-brands fa-paypal' },
-                { key: 'wire',   label: 'Bank Transfer', icon: 'fa-solid fa-building-columns' },
-              ] as { key: 'paypal' | 'wire'; label: string; icon: string }[]).map(m => {
-                const active = payMethod === m.key
-                return (
-                  <button key={m.key} type="button" onClick={() => setPayMethod(m.key)}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px 12px', borderRadius: 10, cursor: 'pointer', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', border: `2px solid ${active ? 'var(--teal)' : 'var(--gray)'}`, background: active ? '#f0fdfa' : 'var(--white)', color: active ? 'var(--teal)' : 'var(--text-mid)', transition: 'all 0.15s' }}>
-                    <i className={m.icon} /> {m.label}
-                  </button>
-                )
-              })}
-            </div>
-          )}
 
           {payMethod === 'wire' ? (
             emailMissing ? (
