@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { CartItem } from './types'
-import { WIRE_BANK_DETAILS } from './wire-config'
+import { normalizeWireConfig } from './wire-config'
+import { getSiteConfig } from './site-config'
 
 let _resend: Resend | null = null
 function getResend() {
@@ -162,7 +163,7 @@ export async function sendWireInstructions({
   if (!process.env.RESEND_API_KEY) return
 
   const ref = orderNumber ?? orderId.slice(0, 8).toUpperCase()
-  const b = WIRE_BANK_DETAILS
+  const b = normalizeWireConfig((await getSiteConfig()).wire_config)
   const rows: [string, string][] = ([
     ['Bank', b.bankName],
     ['Bank Address', b.bankAddress],

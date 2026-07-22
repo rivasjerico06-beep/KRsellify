@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { SiteWireConfig, DEFAULT_WIRE_CONFIG } from './wire-config'
 
 export interface SiteAnnounceBar {
   visible: boolean
@@ -43,6 +44,7 @@ export interface SiteConfig {
   trust_bar: SiteTrustItem[]
   newsletter: SiteNewsletter
   vip_price: number
+  wire_config: SiteWireConfig
 }
 
 export const DEFAULT_CONFIG: SiteConfig = {
@@ -105,6 +107,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
     subheading: 'Get notified about new arrivals, exclusive deals, and limited-edition drops straight to your inbox.',
   },
   vip_price: 20,
+  wire_config: DEFAULT_WIRE_CONFIG,
 }
 
 export async function getSiteConfig(): Promise<SiteConfig> {

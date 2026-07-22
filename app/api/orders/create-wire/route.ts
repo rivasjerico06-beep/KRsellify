@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getAdminSupabase } from '@/lib/supabase-admin'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
-import { WIRE_ENABLED } from '@/lib/wire-config'
+import { normalizeWireConfig } from '@/lib/wire-config'
+import { getSiteConfig } from '@/lib/site-config'
 import { sendWireInstructions } from '@/lib/email'
 
 /**
@@ -15,7 +16,8 @@ import { sendWireInstructions } from '@/lib/email'
  */
 export async function POST(request: Request) {
   try {
-    if (!WIRE_ENABLED)
+    const wire = normalizeWireConfig((await getSiteConfig()).wire_config)
+    if (!wire.enabled)
       return NextResponse.json({ error: 'Wire transfer is not available' }, { status: 400 })
 
     const { items, coupon_code, email, shipping_address, agent_code } = await request.json() as {

@@ -10,7 +10,7 @@ import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 import { PAYMENTS_UNDER_MAINTENANCE } from '@/lib/payments-maintenance'
 import PaymentMaintenanceNotice from '@/components/PaymentMaintenanceNotice'
-import { WIRE_ENABLED, WIRE_BANK_DETAILS } from '@/lib/wire-config'
+import { SiteWireConfig, normalizeWireConfig } from '@/lib/wire-config'
 
 const COUNTRIES = [
   'United States','Philippines','Canada','United Kingdom','Australia','New Zealand',
@@ -73,7 +73,19 @@ export default function CheckoutPage() {
   const isValidationError = useRef(false)
   const [payMethod, setPayMethod] = useState<'paypal' | 'wire'>('paypal')
   const [wireSubmitting, setWireSubmitting] = useState(false)
+  const [wireCfg, setWireCfg] = useState<SiteWireConfig | null>(null)
   const wireSucceeded = useRef(false)
+
+  // Load bank-transfer config (admin-editable, from site_config)
+  useEffect(() => {
+    fetch('/api/site-config')
+      .then(r => r.json())
+      .then((rows: { key: string; value: unknown }[]) => {
+        const row = Array.isArray(rows) ? rows.find(x => x.key === 'wire_config') : null
+        if (row) setWireCfg(normalizeWireConfig(row.value))
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     fetch('/api/products')
@@ -183,6 +195,7 @@ export default function CheckoutPage() {
           shipping_address: ship,
           payment_method: 'wire',
           reference: order.order_number ?? (order.id ? String(order.id).slice(0, 8).toUpperCase() : ''),
+          wire: wireCfg,
         }))
       } catch {}
       wireSucceeded.current = true
@@ -535,7 +548,7 @@ export default function CheckoutPage() {
           </label>
 
           {/* Payment method selector — only shown when wire transfer is enabled */}
-          {WIRE_ENABLED && (
+          {wireCfg?.enabled && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
               {([
                 { key: 'paypal', label: 'PayPal / Card', icon: 'fa-brands fa-paypal' },
@@ -565,11 +578,11 @@ export default function CheckoutPage() {
                     Bank Transfer
                   </p>
                   {([
-                    ['Bank', WIRE_BANK_DETAILS.bankName],
-                    ['Beneficiary Name', WIRE_BANK_DETAILS.accountName],
-                    ['Account Number', WIRE_BANK_DETAILS.accountNumber],
-                    ['Account Type', WIRE_BANK_DETAILS.accountType],
-                    ['SWIFT / BIC', WIRE_BANK_DETAILS.swift],
+                    ['Bank', wireCfg?.bankName ?? ''],
+                    ['Beneficiary Name', wireCfg?.accountName ?? ''],
+                    ['Account Number', wireCfg?.accountNumber ?? ''],
+                    ['Account Type', wireCfg?.accountType ?? ''],
+                    ['SWIFT / BIC', wireCfg?.swift ?? ''],
                   ] as [string, string][]).filter(([, v]) => v && v.trim()).map(([k, v]) => (
                     <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '6px 0', borderBottom: '1px solid var(--gray)' }}>
                       <span style={{ fontSize: 13, color: 'var(--text-light)' }}>{k}</span>

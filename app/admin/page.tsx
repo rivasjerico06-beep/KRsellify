@@ -9,6 +9,7 @@ import { useTheme } from '@/context/ThemeContext'
 import AuthGuard from '@/components/AuthGuard'
 import { Product, Order, Profile, AgentProfile, AnalyticsData, CustomerTierRow, Lead } from '@/lib/types'
 import { SiteConfig, DEFAULT_CONFIG } from '@/lib/site-config'
+import { SiteWireConfig, DEFAULT_WIRE_CONFIG, normalizeWireConfig } from '@/lib/wire-config'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 
 const AdminCharts   = dynamic(() => import('@/components/AdminCharts'),  { ssr: false })
@@ -387,6 +388,8 @@ function AdminContent() {
   const [vipPrice, setVipPrice]       = useState<number>(20)
   const [vipPriceInput, setVipPriceInput] = useState<string>('20')
   const [savingVipPrice, setSavingVipPrice] = useState(false)
+  const [wireForm, setWireForm] = useState<SiteWireConfig>(DEFAULT_WIRE_CONFIG)
+  const [savingWire, setSavingWire] = useState(false)
 
   // New lead form
   const [showNewLead, setShowNewLead]       = useState(false)
@@ -492,6 +495,8 @@ function AdminContent() {
       const price = typeof priceRow?.value === 'number' ? priceRow.value : 20
       setVipPrice(price)
       setVipPriceInput(String(price))
+      const wireRow = rows.find(r => r.key === 'wire_config')
+      setWireForm(normalizeWireConfig(wireRow?.value))
     } else {
       const [p, o, c, a, an] = await Promise.all([
         fetch('/api/admin/products',  { headers: authHeaders() }).then(r => r.json()),
@@ -1822,6 +1827,62 @@ function AdminContent() {
                     </div>
                     <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 12 }}>
                       This price takes effect immediately for all new subscriptions.
+                    </p>
+                  </div>
+
+                  {/* Bank Transfer (Wire) */}
+                  <div style={{ background: 'var(--white)', borderRadius: 14, border: '1px solid var(--gray)', padding: '28px 32px', marginBottom: 20 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                      <i className="fa-solid fa-building-columns" style={{ color: 'var(--teal)', fontSize: 18 }} />
+                      <h3 style={{ fontSize: 17, fontWeight: 800, color: 'var(--heading)', margin: 0 }}>Bank Transfer (Wire)</h3>
+                    </div>
+                    <p style={{ fontSize: 14, color: 'var(--text-light)', marginBottom: 20, lineHeight: 1.6 }}>
+                      Let customers pay by bank wire. When enabled, a <strong>Bank Transfer</strong> option appears at checkout showing these details. Those orders arrive as <strong>Pending Payment</strong> — confirm each with <strong>Mark as Paid</strong> in the Orders tab once the funds land.
+                    </p>
+
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, cursor: 'pointer' }}>
+                      <input type="checkbox" checked={wireForm.enabled} onChange={e => setWireForm({ ...wireForm, enabled: e.target.checked })} style={{ width: 18, height: 18, cursor: 'pointer' }} />
+                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-dark)' }}>Enable bank transfer at checkout</span>
+                    </label>
+
+                    <div style={{ display: 'grid', gap: 12 }}>
+                      {([
+                        { key: 'bankName',      label: 'Bank Name',                  ph: 'e.g. Chase Bank' },
+                        { key: 'bankAddress',   label: 'Bank Address',               ph: 'Bank / branch address' },
+                        { key: 'accountName',   label: 'Beneficiary / Account Name', ph: 'Name on the account' },
+                        { key: 'accountNumber', label: 'Account Number',             ph: 'Account or IBAN number' },
+                        { key: 'accountType',   label: 'Account Type',               ph: 'e.g. Checking' },
+                        { key: 'routingNumber', label: 'Routing / ABA Number',       ph: 'Routing number' },
+                        { key: 'swift',         label: 'SWIFT / BIC',                ph: 'For international wires' },
+                        { key: 'memoNote',      label: 'Memo / Note',                ph: 'e.g. Include your order number' },
+                      ] as { key: 'bankName' | 'bankAddress' | 'accountName' | 'accountNumber' | 'accountType' | 'routingNumber' | 'swift' | 'memoNote'; label: string; ph: string }[]).map(f => (
+                        <div key={f.key}>
+                          <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', display: 'block', marginBottom: 5 }}>{f.label}</label>
+                          <input value={wireForm[f.key]} onChange={e => setWireForm({ ...wireForm, [f.key]: e.target.value })} placeholder={f.ph}
+                            style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 8, padding: '11px 14px', fontSize: 14, color: 'var(--text-dark)', outline: 'none', background: 'var(--white)', boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                        </div>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={async () => {
+                        if (wireForm.enabled && !wireForm.accountNumber.trim()) { flash('Add an account number before enabling'); return }
+                        setSavingWire(true)
+                        const r = await fetch('/api/admin/site-config', {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+                          body: JSON.stringify({ key: 'wire_config', value: wireForm }),
+                        })
+                        setSavingWire(false)
+                        if (r.ok) flash(wireForm.enabled ? 'Bank transfer saved & enabled' : 'Bank transfer details saved')
+                        else flash('Failed to save bank details')
+                      }}
+                      disabled={savingWire}
+                      style={{ marginTop: 20, background: 'var(--navy)', color: 'white', border: 'none', borderRadius: 8, padding: '12px 22px', fontSize: 14, fontWeight: 700, cursor: savingWire ? 'not-allowed' : 'pointer', opacity: savingWire ? 0.6 : 1, fontFamily: 'inherit' }}>
+                      {savingWire ? 'Saving…' : 'Save Bank Details'}
+                    </button>
+                    <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 12 }}>
+                      Changes take effect immediately — no redeploy needed. Any field left blank is hidden from customers.
                     </p>
                   </div>
                 </div>
