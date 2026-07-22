@@ -753,7 +753,8 @@ function AdminContent() {
   )
 
   const ORDER_STATUS_COLOR: Record<string, { bg: string; text: string }> = {
-    paid:      { bg: '#dcfce7', text: '#15803d' },
+    paid:            { bg: '#dcfce7', text: '#15803d' },
+    pending_payment: { bg: '#ffedd5', text: '#9a3412' },
     pending:   { bg: '#fef9c3', text: '#854d0e' },
     confirmed: { bg: '#dbeafe', text: '#1e40af' },
     packed:    { bg: '#ede9fe', text: '#5b21b6' },
@@ -965,7 +966,7 @@ function AdminContent() {
                               <td style={{ padding: '12px 14px', fontWeight: 700 }}>${Number(o.total).toFixed(2)}</td>
                               <td style={{ padding: '12px 14px', fontSize: 13, color: '#059669' }}>{o.discount_amount ? `-$${Number(o.discount_amount).toFixed(2)}` : '—'}</td>
                               <td style={{ padding: '12px 14px' }}>
-                                <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: sc.bg, color: sc.text, textTransform: 'capitalize', whiteSpace: 'nowrap' }}>{o.status}</span>
+                                <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: sc.bg, color: sc.text, textTransform: 'capitalize', whiteSpace: 'nowrap' }}>{(o.status ?? '').replace('_', ' ')}</span>
                               </td>
                               <td style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-light)', whiteSpace: 'nowrap' }}>{o.created_at ? new Date(o.created_at).toLocaleDateString() : '—'}</td>
                               <td style={{ padding: '12px 14px' }}>
@@ -1951,14 +1952,31 @@ function AdminContent() {
                   </div>
                 </div>
 
+                {/* Awaiting bank transfer — one-click confirm */}
+                {selectedOrder.status === 'pending_payment' && (
+                  <div style={{ background: '#fff8ec', border: '1.5px solid #fcd9a3', borderRadius: 12, padding: '14px 16px' }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#9a3412', marginBottom: 4 }}>
+                      <i className="fa-solid fa-building-columns" style={{ marginRight: 7 }} />
+                      Awaiting bank transfer
+                    </p>
+                    <p style={{ fontSize: 12, color: '#9a3412', marginBottom: 12, lineHeight: 1.5 }}>
+                      Confirm once the wire for <strong>${Number(selectedOrder.total).toFixed(2)}</strong> (Ref #{selectedOrder.order_number ?? selectedOrder.id?.slice(0, 5).toUpperCase()}) has landed.
+                    </p>
+                    <button onClick={() => updateOrderStatus(selectedOrder.id!, 'paid')}
+                      style={{ width: '100%', background: '#15803d', border: 'none', borderRadius: 10, color: 'white', fontSize: 14, fontWeight: 700, padding: '12px', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                      <i className="fa-solid fa-check" /> Mark as Paid
+                    </button>
+                  </div>
+                )}
+
                 {/* Status update */}
                 <div>
                   <p style={{ ...SECTION_LABEL, color: D.muted }}>Update Status</p>
                   <select value={selectedOrder.status ?? 'pending'}
                     onChange={e => updateOrderStatus(selectedOrder.id!, e.target.value)}
                     style={{ width: '100%', border: `2px solid ${D.border}`, borderRadius: 10, padding: '10px 14px', fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', outline: 'none', background: D.inputBg, color: D.text }}>
-                    {['paid', 'pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled'].map(s => (
-                      <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                    {['paid', 'pending_payment', 'pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled'].map(s => (
+                      <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1).replace('_', ' ')}</option>
                     ))}
                   </select>
                 </div>

@@ -10,6 +10,7 @@ import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 import { PAYMENTS_UNDER_MAINTENANCE } from '@/lib/payments-maintenance'
 import PaymentMaintenanceNotice from '@/components/PaymentMaintenanceNotice'
+import { WIRE_ENABLED, WIRE_BANK_DETAILS } from '@/lib/wire-config'
 
 const COUNTRIES = [
   'United States','Philippines','Canada','United Kingdom','Australia','New Zealand',
@@ -70,6 +71,9 @@ export default function CheckoutPage() {
   const emailRef = useRef<HTMLInputElement>(null)
   const paypalSucceeded = useRef(false)
   const isValidationError = useRef(false)
+  const [payMethod, setPayMethod] = useState<'paypal' | 'wire'>('paypal')
+  const [wireSubmitting, setWireSubmitting] = useState(false)
+  const wireSucceeded = useRef(false)
 
   useEffect(() => {
     fetch('/api/products')
@@ -106,7 +110,7 @@ export default function CheckoutPage() {
   }, [email])
 
   useEffect(() => {
-    if (cart.length === 0 && !paypalSucceeded.current) {
+    if (cart.length === 0 && !paypalSucceeded.current && !wireSucceeded.current) {
       router.push('/')
     }
   }, [cart.length, router])
@@ -138,6 +142,57 @@ export default function CheckoutPage() {
       setCouponMsg(data.message)
     }
     setValidating(false)
+  }
+
+  async function submitWireOrder() {
+    if (!requireEmail()) return
+    if (!requireShipping()) return
+    setWireSubmitting(true)
+    try {
+      const res = await fetch('/api/orders/create-wire', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          items: cart.map(i => ({
+            id: i.id, qty: i.qty, bundle_label: i.bundle_label,
+            name: i.name, img: i.img, via: i.via, category: i.category, price: i.bundle_price ?? i.price,
+          })),
+          coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
+          email: email.trim(),
+          shipping_address: ship,
+          agent_code: readAgentRef(),
+        }),
+      })
+      const order = await res.json()
+      if (!res.ok) {
+        showToast(order.error ?? 'Could not place order. Please try again.')
+        return
+      }
+      try {
+        localStorage.setItem('themaga_last_order', JSON.stringify({
+          id: order.id ?? '',
+          order_number: order.order_number ?? null,
+          total: order.total ?? finalTotal,
+          discount: order.discount_amount ?? discountAmount,
+          itemCount: cart.reduce((s, i) => s + i.qty, 0),
+          items: cart.map(i => ({ name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img })),
+          guest_email: email.trim(),
+          shipping_address: ship,
+          payment_method: 'wire',
+          reference: order.order_number ?? (order.id ? String(order.id).slice(0, 8).toUpperCase() : ''),
+        }))
+      } catch {}
+      wireSucceeded.current = true
+      clearCart()
+      router.push('/order-success')
+    } catch {
+      showToast('Could not place order. Please try again.')
+    } finally {
+      setWireSubmitting(false)
+    }
   }
 
   function requireEmail() {
@@ -474,12 +529,67 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          {/* PayPal payment */}
+          {/* Payment */}
           <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--text-mid)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Payment
           </label>
 
-          {PAYMENTS_UNDER_MAINTENANCE ? (
+          {/* Payment method selector — only shown when wire transfer is enabled */}
+          {WIRE_ENABLED && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+              {([
+                { key: 'paypal', label: 'PayPal / Card', icon: 'fa-brands fa-paypal' },
+                { key: 'wire',   label: 'Bank Transfer', icon: 'fa-solid fa-building-columns' },
+              ] as { key: 'paypal' | 'wire'; label: string; icon: string }[]).map(m => {
+                const active = payMethod === m.key
+                return (
+                  <button key={m.key} type="button" onClick={() => setPayMethod(m.key)}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px 12px', borderRadius: 10, cursor: 'pointer', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', border: `2px solid ${active ? 'var(--teal)' : 'var(--gray)'}`, background: active ? '#f0fdfa' : 'var(--white)', color: active ? 'var(--teal)' : 'var(--text-mid)', transition: 'all 0.15s' }}>
+                    <i className={m.icon} /> {m.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {payMethod === 'wire' ? (
+            emailMissing ? (
+              <div style={{ textAlign: 'center', padding: '18px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)', marginBottom: 4 }}>
+                <p style={{ fontSize: 14, color: 'var(--text-light)', fontWeight: 600 }}>Enter your email above to continue</p>
+              </div>
+            ) : (
+              <div>
+                <div style={{ background: 'var(--off-white)', border: '1px solid var(--gray)', borderRadius: 10, padding: '16px 18px', marginBottom: 14 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-mid)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <i className="fa-solid fa-building-columns" style={{ marginRight: 7, color: 'var(--teal)' }} />
+                    Bank Transfer
+                  </p>
+                  {([
+                    ['Bank', WIRE_BANK_DETAILS.bankName],
+                    ['Beneficiary Name', WIRE_BANK_DETAILS.accountName],
+                    ['Account Number', WIRE_BANK_DETAILS.accountNumber],
+                    ['Account Type', WIRE_BANK_DETAILS.accountType],
+                    ['SWIFT / BIC', WIRE_BANK_DETAILS.swift],
+                  ] as [string, string][]).filter(([, v]) => v && v.trim()).map(([k, v]) => (
+                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '6px 0', borderBottom: '1px solid var(--gray)' }}>
+                      <span style={{ fontSize: 13, color: 'var(--text-light)' }}>{k}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)', fontFamily: 'monospace', textAlign: 'right' }}>{v}</span>
+                    </div>
+                  ))}
+                  <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 12, lineHeight: 1.5 }}>
+                    Place your order to get your unique reference number, then wire{' '}
+                    <strong>${finalTotal.toFixed(2)}</strong> from your bank. We&apos;ll email full instructions and
+                    ship once your payment is confirmed (1–3 business days).
+                  </p>
+                </div>
+                <button type="button" onClick={submitWireOrder} disabled={wireSubmitting}
+                  style={{ width: '100%', background: 'var(--navy)', border: 'none', borderRadius: 10, color: 'white', fontSize: 16, fontWeight: 800, padding: '16px', cursor: wireSubmitting ? 'wait' : 'pointer', opacity: wireSubmitting ? 0.65 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <i className="fa-solid fa-building-columns" />
+                  {wireSubmitting ? 'Placing order…' : 'Place Order — Pay by Bank Transfer'}
+                </button>
+              </div>
+            )
+          ) : PAYMENTS_UNDER_MAINTENANCE ? (
             <PaymentMaintenanceNotice />
           ) : emailMissing ? (
             <div style={{ textAlign: 'center', padding: '18px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)', marginBottom: 4 }}>
@@ -571,12 +681,25 @@ export default function CheckoutPage() {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginTop: 18, padding: '12px 16px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)' }}>
             <i className="fa-solid fa-lock" style={{ color: '#059669', fontSize: 16, flexShrink: 0, marginTop: 2 }} />
             <div>
-              <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 700, display: 'block' }}>
-                Secure checkout — PayPal buyer protection included
-              </span>
-              <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5, display: 'block', marginTop: 2 }}>
-                Log in to your PayPal account to complete payment. Don&apos;t have one? Create a free account at paypal.com — it only takes a minute.
-              </span>
+              {payMethod === 'wire' ? (
+                <>
+                  <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 700, display: 'block' }}>
+                    Secure checkout — pay directly from your bank
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5, display: 'block', marginTop: 2 }}>
+                    Your order is reserved as soon as you place it. Complete the transfer using the account details above and the reference number we email you.
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 700, display: 'block' }}>
+                    Secure checkout — PayPal buyer protection included
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5, display: 'block', marginTop: 2 }}>
+                    Log in to your PayPal account to complete payment. Don&apos;t have one? Create a free account at paypal.com — it only takes a minute.
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -599,8 +722,14 @@ export default function CheckoutPage() {
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--navy)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>3</div>
               <div>
-                <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Pay with PayPal</p>
-                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Log in to your PayPal account to complete your purchase securely.</p>
+                <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>
+                  {payMethod === 'wire' ? 'Pay by bank transfer' : 'Pay with PayPal'}
+                </p>
+                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>
+                  {payMethod === 'wire'
+                    ? 'Wire the total to the account shown, including your reference number. We ship once your payment is confirmed.'
+                    : 'Log in to your PayPal account to complete your purchase securely.'}
+                </p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>

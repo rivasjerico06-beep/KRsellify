@@ -7,6 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
+import { WIRE_BANK_DETAILS } from '@/lib/wire-config'
 
 const COLORS = ['#58948F', '#093459', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981', '#f97316', '#06b6d4']
 
@@ -53,6 +54,8 @@ interface OrderInfo {
   itemCount: number
   items: { name: string; price: number; qty: number; img: string }[]
   guest_email?: string
+  payment_method?: string
+  reference?: string | number
 }
 
 function GiftCardBonusModal({ authToken, onClose }: { authToken?: string; onClose: () => void }) {
@@ -364,13 +367,46 @@ export default function OrderSuccessPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 900, color: 'var(--heading)', marginBottom: 10 }}>
-          Order Placed!
+          {order?.payment_method === 'wire' ? 'Order Received!' : 'Order Placed!'}
         </motion.h1>
 
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
           style={{ fontSize: 15, color: 'var(--text-mid)', lineHeight: 1.6, marginBottom: 28 }}>
-          Thank you for your purchase. We&apos;ll start processing your order right away.
+          {order?.payment_method === 'wire'
+            ? 'One more step — complete your bank transfer below to finish your order.'
+            : 'Thank you for your purchase. We’ll start processing your order right away.'}
         </motion.p>
+
+        {/* Bank transfer instructions (wire orders only) */}
+        {order?.payment_method === 'wire' && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
+            style={{ background: '#fff8ec', border: '1.5px solid #fcd9a3', borderRadius: 16, padding: 20, marginBottom: 28, textAlign: 'left' }}>
+            <p style={{ fontSize: 13, fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
+              <i className="fa-solid fa-building-columns" style={{ marginRight: 7 }} />
+              Complete Your Bank Transfer
+            </p>
+            {([
+              ['Bank', WIRE_BANK_DETAILS.bankName],
+              ['Bank Address', WIRE_BANK_DETAILS.bankAddress],
+              ['Beneficiary Name', WIRE_BANK_DETAILS.accountName],
+              ['Account Number', WIRE_BANK_DETAILS.accountNumber],
+              ['Account Type', WIRE_BANK_DETAILS.accountType],
+              ['Routing / ABA', WIRE_BANK_DETAILS.routingNumber],
+              ['SWIFT / BIC', WIRE_BANK_DETAILS.swift],
+              ['Amount', `$${order.total.toFixed(2)}`],
+              ['Reference', `#${order.reference ?? order.order_number ?? order.id.slice(0, 8).toUpperCase()}`],
+            ] as [string, string][]).filter(([, v]) => v && v.trim()).map(([k, v]) => (
+              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '7px 0', borderBottom: '1px solid #fcd9a3' }}>
+                <span style={{ fontSize: 13, color: '#92400e' }}>{k}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#7c2d12', fontFamily: 'monospace', textAlign: 'right' }}>{v}</span>
+              </div>
+            ))}
+            <p style={{ fontSize: 12, color: '#92400e', marginTop: 12, lineHeight: 1.6 }}>
+              <strong>Important:</strong> {WIRE_BANK_DETAILS.memoNote} We&apos;ve also emailed these details to you. Your
+              order ships once we confirm the transfer.
+            </p>
+          </motion.div>
+        )}
 
         {/* order summary */}
         {order && (
@@ -433,7 +469,9 @@ export default function OrderSuccessPage() {
 
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
           style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 20 }}>
-          A confirmation has been sent to your email.{isLoggedIn && <> You can view order status in <Link href="/account" style={{ color: 'var(--teal)', fontWeight: 700 }}>My Account</Link>.</>}
+          {order?.payment_method === 'wire'
+            ? <>We&apos;ve emailed your bank transfer instructions. You can track this order once we confirm your payment.</>
+            : <>A confirmation has been sent to your email.{isLoggedIn && <> You can view order status in <Link href="/account" style={{ color: 'var(--teal)', fontWeight: 700 }}>My Account</Link>.</>}</>}
         </motion.p>
       </motion.div>
     </div>
