@@ -566,10 +566,11 @@ export default function CheckoutPage() {
                   </p>
                   {([
                     ['Bank', WIRE_BANK_DETAILS.bankName],
-                    ['Account Name', WIRE_BANK_DETAILS.accountName],
+                    ['Beneficiary Name', WIRE_BANK_DETAILS.accountName],
                     ['Account Number', WIRE_BANK_DETAILS.accountNumber],
+                    ['Account Type', WIRE_BANK_DETAILS.accountType],
                     ['SWIFT / BIC', WIRE_BANK_DETAILS.swift],
-                  ] as [string, string][]).map(([k, v]) => (
+                  ] as [string, string][]).filter(([, v]) => v && v.trim()).map(([k, v]) => (
                     <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '6px 0', borderBottom: '1px solid var(--gray)' }}>
                       <span style={{ fontSize: 13, color: 'var(--text-light)' }}>{k}</span>
                       <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)', fontFamily: 'monospace', textAlign: 'right' }}>{v}</span>

@@ -163,15 +163,17 @@ export async function sendWireInstructions({
 
   const ref = orderNumber ?? orderId.slice(0, 8).toUpperCase()
   const b = WIRE_BANK_DETAILS
-  const rows: [string, string][] = [
+  const rows: [string, string][] = ([
     ['Bank', b.bankName],
-    ['Account Name', b.accountName],
+    ['Bank Address', b.bankAddress],
+    ['Beneficiary Name', b.accountName],
     ['Account Number', b.accountNumber],
+    ['Account Type', b.accountType],
     ['Routing / ABA', b.routingNumber],
     ['SWIFT / BIC', b.swift],
     ['Amount', `$${total.toFixed(2)}`],
     ['Payment Reference', `#${ref}`],
-  ]
+  ] as [string, string][]).filter(([, v]) => v && v.trim())
   const detailRows = rows.map(([k, v]) =>
     `<tr>
       <td style="padding:10px 0;border-bottom:1px solid #e8eff0;font-size:13px;color:#4a6170">${k}</td>

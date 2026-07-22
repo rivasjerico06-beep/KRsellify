@@ -15,8 +15,10 @@
 
 export interface WireBankDetails {
   bankName: string
+  bankAddress: string
   accountName: string
   accountNumber: string
+  accountType: string
   routingNumber: string
   swift: string
   memoNote: string
@@ -24,8 +26,10 @@ export interface WireBankDetails {
 
 export const WIRE_BANK_DETAILS: WireBankDetails = {
   bankName:      process.env.NEXT_PUBLIC_WIRE_BANK_NAME      ?? 'Your Bank Name',
+  bankAddress:   process.env.NEXT_PUBLIC_WIRE_BANK_ADDRESS   ?? '',
   accountName:   process.env.NEXT_PUBLIC_WIRE_ACCOUNT_NAME   ?? 'Account Holder Name',
   accountNumber: process.env.NEXT_PUBLIC_WIRE_ACCOUNT_NUMBER ?? '0000000000',
+  accountType:   process.env.NEXT_PUBLIC_WIRE_ACCOUNT_TYPE   ?? '',
   routingNumber: process.env.NEXT_PUBLIC_WIRE_ROUTING_NUMBER ?? '000000000',
   swift:         process.env.NEXT_PUBLIC_WIRE_SWIFT          ?? 'XXXXXXXX',
   memoNote:      process.env.NEXT_PUBLIC_WIRE_MEMO_NOTE

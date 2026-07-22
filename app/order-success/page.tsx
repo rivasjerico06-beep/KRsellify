@@ -387,13 +387,15 @@ export default function OrderSuccessPage() {
             </p>
             {([
               ['Bank', WIRE_BANK_DETAILS.bankName],
-              ['Account Name', WIRE_BANK_DETAILS.accountName],
+              ['Bank Address', WIRE_BANK_DETAILS.bankAddress],
+              ['Beneficiary Name', WIRE_BANK_DETAILS.accountName],
               ['Account Number', WIRE_BANK_DETAILS.accountNumber],
+              ['Account Type', WIRE_BANK_DETAILS.accountType],
               ['Routing / ABA', WIRE_BANK_DETAILS.routingNumber],
               ['SWIFT / BIC', WIRE_BANK_DETAILS.swift],
               ['Amount', `$${order.total.toFixed(2)}`],
               ['Reference', `#${order.reference ?? order.order_number ?? order.id.slice(0, 8).toUpperCase()}`],
-            ] as [string, string][]).map(([k, v]) => (
+            ] as [string, string][]).filter(([, v]) => v && v.trim()).map(([k, v]) => (
               <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '7px 0', borderBottom: '1px solid #fcd9a3' }}>
                 <span style={{ fontSize: 13, color: '#92400e' }}>{k}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#7c2d12', fontFamily: 'monospace', textAlign: 'right' }}>{v}</span>
