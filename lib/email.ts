@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { CartItem } from './types'
+import { WIRE_BANK_DETAILS } from './wire-config'
 
 let _resend: Resend | null = null
 function getResend() {
@@ -141,6 +142,105 @@ export async function sendOrderConfirmation({
       Total: <strong>$${total.toFixed(2)}</strong><br>
       Items: ${items.map(i => `${i.name} ×${i.qty}`).join(', ')}
       ${shippingAddress ? `<br><br>Ship to: ${[shippingAddress.firstName, shippingAddress.lastName].filter(Boolean).join(' ')}, ${shippingAddress.address}${shippingAddress.apartment ? ' ' + shippingAddress.apartment : ''}, ${[shippingAddress.city, shippingAddress.region, shippingAddress.postalCode, shippingAddress.country].filter(Boolean).join(', ')} — ${shippingAddress.phone ?? ''}` : ''}
+    </p>`,
+  })
+}
+
+export async function sendWireInstructions({
+  to,
+  name,
+  orderId,
+  orderNumber,
+  total,
+}: {
+  to: string
+  name: string
+  orderId: string
+  orderNumber?: number | null
+  total: number
+}) {
+  if (!process.env.RESEND_API_KEY) return
+
+  const ref = orderNumber ?? orderId.slice(0, 8).toUpperCase()
+  const b = WIRE_BANK_DETAILS
+  const rows: [string, string][] = [
+    ['Bank', b.bankName],
+    ['Account Name', b.accountName],
+    ['Account Number', b.accountNumber],
+    ['Routing / ABA', b.routingNumber],
+    ['SWIFT / BIC', b.swift],
+    ['Amount', `$${total.toFixed(2)}`],
+    ['Payment Reference', `#${ref}`],
+  ]
+  const detailRows = rows.map(([k, v]) =>
+    `<tr>
+      <td style="padding:10px 0;border-bottom:1px solid #e8eff0;font-size:13px;color:#4a6170">${k}</td>
+      <td style="padding:10px 0;border-bottom:1px solid #e8eff0;font-size:14px;color:#093459;font-weight:700;text-align:right;font-family:monospace">${v}</td>
+    </tr>`
+  ).join('')
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f8f8;font-family:'DM Sans',Arial,sans-serif">
+  <div style="max-width:560px;margin:32px auto;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(9,52,89,0.10)">
+    <div style="background:#093459;padding:28px 36px;text-align:center">
+      <p style="font-size:26px;font-weight:900;color:#ffffff;margin:0;letter-spacing:-0.02em">
+        Maga <span style="color:#f59e0b">Offers</span>
+      </p>
+      <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:6px 0 0;letter-spacing:0.15em;text-transform:uppercase">Bank Transfer Instructions</p>
+    </div>
+
+    <div style="padding:36px">
+      <h1 style="font-size:22px;font-weight:900;color:#093459;margin:0 0 8px">Complete your payment</h1>
+      <p style="font-size:14px;color:#4a6170;margin:0 0 24px;line-height:1.7">
+        Thank you, <strong>${name}</strong>. Your order <strong>#${ref}</strong> is reserved. To finish, please wire
+        <strong>$${total.toFixed(2)}</strong> to the account below and include your reference number in the memo.
+      </p>
+
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+        <tbody>${detailRows}</tbody>
+      </table>
+
+      <div style="background:#fff8ec;border:1px solid #fcd9a3;border-radius:12px;padding:16px 20px;margin-bottom:20px">
+        <p style="font-size:13px;color:#92400e;margin:0;line-height:1.6">
+          <strong>Important:</strong> ${b.memoNote}
+        </p>
+      </div>
+
+      <p style="font-size:13px;color:#8ba0aa;margin:0;text-align:center;line-height:1.6">
+        Your order ships once we confirm the transfer (usually 1–3 business days).<br>
+        Questions? <a href="mailto:support@themagaoffers.net" style="color:#f59e0b;font-weight:600">support@themagaoffers.net</a>
+      </p>
+    </div>
+
+    <div style="background:#f4f8f8;padding:18px 36px;text-align:center;border-top:1px solid #e8eff0">
+      <p style="font-size:11px;color:#8ba0aa;margin:0">© 2026 Maga Offers. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`
+
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    replyTo: 'support@themagaoffers.net',
+    subject: `Bank transfer instructions — Maga Offers (Ref: #${ref})`,
+    html,
+  })
+
+  // Notify store owner that a wire order is awaiting payment
+  await getResend().emails.send({
+    from: FROM,
+    to: ADMIN_EMAIL,
+    subject: `⏳ Wire order pending — $${total.toFixed(2)} (Ref #${ref})`,
+    html: `<p style="font-family:Arial,sans-serif;font-size:15px;color:#093459">
+      <strong>New bank-transfer order awaiting payment.</strong><br><br>
+      Customer: <strong>${name}</strong> (${to})<br>
+      Reference: <code>#${ref}</code><br>
+      Amount: <strong>$${total.toFixed(2)}</strong><br><br>
+      Mark it <strong>Paid</strong> in the admin dashboard once the funds arrive.
     </p>`,
   })
 }

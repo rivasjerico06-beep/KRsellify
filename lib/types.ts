@@ -39,6 +39,7 @@ export interface Order {
   items: CartItem[]
   total: number
   status?: string
+  payment_method?: string | null
   referral_code?: string | null
   coupon_code?: string | null
   discount_amount?: number | null

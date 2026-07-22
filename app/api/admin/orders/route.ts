@@ -1,20 +1,30 @@
 import { NextResponse } from 'next/server'
 import { getAdminSupabase } from '@/lib/supabase-admin'
 import { requireAdmin, isNextResponse } from '@/lib/require-admin'
-import { sendOrderStatusUpdate } from '@/lib/email'
+import { sendOrderStatusUpdate, sendOrderConfirmation } from '@/lib/email'
 
-const VALID_STATUSES = ['paid', 'pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled']
+const VALID_STATUSES = ['paid', 'pending', 'pending_payment', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled']
 
 export async function GET(request: Request) {
   const auth = await requireAdmin(request)
   if (isNextResponse(auth)) return auth
 
   const admin = getAdminSupabase()
-  const { data: orders, error } = await admin
+  // Show all real orders plus wire transfers that are still awaiting payment
+  // (abandoned gateway redirects stay hidden). Fall back gracefully if the
+  // payment_method column has not been added yet.
+  let { data: orders, error } = await admin
     .from('orders')
     .select('*')
-    .neq('status', 'pending_payment')
+    .or('status.neq.pending_payment,payment_method.eq.wire')
     .order('created_at', { ascending: false })
+  if (error?.code === '42703') {
+    ;({ data: orders, error } = await admin
+      .from('orders')
+      .select('*')
+      .neq('status', 'pending_payment')
+      .order('created_at', { ascending: false }))
+  }
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   const userIds = [...new Set((orders ?? []).map(o => o.user_id).filter(Boolean) as string[])]
@@ -85,13 +95,28 @@ export async function PATCH(request: Request) {
     }
 
     if (customerEmail) {
-      sendOrderStatusUpdate({
-        to: customerEmail,
-        name: customerName ?? customerEmail.split('@')[0],
-        orderId: data.id,
-        orderNumber: data.order_number,
-        status,
-      }).catch(() => {})
+      // A wire order becoming 'paid' means the transfer was confirmed — send the
+      // full order confirmation. Other transitions send a status-update email.
+      if (status === 'paid' && data.payment_method === 'wire') {
+        sendOrderConfirmation({
+          to: customerEmail,
+          name: customerName ?? customerEmail.split('@')[0],
+          orderId: data.id,
+          orderNumber: data.order_number,
+          items: Array.isArray(data.items) ? data.items : [],
+          total: Number(data.total),
+          discountAmount: data.discount_amount ? Number(data.discount_amount) : undefined,
+          shippingAddress: data.shipping_address ?? undefined,
+        }).catch(() => {})
+      } else {
+        sendOrderStatusUpdate({
+          to: customerEmail,
+          name: customerName ?? customerEmail.split('@')[0],
+          orderId: data.id,
+          orderNumber: data.order_number,
+          status,
+        }).catch(() => {})
+      }
     }
   } catch {}
 
