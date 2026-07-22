@@ -51,21 +51,29 @@ export async function POST(request: Request) {
 
     const productMap = Object.fromEntries(dbProducts.map(p => [p.id, p]))
 
-    // Authoritative amount — computed from DB prices, never the client total
+    // Authoritative amount + line items — priced from DB, never the client total
+    type LineItem = { id: string; name: string; price: number; qty: number; img?: string; via?: string; category?: string; bundle_label?: string }
+    const lineItems: LineItem[] = []
     let amount = 0
     for (const item of items) {
       const product = productMap[item.id]
       if (!product)
         return NextResponse.json({ error: `Product ${item.id} not found` }, { status: 400 })
+      let unitPrice: number
       if (item.bundle_label && Array.isArray(product.quantity_options)) {
         const bundle = (product.quantity_options as { label: string; bundle_total: number }[])
           .find(o => o.label === item.bundle_label)
         if (!bundle)
           return NextResponse.json({ error: 'Bundle not found' }, { status: 400 })
-        amount += bundle.bundle_total * item.qty
+        unitPrice = Number(bundle.bundle_total)
       } else {
-        amount += Number(product.price) * item.qty
+        unitPrice = Number(product.price)
       }
+      amount += unitPrice * item.qty
+      lineItems.push({
+        id: item.id, name: product.name, price: unitPrice, qty: item.qty,
+        img: item.img, via: item.via, category: item.category, bundle_label: item.bundle_label,
+      })
     }
     const grossAmount = amount
 
@@ -90,6 +98,13 @@ export async function POST(request: Request) {
       )
       if (coupon && Number(coupon.min_spend ?? 0) <= amount) {
         amount = amount * (1 - coupon.discount_pct / 100)
+        // Consume single-use (user-specific) coupons so they can't be reused
+        // across multiple wire orders. Global promo codes stay reusable.
+        if (coupon.user_id) {
+          await admin.from('coupons')
+            .update({ is_used: true, used_at: new Date().toISOString() })
+            .eq('id', coupon.id)
+        }
       }
     }
 
@@ -103,10 +118,7 @@ export async function POST(request: Request) {
     const orderPayload = {
       user_id: userId,
       guest_email: !userId ? emailLower : null,
-      items: items.map(i => ({
-        id: i.id, name: productMap[i.id]?.name ?? i.name, price: i.price, qty: i.qty,
-        img: i.img, via: i.via, category: i.category, bundle_label: i.bundle_label,
-      })),
+      items: lineItems,
       total: Number(amount.toFixed(2)),
       discount_amount: Number(discountAmount.toFixed(2)),
       coupon_code: coupon_code ?? null,

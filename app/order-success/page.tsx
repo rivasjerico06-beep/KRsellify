@@ -469,7 +469,9 @@ export default function OrderSuccessPage() {
 
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
           style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 20 }}>
-          A confirmation has been sent to your email.{isLoggedIn && <> You can view order status in <Link href="/account" style={{ color: 'var(--teal)', fontWeight: 700 }}>My Account</Link>.</>}
+          {order?.payment_method === 'wire'
+            ? <>We&apos;ve emailed your bank transfer instructions. You can track this order once we confirm your payment.</>
+            : <>A confirmation has been sent to your email.{isLoggedIn && <> You can view order status in <Link href="/account" style={{ color: 'var(--teal)', fontWeight: 700 }}>My Account</Link>.</>}</>}
         </motion.p>
       </motion.div>
     </div>

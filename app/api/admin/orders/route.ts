@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAdminSupabase } from '@/lib/supabase-admin'
 import { requireAdmin, isNextResponse } from '@/lib/require-admin'
 import { sendOrderStatusUpdate, sendOrderConfirmation } from '@/lib/email'
+import { applyPostPaymentRewards, itemsHaveGiftCard } from '@/lib/order-fulfillment'
 
 const VALID_STATUSES = ['paid', 'pending', 'pending_payment', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled']
 
@@ -78,6 +79,15 @@ export async function PATCH(request: Request) {
 
   const { data, error } = await admin.from('orders').update({ status }).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // A wire order confirmed as paid earns the same rewards a paid PayPal order
+  // does (gift-card coupon + loyalty tiers). Idempotent, so safe to re-run.
+  if (status === 'paid' && data.payment_method === 'wire') {
+    try {
+      const hasGiftCard = itemsHaveGiftCard(Array.isArray(data.items) ? data.items : [])
+      await applyPostPaymentRewards(admin, { userId: data.user_id ?? null, hasGiftCard })
+    } catch {}
+  }
 
   // Email the customer about their updated status (non-blocking)
   try {

@@ -681,12 +681,25 @@ export default function CheckoutPage() {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginTop: 18, padding: '12px 16px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)' }}>
             <i className="fa-solid fa-lock" style={{ color: '#059669', fontSize: 16, flexShrink: 0, marginTop: 2 }} />
             <div>
-              <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 700, display: 'block' }}>
-                Secure checkout — PayPal buyer protection included
-              </span>
-              <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5, display: 'block', marginTop: 2 }}>
-                Log in to your PayPal account to complete payment. Don&apos;t have one? Create a free account at paypal.com — it only takes a minute.
-              </span>
+              {payMethod === 'wire' ? (
+                <>
+                  <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 700, display: 'block' }}>
+                    Secure checkout — pay directly from your bank
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5, display: 'block', marginTop: 2 }}>
+                    Your order is reserved as soon as you place it. Complete the transfer using the account details above and the reference number we email you.
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 700, display: 'block' }}>
+                    Secure checkout — PayPal buyer protection included
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5, display: 'block', marginTop: 2 }}>
+                    Log in to your PayPal account to complete payment. Don&apos;t have one? Create a free account at paypal.com — it only takes a minute.
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -709,8 +722,14 @@ export default function CheckoutPage() {
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--navy)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>3</div>
               <div>
-                <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>Pay with PayPal</p>
-                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>Log in to your PayPal account to complete your purchase securely.</p>
+                <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>
+                  {payMethod === 'wire' ? 'Pay by bank transfer' : 'Pay with PayPal'}
+                </p>
+                <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>
+                  {payMethod === 'wire'
+                    ? 'Wire the total to the account shown, including your reference number. We ship once your payment is confirmed.'
+                    : 'Log in to your PayPal account to complete your purchase securely.'}
+                </p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>

@@ -3,6 +3,7 @@ import { getAdminSupabase } from '@/lib/supabase-admin'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { CartItem } from '@/lib/types'
 import { sendOrderConfirmation } from '@/lib/email'
+import { applyPostPaymentRewards } from '@/lib/order-fulfillment'
 
 const PAYPAL_BASE = 'https://api-m.paypal.com'
 
@@ -22,12 +23,6 @@ async function getPayPalToken() {
   if (!data.access_token) throw new Error('PayPal auth failed')
   return data.access_token as string
 }
-
-const TIERS = [
-  { min: 2000, tier: 'platinum', pct: 50, label: 'PLATINUM50' },
-  { min: 1000, tier: 'gold',     pct: 50, label: 'GOLD50' },
-  { min: 500,  tier: 'silver',   pct: 30, label: 'SILVER30' },
-]
 
 export async function POST(request: Request) {
   try {
@@ -153,55 +148,8 @@ export async function POST(request: Request) {
     if (orderError || !order)
       return NextResponse.json({ error: 'Failed to save order' }, { status: 500 })
 
-    // Issue THEMAGA10 coupon for gift card purchasers
-    if (hasGiftCard) {
-      if (userId) {
-        const { data: existing } = await admin
-          .from('coupons').select('id')
-          .eq('code', 'THEMAGA10').eq('user_id', userId).maybeSingle()
-        if (!existing) {
-          await admin.from('coupons').insert({
-            code: 'THEMAGA10', discount_pct: 10, min_spend: 0, user_id: userId, tier: 'gift_card',
-          })
-        }
-      } else {
-        // Guest: create a global THEMAGA10 if none exists
-        const { data: existing } = await admin
-          .from('coupons').select('id')
-          .eq('code', 'THEMAGA10').is('user_id', null).eq('is_used', false).maybeSingle()
-        if (!existing) {
-          await admin.from('coupons').insert({
-            code: 'THEMAGA10', discount_pct: 10, min_spend: 0, user_id: null, tier: 'gift_card',
-          })
-        }
-      }
-    }
-
-    // Loyalty tier coupons for logged-in users
-    if (userId) {
-      const { data: userOrders } = await admin
-        .from('orders')
-        .select('total, discount_amount')
-        .eq('user_id', userId)
-        .neq('status', 'cancelled')
-      const totalSpent = (userOrders ?? []).reduce(
-        (sum, o) => sum + Number(o.total) - Number(o.discount_amount ?? 0), 0
-      )
-      for (const { min, tier, pct, label } of TIERS) {
-        if (totalSpent >= min) {
-          const { data: existing } = await admin
-            .from('coupons').select('id')
-            .eq('user_id', userId).eq('tier', tier).maybeSingle()
-          if (!existing) {
-            const suffix = Math.random().toString(36).slice(2, 7).toUpperCase()
-            await admin.from('coupons').insert({
-              code: `${label}-${suffix}`, discount_pct: pct, min_spend: 0, user_id: userId, tier,
-            })
-          }
-          break
-        }
-      }
-    }
+    // Issue gift-card + loyalty rewards for this paid order
+    await applyPostPaymentRewards(admin, { userId, hasGiftCard })
 
     // Send confirmation email
     const confirmEmail = userId
