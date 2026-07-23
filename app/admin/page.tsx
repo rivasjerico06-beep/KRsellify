@@ -2057,6 +2057,23 @@ function AdminContent() {
                   <i className="fa-solid fa-clock" style={{ marginRight: 6 }} />
                   Placed {selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleString() : '—'}
                 </p>
+
+                {/* Delete this order (e.g. test orders) */}
+                <button
+                  onClick={async () => {
+                    if (!confirm(`Delete order #${selectedOrder.order_number ?? selectedOrder.id?.slice(0, 5).toUpperCase()}? This permanently removes it and cannot be undone.`)) return
+                    const res = await fetch(`/api/admin/orders?id=${selectedOrder.id}`, { method: 'DELETE', headers: authHeaders() })
+                    if (res.ok) {
+                      setOrders(prev => prev.filter(o => o.id !== selectedOrder.id))
+                      setSelectedOrder(null)
+                      flash('✓ Order deleted')
+                    } else {
+                      flash('Failed to delete order')
+                    }
+                  }}
+                  style={{ width: '100%', marginTop: 8, background: '#fee2e2', border: '1px solid #fca5a5', color: '#991b1b', padding: '11px', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <i className="fa-solid fa-trash-can" /> Delete Order
+                </button>
               </div>
             </motion.div>
           </>
