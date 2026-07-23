@@ -57,6 +57,7 @@ interface OrderInfo {
   payment_method?: string
   reference?: string | number
   wire?: SiteWireConfig | null
+  receipt_uploaded?: boolean
 }
 
 function GiftCardBonusModal({ authToken, onClose }: { authToken?: string; onClose: () => void }) {
@@ -320,6 +321,7 @@ export default function OrderSuccessPage() {
         const parsed = JSON.parse(raw)
         setOrder(parsed)
         isWireOrder = parsed?.payment_method === 'wire'
+        if (parsed?.receipt_uploaded) setReceiptDone(true)
         localStorage.removeItem('themaga_last_order')
       }
     } catch {}
@@ -395,13 +397,17 @@ export default function OrderSuccessPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 900, color: 'var(--heading)', marginBottom: 10 }}>
-          {order?.payment_method === 'wire' ? 'Order Received!' : 'Order Placed!'}
+          {order?.payment_method === 'wire'
+            ? (order?.receipt_uploaded ? 'Receipt Received!' : 'Order Received!')
+            : 'Order Placed!'}
         </motion.h1>
 
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
           style={{ fontSize: 15, color: 'var(--text-mid)', lineHeight: 1.6, marginBottom: 28 }}>
           {order?.payment_method === 'wire'
-            ? 'One more step — complete your bank transfer below to finish your order.'
+            ? (order?.receipt_uploaded
+                ? 'The MAGA has received your transfer receipt. We’ll verify your payment, and you’ll be notified at your email once your order is placed.'
+                : 'One more step — complete your bank transfer below and upload your receipt to finish your order.')
             : 'Thank you for your purchase. We’ll start processing your order right away.'}
         </motion.p>
 
@@ -443,7 +449,7 @@ export default function OrderSuccessPage() {
               {receiptDone ? (
                 <p style={{ fontSize: 13, color: '#15803d', fontWeight: 700, lineHeight: 1.6 }}>
                   <i className="fa-solid fa-circle-check" style={{ marginRight: 6 }} />
-                  Receipt uploaded! We&apos;ll confirm your order as soon as we verify it. Thank you!
+                  The MAGA has received your receipt. You&apos;ll be notified at your email once your payment is verified and your order is placed. Thank you!
                 </p>
               ) : (
                 <>

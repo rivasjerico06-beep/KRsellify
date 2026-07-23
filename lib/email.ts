@@ -219,7 +219,7 @@ export async function sendWireInstructions({
           📎 Upload your payment receipt
         </a>
         <p style="font-size:12px;color:#8ba0aa;margin:10px 0 0;line-height:1.6">
-          After you send the wire, upload a screenshot or PDF of the receipt so we can confirm your order faster.<br>You can use this link any time.
+          Already uploaded your receipt at checkout? You&rsquo;re all set — we&rsquo;ll email you once your order is placed.<br>Otherwise (or to replace it), you can use this link any time.
         </p>
       </div>
 

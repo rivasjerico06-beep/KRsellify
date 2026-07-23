@@ -74,6 +74,8 @@ export default function CheckoutPage() {
   const [payMethod, setPayMethod] = useState<'paypal' | 'wire'>('paypal')
   const [wireSubmitting, setWireSubmitting] = useState(false)
   const [wireCfg, setWireCfg] = useState<SiteWireConfig | null>(null)
+  const [receiptFile, setReceiptFile] = useState<File | null>(null)
+  const receiptInputRef = useRef<HTMLInputElement>(null)
   const wireSucceeded = useRef(false)
 
   // Load bank-transfer config (admin-editable, from site_config)
@@ -164,6 +166,10 @@ export default function CheckoutPage() {
   async function submitWireOrder() {
     if (!requireEmail()) return
     if (!requireShipping()) return
+    if (!receiptFile) {
+      showToast('Please upload your bank-transfer receipt first.')
+      return
+    }
     setWireSubmitting(true)
     try {
       const res = await fetch('/api/orders/create-wire', {
@@ -188,6 +194,16 @@ export default function CheckoutPage() {
         showToast(order.error ?? 'Could not place order. Please try again.')
         return
       }
+      // Attach the receipt the customer selected at checkout. If it fails, the
+      // success page (and the email link) still let them upload it again.
+      let receiptUploaded = false
+      try {
+        const fd = new FormData()
+        fd.append('order_id', order.id)
+        fd.append('file', receiptFile)
+        const ur = await fetch('/api/orders/upload-receipt', { method: 'POST', body: fd })
+        receiptUploaded = ur.ok
+      } catch {}
       try {
         localStorage.setItem('themaga_last_order', JSON.stringify({
           id: order.id ?? '',
@@ -201,6 +217,7 @@ export default function CheckoutPage() {
           payment_method: 'wire',
           reference: order.order_number ?? (order.id ? String(order.id).slice(0, 8).toUpperCase() : ''),
           wire: wireCfg,
+          receipt_uploaded: receiptUploaded,
         }))
       } catch {}
       wireSucceeded.current = true
@@ -555,10 +572,6 @@ export default function CheckoutPage() {
           {payMethod === 'wire' ? (
             wireCfg?.maintenance ? (
               <PaymentMaintenanceNotice />
-            ) : emailMissing ? (
-              <div style={{ textAlign: 'center', padding: '18px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)', marginBottom: 4 }}>
-                <p style={{ fontSize: 14, color: 'var(--text-light)', fontWeight: 600 }}>Enter your email above to continue</p>
-              </div>
             ) : (
               <div>
                 <div style={{ background: 'var(--off-white)', border: '1px solid var(--gray)', borderRadius: 10, padding: '16px 18px', marginBottom: 14 }}>
@@ -579,16 +592,54 @@ export default function CheckoutPage() {
                     </div>
                   ))}
                   <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 12, lineHeight: 1.5 }}>
-                    Place your order to get your unique reference number, then wire{' '}
-                    <strong>${finalTotal.toFixed(2)}</strong> from your bank. We&apos;ll email full instructions and
-                    ship once your payment is confirmed (1–3 business days).
+                    Wire <strong>${finalTotal.toFixed(2)}</strong> to the account above from your bank, then upload
+                    your receipt below. The MAGA will verify your payment and email you once your order is placed.
                   </p>
                 </div>
-                <button type="button" onClick={submitWireOrder} disabled={wireSubmitting}
-                  style={{ width: '100%', background: 'var(--navy)', border: 'none', borderRadius: 10, color: 'white', fontSize: 16, fontWeight: 800, padding: '16px', cursor: wireSubmitting ? 'wait' : 'pointer', opacity: wireSubmitting ? 0.65 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                  <i className="fa-solid fa-building-columns" />
-                  {wireSubmitting ? 'Placing order…' : 'Place Order — Pay by Bank Transfer'}
+
+                {/* Receipt upload — unlocked once email + shipping address are filled in */}
+                <div style={{ background: '#fff8ec', border: '1.5px solid #fcd9a3', borderRadius: 10, padding: '14px 16px', marginBottom: 14 }}>
+                  <p style={{ fontSize: 13, fontWeight: 800, color: '#92400e', marginBottom: 6 }}>
+                    <i className="fa-solid fa-receipt" style={{ marginRight: 7 }} />
+                    Upload your transfer receipt <span style={{ color: '#b91c1c' }}>*</span>
+                  </p>
+                  {emailMissing || shipMissing ? (
+                    <p style={{ fontSize: 12.5, color: '#92400e', lineHeight: 1.6 }}>
+                      <i className="fa-solid fa-lock" style={{ marginRight: 6 }} />
+                      Fill in your <strong>email</strong> and <strong>shipping address</strong> above to unlock the receipt upload.
+                    </p>
+                  ) : (
+                    <>
+                      <p style={{ fontSize: 12, color: '#7c5b16', lineHeight: 1.6, marginBottom: 10 }}>
+                        A screenshot or PDF of your completed bank transfer. (JPG / PNG / PDF, max 5MB.)
+                      </p>
+                      <input ref={receiptInputRef} type="file" accept="image/*,application/pdf" style={{ display: 'none' }}
+                        onChange={e => setReceiptFile(e.target.files?.[0] ?? null)} />
+                      <button type="button" onClick={() => receiptInputRef.current?.click()}
+                        style={{ background: receiptFile ? '#f0fdf4' : 'white', border: `1.5px solid ${receiptFile ? '#86efac' : '#fcd9a3'}`, borderRadius: 10, padding: '11px 16px', fontSize: 13.5, fontWeight: 700, color: receiptFile ? '#15803d' : '#92400e', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, maxWidth: '100%' }}>
+                        <i className={`fa-solid ${receiptFile ? 'fa-circle-check' : 'fa-upload'}`} />
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {receiptFile ? receiptFile.name : 'Choose receipt file'}
+                        </span>
+                      </button>
+                      {receiptFile && (
+                        <button type="button" onClick={() => { setReceiptFile(null); if (receiptInputRef.current) receiptInputRef.current.value = '' }}
+                          style={{ background: 'none', border: 'none', color: '#b91c1c', fontSize: 12, fontWeight: 700, cursor: 'pointer', marginLeft: 10 }}>
+                          Remove
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                <button type="button" onClick={submitWireOrder} disabled={wireSubmitting || !receiptFile || emailMissing || shipMissing}
+                  style={{ width: '100%', background: 'var(--navy)', border: 'none', borderRadius: 10, color: 'white', fontSize: 16, fontWeight: 800, padding: '16px', cursor: wireSubmitting ? 'wait' : (!receiptFile || emailMissing || shipMissing) ? 'not-allowed' : 'pointer', opacity: (wireSubmitting || !receiptFile || emailMissing || shipMissing) ? 0.55 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <i className="fa-solid fa-paper-plane" />
+                  {wireSubmitting ? 'Submitting…' : 'Submit Order & Receipt'}
                 </button>
+                <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 10, lineHeight: 1.5, textAlign: 'center' }}>
+                  The MAGA will confirm your payment and notify you by email once your order is placed.
+                </p>
               </div>
             )
           ) : PAYMENTS_UNDER_MAINTENANCE ? (
