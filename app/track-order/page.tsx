@@ -25,6 +25,7 @@ interface Order {
 }
 
 const STATUS_LIGHT: Record<string, { label: string; color: string; bg: string }> = {
+  pending_payment: { label: 'Verifying Payment', color: '#92400e', bg: '#fde68a' },
   paid:        { label: 'Paid',        color: '#065f46', bg: '#a7f3d0' },
   processing:  { label: 'Processing',  color: '#78350f', bg: '#fde68a' },
   shipped:     { label: 'Shipped',     color: '#1e3a8a', bg: '#bfdbfe' },
@@ -33,6 +34,7 @@ const STATUS_LIGHT: Record<string, { label: string; color: string; bg: string }>
 }
 
 const STATUS_DARK: Record<string, { label: string; color: string; bg: string }> = {
+  pending_payment: { label: 'Verifying Payment', color: '#fcd34d', bg: 'rgba(146,64,14,0.35)' },
   paid:        { label: 'Paid',        color: '#6ee7b7', bg: 'rgba(6,95,70,0.35)' },
   processing:  { label: 'Processing',  color: '#fcd34d', bg: 'rgba(120,53,15,0.35)' },
   shipped:     { label: 'Shipped',     color: '#93c5fd', bg: 'rgba(30,58,138,0.35)' },

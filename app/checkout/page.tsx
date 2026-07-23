@@ -581,9 +581,11 @@ export default function CheckoutPage() {
                   </p>
                   {([
                     ['Bank', wireCfg?.bankName ?? ''],
+                    ['Bank Address', wireCfg?.bankAddress ?? ''],
                     ['Beneficiary Name', wireCfg?.accountName ?? ''],
                     ['Account Number', wireCfg?.accountNumber ?? ''],
                     ['Account Type', wireCfg?.accountType ?? ''],
+                    ['Routing / ABA', wireCfg?.routingNumber ?? ''],
                     ['SWIFT / BIC', wireCfg?.swift ?? ''],
                   ] as [string, string][]).filter(([, v]) => v && v.trim()).map(([k, v]) => (
                     <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '6px 0', borderBottom: '1px solid var(--gray)' }}>
