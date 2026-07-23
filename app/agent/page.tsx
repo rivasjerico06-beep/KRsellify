@@ -597,12 +597,58 @@ function AgentContent() {
                       <i className="fa-solid fa-book-open" style={{ color: '#1a1200', fontSize: 18 }} />
                     </div>
                     <div>
-                      <p style={{ fontWeight: 900, fontSize: 17, color: 'white' }}>Agent Rules & Dialer Guide</p>
-                      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>Read this before making any calls. Every call must be logged — no exceptions.</p>
+                      <p style={{ fontWeight: 900, fontSize: 17, color: 'white' }}>Agent Guide — Closing Sales, Dialer & Rules</p>
+                      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>The store now takes payment by bank transfer only. Read how a sale works before making any calls.</p>
                     </div>
                   </div>
 
                   <div style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+
+                    {/* ── SECTION 0: How to close a sale (bank-transfer checkout) ── */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 10, background: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <i className="fa-solid fa-sack-dollar" style={{ color: 'white', fontSize: 14 }} />
+                        </div>
+                        <div>
+                          <p style={{ fontSize: 15, fontWeight: 900, color: D.text }}>HOW TO CLOSE A SALE — BANK TRANSFER CHECKOUT</p>
+                          <p style={{ fontSize: 12, color: D.muted }}>PayPal &amp; card are OFF. Every purchase is paid by bank wire — walk your customer through these exact steps</p>
+                        </div>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
+                        {[
+                          { n: 1, text: 'Send your product link (Generate Link on any product page) — purchases through your link are credited to you automatically', bold: true },
+                          { n: 2, text: 'Customer adds products to the cart and opens Checkout' },
+                          { n: 3, text: 'Customer fills in their EMAIL and full SHIPPING ADDRESS — the same email or phone you have on their lead, or the sale may not credit to you', bold: true },
+                          { n: 4, text: 'Checkout shows The MAGA’s bank details — the customer wires the EXACT order total from their bank' },
+                          { n: 5, text: 'The receipt upload unlocks once email + address are filled. Customer uploads a screenshot or PDF of the transfer receipt — required, no receipt = no order', bold: true },
+                          { n: 6, text: 'Customer taps “Submit Order & Receipt”. The order is NOT placed yet — it shows as “Verifying Payment”' },
+                          { n: 7, text: 'The MAGA verifies the money arrived, then the customer gets the “Order Confirmed” email. ONLY THEN is it a real sale — and it appears in your My Sales', bold: true },
+                          { n: 8, text: 'Log the call as “Converted / Ordered” and write the exact email the customer used in your Notes' },
+                        ].map(s => (
+                          <div key={s.n} style={{
+                            display: 'flex', gap: 12, alignItems: 'flex-start',
+                            padding: '12px 14px', borderRadius: 12,
+                            background: isDark ? '#062015' : '#ecfdf5',
+                            border: `1.5px solid ${isDark ? '#14432f' : '#6ee7b7'}`,
+                          }}>
+                            <span style={{
+                              minWidth: 28, height: 28, borderRadius: '50%',
+                              background: '#059669', color: 'white',
+                              fontSize: 13, fontWeight: 900,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                            }}>{s.n}</span>
+                            <p style={{ fontSize: 13, color: D.text, lineHeight: 1.55, fontWeight: s.bold ? 700 : 400 }}>{s.text}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ marginTop: 12, padding: '12px 16px', borderRadius: 12, background: isDark ? '#221605' : '#fffbeb', border: `1.5px solid ${isDark ? '#4a3010' : '#fde68a'}` }}>
+                        <p style={{ fontSize: 12.5, color: isDark ? '#fcd34d' : '#92400e', lineHeight: 1.65 }}>
+                          <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }} />
+                          <strong>Remember:</strong> an order stuck at &ldquo;Verifying Payment&rdquo; is <strong>not a sale yet</strong> — no money received, no credit. If the customer couldn&rsquo;t upload the receipt at checkout, their instructions email has an upload link they can use any time. They can watch their status in <strong>Track My Order</strong> (&ldquo;Verifying Payment&rdquo; &rarr; &ldquo;Paid&rdquo;).
+                        </p>
+                      </div>
+                    </div>
 
                     {/* ── SECTION 1: Steps ── */}
                     <div>
