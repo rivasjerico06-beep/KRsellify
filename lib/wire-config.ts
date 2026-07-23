@@ -14,6 +14,7 @@
 
 export interface SiteWireConfig {
   enabled: boolean
+  maintenance: boolean // when true, bank transfer shows but the Place Order button is paused
   bankName: string
   bankAddress: string
   accountName: string // beneficiary
@@ -26,6 +27,7 @@ export interface SiteWireConfig {
 
 export const DEFAULT_WIRE_CONFIG: SiteWireConfig = {
   enabled: false,
+  maintenance: false,
   bankName: '',
   bankAddress: '',
   accountName: '',
@@ -43,6 +45,7 @@ export function normalizeWireConfig(value: unknown): SiteWireConfig {
   const str = (x: unknown, fallback = '') => (typeof x === 'string' ? x.trim() : fallback)
   return {
     enabled:       v.enabled === true,
+    maintenance:   v.maintenance === true,
     bankName:      str(v.bankName),
     bankAddress:   str(v.bankAddress),
     accountName:   str(v.accountName),

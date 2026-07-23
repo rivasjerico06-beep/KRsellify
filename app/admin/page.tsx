@@ -1840,9 +1840,20 @@ function AdminContent() {
                       Let customers pay by bank wire. When enabled, a <strong>Bank Transfer</strong> option appears at checkout showing these details. Those orders arrive as <strong>Pending Payment</strong> — confirm each with <strong>Mark as Paid</strong> in the Orders tab once the funds land.
                     </p>
 
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, cursor: 'pointer' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, cursor: 'pointer' }}>
                       <input type="checkbox" checked={wireForm.enabled} onChange={e => setWireForm({ ...wireForm, enabled: e.target.checked })} style={{ width: 18, height: 18, cursor: 'pointer' }} />
                       <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-dark)' }}>Enable bank transfer at checkout</span>
+                    </label>
+
+                    <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 20, cursor: 'pointer', background: wireForm.maintenance ? '#fffbeb' : 'transparent', border: `1px solid ${wireForm.maintenance ? '#fde68a' : 'transparent'}`, borderRadius: 8, padding: wireForm.maintenance ? '10px 12px' : '0' }}>
+                      <input type="checkbox" checked={wireForm.maintenance} onChange={e => setWireForm({ ...wireForm, maintenance: e.target.checked })} style={{ width: 18, height: 18, cursor: 'pointer', marginTop: 2 }} />
+                      <span>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: wireForm.maintenance ? '#b45309' : 'var(--text-dark)', display: 'block' }}>
+                          <i className="fa-solid fa-screwdriver-wrench" style={{ marginRight: 7 }} />
+                          Put the “Place Order” button under maintenance
+                        </span>
+                        <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5 }}>Bank transfer still shows, but customers see an “under maintenance” notice and cannot place orders until you switch this off.</span>
+                      </span>
                     </label>
 
                     <div style={{ display: 'grid', gap: 12 }}>

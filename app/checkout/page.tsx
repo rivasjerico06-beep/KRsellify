@@ -553,7 +553,7 @@ export default function CheckoutPage() {
           </label>
 
           {payMethod === 'wire' ? (
-            PAYMENTS_UNDER_MAINTENANCE ? (
+            wireCfg?.maintenance ? (
               <PaymentMaintenanceNotice />
             ) : emailMissing ? (
               <div style={{ textAlign: 'center', padding: '18px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)', marginBottom: 4 }}>

@@ -17,7 +17,7 @@ import { sendWireInstructions } from '@/lib/email'
 export async function POST(request: Request) {
   try {
     const wire = normalizeWireConfig((await getSiteConfig()).wire_config)
-    if (!wire.enabled)
+    if (!wire.enabled || wire.maintenance)
       return NextResponse.json({ error: 'Wire transfer is not available' }, { status: 400 })
 
     const { items, coupon_code, email, shipping_address, agent_code } = await request.json() as {
