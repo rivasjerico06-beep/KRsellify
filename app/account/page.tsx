@@ -109,7 +109,7 @@ function AccountContent() {
     setApplying(false)
   }
 
-  const totalSpent = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + Number(o.total), 0)
+  const totalSpent = orders.filter(o => o.status !== 'cancelled' && o.status !== 'pending_payment').reduce((s, o) => s + Number(o.total), 0)
   const currentTier = getTier(totalSpent)
   const nextTierIdx = TIERS.indexOf(currentTier) - 1
   const nextTier    = nextTierIdx >= 0 ? TIERS[nextTierIdx] : null
@@ -123,7 +123,8 @@ function AccountContent() {
   }
 
   const statusColors: Record<string, { bg: string; text: string }> = {
-    paid:      { bg: '#dcfce7', text: '#15803d' },
+    paid:            { bg: '#dcfce7', text: '#15803d' },
+    pending_payment: { bg: '#ffedd5', text: '#9a3412' },
     pending:   { bg: '#fef9c3', text: '#854d0e' },
     confirmed: { bg: '#dbeafe', text: '#1e40af' },
     packed:    { bg: '#ede9fe', text: '#5b21b6' },
@@ -346,7 +347,7 @@ function AccountContent() {
                         <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--heading)' }}>${Number(o.total).toFixed(2)}</td>
                         <td style={{ padding: '12px 16px' }}>
                           <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: sc.bg, color: sc.text, textTransform: 'capitalize', whiteSpace: 'nowrap' }}>
-                            {o.status ?? 'pending'}
+                            {(o.status ?? 'pending') === 'pending_payment' ? 'Verifying Payment' : (o.status ?? 'pending')}
                           </span>
                         </td>
                       </tr>

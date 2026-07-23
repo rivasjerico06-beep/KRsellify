@@ -782,7 +782,7 @@ export default function CheckoutPage() {
                 </p>
                 <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>
                   {payMethod === 'wire'
-                    ? 'Wire the total to the account shown, including your reference number. We ship once your payment is confirmed.'
+                    ? 'Wire the exact total to the account shown, then upload your transfer receipt. We verify your payment and email you once your order is placed.'
                     : 'Log in to your PayPal account to complete your purchase securely.'}
                 </p>
               </div>

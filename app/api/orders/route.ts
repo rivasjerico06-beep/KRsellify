@@ -11,12 +11,23 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = getAdminSupabase()
-  const { data, error } = await admin
+  // Hide abandoned gateway redirects, but DO show pending WIRE orders — the
+  // customer placed those deliberately and is waiting for payment verification.
+  let { data, error } = await admin
     .from('orders')
     .select('*')
     .eq('user_id', user.id)
-    .neq('status', 'pending_payment')
+    .or('status.neq.pending_payment,payment_method.eq.wire')
     .order('created_at', { ascending: false })
+  // payment_method column may not exist yet — fall back to the old filter
+  if (error?.code === '42703') {
+    ;({ data, error } = await admin
+      .from('orders')
+      .select('*')
+      .eq('user_id', user.id)
+      .neq('status', 'pending_payment')
+      .order('created_at', { ascending: false }))
+  }
 
   if (error) return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 })
   return NextResponse.json(data ?? [])

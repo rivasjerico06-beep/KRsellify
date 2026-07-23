@@ -207,11 +207,12 @@ export async function sendWireInstructions({
         <tbody>${detailRows}</tbody>
       </table>
 
+      ${b.memoNote.trim() ? `
       <div style="background:#fff8ec;border:1px solid #fcd9a3;border-radius:12px;padding:16px 20px;margin-bottom:20px">
         <p style="font-size:13px;color:#92400e;margin:0;line-height:1.6">
           <strong>Important:</strong> ${b.memoNote}
         </p>
-      </div>
+      </div>` : ''}
 
       <div style="text-align:center;margin-bottom:22px">
         <a href="${SITE_URL}/upload-receipt?order=${orderId}"

@@ -61,6 +61,11 @@ export async function POST(request: Request) {
       const product = productMap[item.id]
       if (!product)
         return NextResponse.json({ error: `Product ${item.id} not found` }, { status: 400 })
+      // Never trust the client's qty shape — clamp to a positive integer so a
+      // crafted negative/fractional qty can't manipulate the total
+      const qty = Math.floor(Number(item.qty))
+      if (!Number.isFinite(qty) || qty < 1 || qty > 999)
+        return NextResponse.json({ error: 'Invalid quantity' }, { status: 400 })
       let unitPrice: number
       if (item.bundle_label && Array.isArray(product.quantity_options)) {
         const bundle = (product.quantity_options as { label: string; bundle_total: number }[])
@@ -71,9 +76,9 @@ export async function POST(request: Request) {
       } else {
         unitPrice = Number(product.price)
       }
-      amount += unitPrice * item.qty
+      amount += unitPrice * qty
       lineItems.push({
-        id: item.id, name: product.name, price: unitPrice, qty: item.qty,
+        id: item.id, name: product.name, price: unitPrice, qty,
         img: item.img, via: item.via, category: item.category, bundle_label: item.bundle_label,
       })
     }

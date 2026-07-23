@@ -417,7 +417,7 @@ export default function OrderSuccessPage() {
             style={{ background: '#fff8ec', border: '1.5px solid #fcd9a3', borderRadius: 16, padding: 20, marginBottom: 28, textAlign: 'left' }}>
             <p style={{ fontSize: 13, fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
               <i className="fa-solid fa-building-columns" style={{ marginRight: 7 }} />
-              Complete Your Bank Transfer
+              {order.receipt_uploaded ? 'Your Bank Transfer Details' : 'Complete Your Bank Transfer'}
             </p>
             {([
               ['Bank', order.wire?.bankName ?? ''],
@@ -436,8 +436,10 @@ export default function OrderSuccessPage() {
               </div>
             ))}
             <p style={{ fontSize: 12, color: '#92400e', marginTop: 12, lineHeight: 1.6 }}>
-              <strong>Important:</strong> {order.wire?.memoNote ?? 'Include your order reference number in the transfer memo so we can match your payment.'} We&apos;ve also emailed these details to you. Your
-              order ships once we confirm the transfer.
+              {order.wire?.memoNote?.trim() ? <><strong>Important:</strong> {order.wire.memoNote.trim()}{' '}</> : null}
+              {order.receipt_uploaded
+                ? <>We&apos;ve emailed these details to you for your records. Your order ships once we verify your payment.</>
+                : <>We&apos;ve also emailed these details to you. Your order ships once we confirm the transfer.</>}
             </p>
 
             {/* Upload transfer receipt */}
