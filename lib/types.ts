@@ -43,6 +43,8 @@ export interface Order {
   referral_code?: string | null
   coupon_code?: string | null
   discount_amount?: number | null
+  receipt_url?: string | null            // storage path in the private "receipts" bucket
+  receipt_signed_url?: string | null     // short-lived signed URL, enriched by /api/admin/orders
   created_at?: string
   // enriched by /api/admin/orders
   customer_name?: string | null

@@ -28,8 +28,20 @@ export async function GET(request: Request) {
   }
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const userIds = [...new Set((orders ?? []).map(o => o.user_id).filter(Boolean) as string[])]
-  if (userIds.length === 0) return NextResponse.json(orders ?? [])
+  const ordersList = orders ?? []
+
+  // Sign receipt paths (private "receipts" bucket) so the admin can view them for ~1h
+  const signedMap: Record<string, string> = {}
+  await Promise.all(
+    ordersList.filter(o => o.receipt_url).map(async o => {
+      const { data } = await admin.storage.from('receipts').createSignedUrl(o.receipt_url as string, 60 * 60)
+      if (data?.signedUrl) signedMap[o.id] = data.signedUrl
+    }),
+  )
+
+  const userIds = [...new Set(ordersList.map(o => o.user_id).filter(Boolean) as string[])]
+  if (userIds.length === 0)
+    return NextResponse.json(ordersList.map(o => ({ ...o, receipt_signed_url: signedMap[o.id] ?? null })))
 
   const [profilesRes, authRes] = await Promise.all([
     admin.from('profiles').select('id,full_name,phone,city,address').in('id', userIds),
@@ -42,13 +54,14 @@ export async function GET(request: Request) {
   const emailMap: Record<string, string> = {}
   for (const u of authRes.data?.users ?? []) emailMap[u.id] = u.email ?? ''
 
-  const enriched = (orders ?? []).map(o => ({
+  const enriched = ordersList.map(o => ({
     ...o,
     customer_name:    o.user_id ? (profileMap[o.user_id]?.full_name ?? null)  : null,
     customer_email:   o.user_id ? (emailMap[o.user_id] ?? null)               : (o.guest_email ?? null),
     customer_phone:   o.user_id ? (profileMap[o.user_id]?.phone ?? null)      : null,
     customer_city:    o.user_id ? (profileMap[o.user_id]?.city ?? null)       : null,
     customer_address: o.user_id ? (profileMap[o.user_id]?.address ?? null)    : null,
+    receipt_signed_url: signedMap[o.id] ?? null,
   }))
 
   return NextResponse.json(enriched)

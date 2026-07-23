@@ -2024,6 +2024,39 @@ function AdminContent() {
                   </div>
                 </div>
 
+                {/* Bank-transfer receipt */}
+                {(selectedOrder.payment_method === 'wire' || selectedOrder.receipt_url) && (
+                  <div>
+                    <p style={{ ...SECTION_LABEL, color: D.muted }}>Payment Receipt</p>
+                    {selectedOrder.receipt_signed_url ? (
+                      <div>
+                        {selectedOrder.receipt_url?.toLowerCase().endsWith('.pdf') ? (
+                          <a href={selectedOrder.receipt_signed_url} target="_blank" rel="noopener noreferrer"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: D.drawerBg, border: `1.5px solid ${D.border}`, borderRadius: 10, padding: '12px 16px', color: 'var(--teal)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+                            <i className="fa-solid fa-file-pdf" /> View receipt (PDF)
+                          </a>
+                        ) : (
+                          <a href={selectedOrder.receipt_signed_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={selectedOrder.receipt_signed_url} alt="Payment receipt"
+                              style={{ width: '100%', maxHeight: 320, objectFit: 'contain', borderRadius: 10, border: `1.5px solid ${D.border}`, background: D.drawerBg }} />
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 6, color: 'var(--teal)', fontWeight: 700, fontSize: 13 }}>
+                              <i className="fa-solid fa-up-right-from-square" /> Open full size
+                            </span>
+                          </a>
+                        )}
+                        <p style={{ fontSize: 12, color: '#15803d', fontWeight: 700, marginTop: 8 }}>
+                          <i className="fa-solid fa-circle-check" style={{ marginRight: 6 }} /> Receipt uploaded — review it before marking the order as paid.
+                        </p>
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: 13, color: D.muted, background: D.drawerBg, border: `1.5px dashed ${D.border}`, borderRadius: 10, padding: '14px 16px' }}>
+                        <i className="fa-solid fa-hourglass-half" style={{ marginRight: 7 }} /> No receipt uploaded yet.
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Awaiting bank transfer — one-click confirm */}
                 {selectedOrder.status === 'pending_payment' && (
                   <div style={{ background: '#fff8ec', border: '1.5px solid #fcd9a3', borderRadius: 12, padding: '14px 16px' }}>

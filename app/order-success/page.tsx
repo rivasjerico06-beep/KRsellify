@@ -287,13 +287,39 @@ export default function OrderSuccessPage() {
   const [authToken, setAuthToken] = useState<string | undefined>(undefined)
   const [showBonusModal, setShowBonusModal] = useState(false)
   const redirectRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [receiptUploading, setReceiptUploading] = useState(false)
+  const [receiptDone, setReceiptDone] = useState(false)
+  const [receiptError, setReceiptError] = useState('')
+  const receiptInputRef = useRef<HTMLInputElement>(null)
+
+  async function uploadReceipt(file: File) {
+    if (!order?.id) return
+    setReceiptError('')
+    setReceiptUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append('order_id', order.id)
+      fd.append('file', file)
+      const res = await fetch('/api/orders/upload-receipt', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (res.ok && data.ok) setReceiptDone(true)
+      else setReceiptError(data.error ?? 'Upload failed. Please try again.')
+    } catch {
+      setReceiptError('Upload failed. Please try again.')
+    } finally {
+      setReceiptUploading(false)
+    }
+  }
 
   useEffect(() => {
     // Load order from localStorage
+    let isWireOrder = false
     try {
       const raw = localStorage.getItem('themaga_last_order')
       if (raw) {
-        setOrder(JSON.parse(raw))
+        const parsed = JSON.parse(raw)
+        setOrder(parsed)
+        isWireOrder = parsed?.payment_method === 'wire'
         localStorage.removeItem('themaga_last_order')
       }
     } catch {}
@@ -313,7 +339,8 @@ export default function OrderSuccessPage() {
     })
 
     const t = setTimeout(() => setShowConfetti(false), 4000)
-    redirectRef.current = setTimeout(() => router.push('/'), 30000)
+    // Wire orders stay put — the customer needs time to read the bank details and upload a receipt
+    if (!isWireOrder) redirectRef.current = setTimeout(() => router.push('/'), 30000)
 
     return () => { clearTimeout(t); if (redirectRef.current) clearTimeout(redirectRef.current) }
   }, [router])
@@ -406,6 +433,33 @@ export default function OrderSuccessPage() {
               <strong>Important:</strong> {order.wire?.memoNote ?? 'Include your order reference number in the transfer memo so we can match your payment.'} We&apos;ve also emailed these details to you. Your
               order ships once we confirm the transfer.
             </p>
+
+            {/* Upload transfer receipt */}
+            <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #fcd9a3' }}>
+              <p style={{ fontSize: 13, fontWeight: 800, color: '#92400e', marginBottom: 6 }}>
+                <i className="fa-solid fa-receipt" style={{ marginRight: 7 }} />
+                Upload your transfer receipt
+              </p>
+              {receiptDone ? (
+                <p style={{ fontSize: 13, color: '#15803d', fontWeight: 700, lineHeight: 1.6 }}>
+                  <i className="fa-solid fa-circle-check" style={{ marginRight: 6 }} />
+                  Receipt uploaded! We&apos;ll confirm your order as soon as we verify it. Thank you!
+                </p>
+              ) : (
+                <>
+                  <p style={{ fontSize: 12, color: '#7c5b16', lineHeight: 1.6, marginBottom: 10 }}>
+                    After you send the wire, upload a screenshot or PDF of the receipt here so we can confirm your order faster. (JPG / PNG / PDF, max 5MB.)
+                  </p>
+                  <input ref={receiptInputRef} type="file" accept="image/*,application/pdf" style={{ display: 'none' }}
+                    onChange={e => { const f = e.target.files?.[0]; if (f) uploadReceipt(f) }} />
+                  <button type="button" disabled={receiptUploading} onClick={() => receiptInputRef.current?.click()}
+                    style={{ background: '#92400e', color: 'white', border: 'none', borderRadius: 10, padding: '11px 18px', fontSize: 14, fontWeight: 700, cursor: receiptUploading ? 'wait' : 'pointer', opacity: receiptUploading ? 0.7 : 1, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <i className={`fa-solid ${receiptUploading ? 'fa-spinner fa-spin' : 'fa-upload'}`} /> {receiptUploading ? 'Uploading…' : 'Choose file & upload'}
+                  </button>
+                  {receiptError && <p style={{ fontSize: 12, color: '#b91c1c', fontWeight: 700, marginTop: 8 }}>{receiptError}</p>}
+                </>
+              )}
+            </div>
           </motion.div>
         )}
 
