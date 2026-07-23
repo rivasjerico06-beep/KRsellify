@@ -10,6 +10,7 @@ function getResend() {
 }
 const FROM = process.env.EMAIL_FROM ?? 'Maga Offers <orders@themagaoffers.com>'
 const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL ?? 'rivasjerico06@gmail.com'
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.themagaoffers.net').replace(/\/$/, '')
 
 export async function sendOrderConfirmation({
   to,
@@ -209,6 +210,16 @@ export async function sendWireInstructions({
       <div style="background:#fff8ec;border:1px solid #fcd9a3;border-radius:12px;padding:16px 20px;margin-bottom:20px">
         <p style="font-size:13px;color:#92400e;margin:0;line-height:1.6">
           <strong>Important:</strong> ${b.memoNote}
+        </p>
+      </div>
+
+      <div style="text-align:center;margin-bottom:22px">
+        <a href="${SITE_URL}/upload-receipt?order=${orderId}"
+          style="display:inline-block;background:#093459;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;padding:14px 30px;border-radius:10px">
+          📎 Upload your payment receipt
+        </a>
+        <p style="font-size:12px;color:#8ba0aa;margin:10px 0 0;line-height:1.6">
+          After you send the wire, upload a screenshot or PDF of the receipt so we can confirm your order faster.<br>You can use this link any time.
         </p>
       </div>
 

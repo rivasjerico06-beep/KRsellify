@@ -12,6 +12,30 @@ const ALLOWED: Record<string, string> = {
 }
 const MAX_BYTES = 5 * 1024 * 1024 // 5MB
 
+// Minimal order info for the standalone upload page (shown via the email link).
+// The order id is an unguessable UUID, which authorizes the lookup.
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const orderId = (searchParams.get('order_id') ?? searchParams.get('order') ?? '').trim()
+  if (!orderId) return NextResponse.json({ error: 'Missing order.' }, { status: 400 })
+
+  const admin = getAdminSupabase()
+  const { data: order } = await admin
+    .from('orders')
+    .select('id, order_number, total, payment_method, receipt_url, status')
+    .eq('id', orderId)
+    .maybeSingle()
+  if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 })
+
+  return NextResponse.json({
+    order_number: order.order_number ?? null,
+    total: Number(order.total),
+    payment_method: order.payment_method ?? null,
+    has_receipt: !!order.receipt_url,
+    status: order.status ?? null,
+  })
+}
+
 // A customer uploads proof of their bank wire. Guest-friendly: the order id is an
 // unguessable UUID, which is the authorization. The file is stored in the private
 // "receipts" bucket and its path is attached to the order for the admin to review.
