@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
 import { useFlyToCart } from '@/components/FlyToCart'
+import { usePayLinkConfig } from '@/lib/use-pay-link'
 import { Product } from '@/lib/types'
 import Stars from '@/components/Stars'
 
@@ -57,6 +58,10 @@ export default function ProductCard({ product, index }: { product: Product; inde
   }
 
   const savings = product.old_price ? Math.round((1 - product.price / product.old_price) * 100) : 0
+  // One-product-at-a-time mode replaces the card's cart button with a plain
+  // link through to the product page, where Buy Now is the only route.
+  const payLinkCfg = usePayLinkConfig()
+  const showBuyButton = payLinkCfg !== null && !payLinkCfg.hideAddToCart
 
   return (
     <motion.div
@@ -158,6 +163,17 @@ export default function ProductCard({ product, index }: { product: Product; inde
             </div>
           </div>
 
+          {!showBuyButton ? (
+            <Link href={`/products/${product.id}`}
+              style={{
+                background: 'var(--navy)', color: 'white', padding: '11px 20px', borderRadius: 50,
+                fontSize: 13, fontWeight: 700, letterSpacing: '0.05em', textDecoration: 'none',
+                textTransform: 'uppercase', whiteSpace: 'nowrap', fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.22s',
+              }}>
+              <i className="fa-solid fa-bolt" /> Buy
+            </Link>
+          ) : (
           <AnimatePresence mode="wait">
             <motion.button
               ref={buyBtnRef}
@@ -180,6 +196,7 @@ export default function ProductCard({ product, index }: { product: Product; inde
                 : <><i className="fa-solid fa-cart-plus" /> Buy</>}
             </motion.button>
           </AnimatePresence>
+          )}
         </div>
       </motion.div>
     </motion.div>

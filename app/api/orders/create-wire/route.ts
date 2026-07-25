@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAdminSupabase } from '@/lib/supabase-admin'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { normalizeWireConfig } from '@/lib/wire-config'
-import { normalizePayLinkConfig, isSafePayLinkUrl, payLinkMatches } from '@/lib/pay-link'
+import { normalizePayLinkConfig, findPayLink } from '@/lib/pay-link'
 import { getSiteConfig } from '@/lib/site-config'
 import { sendWireInstructions } from '@/lib/email'
 
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     const wire = normalizeWireConfig(siteCfg.wire_config)
     const payLink = normalizePayLinkConfig(siteCfg.pay_link)
     const wireAvailable = wire.enabled && !wire.maintenance
-    const payLinkAvailable = payLink.enabled && !!payLink.url && isSafePayLinkUrl(payLink.url)
+    const payLinkAvailable = payLink.enabled && payLink.links.length > 0
     if (!wireAvailable && !payLinkAvailable)
       return NextResponse.json({ error: 'Wire transfer is not available' }, { status: 400 })
 
@@ -131,8 +131,8 @@ export async function POST(request: Request) {
     // this, a crafted request could bank a discounted order against a link
     // that would take the full price (or vice versa).
     const payableTotal = Number(amount.toFixed(2))
-    const payLinkOk = payLinkAvailable && payLinkMatches(payLink, lineItems, payableTotal)
-    if (!wireAvailable && !payLinkOk)
+    const matchedLink = payLinkAvailable ? findPayLink(payLink, lineItems, payableTotal) : null
+    if (!wireAvailable && !matchedLink)
       return NextResponse.json(
         { error: 'This order can’t be paid online right now. Please contact support.' },
         { status: 400 },
@@ -172,7 +172,7 @@ export async function POST(request: Request) {
       orderId: order.id,
       orderNumber: order.order_number,
       total: payableTotal,
-      payLinkUrl: payLinkOk ? payLink.url : undefined,
+      payLinkUrl: matchedLink?.url,
     }).catch(() => {})
 
     return NextResponse.json({
@@ -180,7 +180,7 @@ export async function POST(request: Request) {
       order_number: order.order_number,
       total: payableTotal,
       discount_amount: Number(discountAmount.toFixed(2)),
-      pay_link_url: payLinkOk ? payLink.url : null,
+      pay_link_url: matchedLink?.url ?? null,
     })
   } catch (err) {
     console.error('[orders/create-wire]', err)

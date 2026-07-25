@@ -1,12 +1,14 @@
 ﻿'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 import { useFlyToCart } from '@/components/FlyToCart'
+import { usePayLinkConfig } from '@/lib/use-pay-link'
 import { Product } from '@/lib/types'
 import ProductCard from './ProductCard'
 import BuyNowModal from './BuyNowModal'
@@ -35,9 +37,16 @@ function Stars({ rating, large }: { rating: number; large?: boolean }) {
 }
 
 export default function ProductDetailClient({ product, related }: { product: Product; related: Product[] }) {
-  const { cart, addToCart, addBundle, heartToggle, showToast, setCartOpen } = useCart()
+  const { cart, addToCart, addBundle, clearCart, heartToggle, showToast, setCartOpen } = useCart()
   const { user, isApprovedAgent, agentProfile } = useAuth()
   const { flyToCart } = useFlyToCart()
+  const router = useRouter()
+  // One-product-at-a-time mode: each pay link is priced for a single product,
+  // so a stacked cart could never match one. Null while the config loads —
+  // the cart button only appears once we know it is allowed.
+  const payLinkCfg = usePayLinkConfig()
+  const oneAtATime = payLinkCfg?.hideAddToCart === true
+  const showAddToCart = payLinkCfg !== null && !payLinkCfg.hideAddToCart
   const addBtnRef = useRef<HTMLButtonElement>(null)
   const [qty, setQty] = useState(1)
   const [selectedTierIdx, setSelectedTierIdx] = useState(0)
@@ -82,12 +91,16 @@ export default function ProductDetailClient({ product, related }: { product: Pro
   }
 
   function handleBuyNow() {
+    // In one-at-a-time mode the cart is replaced, not appended to: leftovers
+    // from an earlier visit would push the total off the pay link's amount.
+    if (oneAtATime) clearCart()
     if (selectedTier) {
       addBundle(product, selectedTier.label, selectedTier.qty, selectedTier.bundle_total)
     } else {
       for (let i = 0; i < qty; i++) addToCart(product, 'btn')
     }
-    setCartOpen(true)
+    if (oneAtATime) router.push('/checkout')
+    else setCartOpen(true)
   }
 
   function handleHeart() {
@@ -315,6 +328,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
             </div>
           ) : (
           <div style={{ display: 'flex', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>
+            {showAddToCart && (
             <AnimatePresence mode="wait">
               <motion.button
                 ref={addBtnRef}
@@ -332,12 +346,24 @@ export default function ProductDetailClient({ product, related }: { product: Pro
                   : <><i className="fa-solid fa-cart-plus" /> Add to Cart</>}
               </motion.button>
             </AnimatePresence>
+            )}
 
             <motion.button onClick={handleBuyNow}
-              whileHover={{ borderColor: 'var(--gold)', color: 'var(--gold)', boxShadow: '0 4px 18px rgba(202,138,4,0.2)' }}
+              whileHover={showAddToCart
+                ? { borderColor: 'var(--gold)', color: 'var(--gold)', boxShadow: '0 4px 18px rgba(202,138,4,0.2)' }
+                : { boxShadow: '0 8px 28px rgba(202,138,4,0.55)' }}
               whileTap={{ scale: 0.97 }}
               disabled={!product.in_stock}
-              style={{ flex: 1, minWidth: 160, background: 'transparent', color: 'var(--heading)', border: '2px solid var(--heading)', padding: '18px 24px', borderRadius: 50, fontSize: 16, fontWeight: 700, letterSpacing: '0.07em', cursor: product.in_stock ? 'pointer' : 'not-allowed', textTransform: 'uppercase', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: product.in_stock ? 1 : 0.5, transition: 'all 0.22s' }}>
+              style={{
+                flex: 1, minWidth: 160, padding: '18px 24px', borderRadius: 50, fontSize: 16, fontWeight: 700,
+                letterSpacing: '0.07em', cursor: product.in_stock ? 'pointer' : 'not-allowed', textTransform: 'uppercase',
+                fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                opacity: product.in_stock ? 1 : 0.5, transition: 'all 0.22s',
+                // Sole call to action when the cart button is hidden, so it takes the primary styling
+                ...(showAddToCart
+                  ? { background: 'transparent', color: 'var(--heading)', border: '2px solid var(--heading)' }
+                  : { background: 'linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%)', color: 'white', border: 'none', boxShadow: '0 4px 18px rgba(202,138,4,0.32)' }),
+              }}>
               <i className="fa-solid fa-bolt" /> Buy Now
             </motion.button>
           </div>

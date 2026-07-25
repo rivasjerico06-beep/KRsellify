@@ -11,7 +11,7 @@ import { useAuth } from '@/context/AuthContext'
 import { PAYMENTS_UNDER_MAINTENANCE } from '@/lib/payments-maintenance'
 import PaymentMaintenanceNotice from '@/components/PaymentMaintenanceNotice'
 import { SiteWireConfig, normalizeWireConfig } from '@/lib/wire-config'
-import { SitePayLinkConfig, normalizePayLinkConfig, payLinkMatches } from '@/lib/pay-link'
+import { SitePayLinkConfig, normalizePayLinkConfig, findPayLink } from '@/lib/pay-link'
 
 const COUNTRIES = [
   'United States','Philippines','Canada','United Kingdom','Australia','New Zealand',
@@ -99,7 +99,7 @@ export default function CheckoutPage() {
           setPayLinkCfg(pl)
           // A live pay link also counts as an out-of-band method, so keep the
           // customer off the PayPal branch even if bank details are switched off.
-          if (pl.enabled && pl.url) setPayMethod('wire')
+          if (pl.enabled && pl.links.length) setPayMethod('wire')
         }
       })
       .catch(() => {})
@@ -155,8 +155,10 @@ export default function CheckoutPage() {
   // exact cart totals exactly what the link charges. A VIP discount, a coupon
   // or a quantity above one moves the total and sends the customer back to the
   // bank-transfer flow rather than to a link that would take the wrong sum.
-  const payLinkActive = !!payLinkCfg
-    && payLinkMatches(payLinkCfg, cart.map(i => ({ id: i.id })), Number(finalTotal.toFixed(2)))
+  const matchedPayLink = payLinkCfg
+    ? findPayLink(payLinkCfg, cart.map(i => ({ id: i.id })), Number(finalTotal.toFixed(2)))
+    : null
+  const payLinkActive = !!matchedPayLink
 
   async function validateCoupon() {
     if (!couponCode.trim()) return
@@ -257,7 +259,7 @@ export default function CheckoutPage() {
   async function submitPayLinkOrder() {
     if (!requireEmail()) return
     if (!requireShipping()) return
-    if (!payLinkCfg || !payLinkActive) return
+    if (!payLinkCfg || !matchedPayLink) return
 
     // Opened synchronously so the browser still attributes it to the user's
     // click; a window.open() after the await gets eaten by popup blockers.
@@ -287,7 +289,7 @@ export default function CheckoutPage() {
         showToast(order.error ?? 'Could not place order. Please try again.')
         return
       }
-      const destination: string = order.pay_link_url ?? payLinkCfg.url
+      const destination: string = order.pay_link_url ?? matchedPayLink.url
       try {
         localStorage.setItem('themaga_last_order', JSON.stringify({
           id: order.id ?? '',
