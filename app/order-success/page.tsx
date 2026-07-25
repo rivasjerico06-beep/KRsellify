@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { SiteWireConfig } from '@/lib/wire-config'
+import { usePayLinkConfig } from '@/lib/use-pay-link'
 
 const COLORS = ['#58948F', '#093459', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981', '#f97316', '#06b6d4']
 
@@ -288,6 +289,10 @@ export default function OrderSuccessPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [authToken, setAuthToken] = useState<string | undefined>(undefined)
   const [showBonusModal, setShowBonusModal] = useState(false)
+  // The post-order upsell sells 30%/50% coupons — hidden along with every other
+  // promo, since a discount pushes a repeat order off its fixed pay-link amount.
+  const payLinkCfg = usePayLinkConfig()
+  const showPromos = payLinkCfg !== null && !payLinkCfg.hidePromos
   const redirectRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [receiptUploading, setReceiptUploading] = useState(false)
   const [receiptDone, setReceiptDone] = useState(false)
@@ -360,7 +365,7 @@ export default function OrderSuccessPage() {
 
       {/* Gift card bonus modal */}
       <AnimatePresence>
-        {showBonusModal && (
+        {showBonusModal && showPromos && (
           <GiftCardBonusModal
             authToken={authToken}
             onClose={() => setShowBonusModal(false)}
