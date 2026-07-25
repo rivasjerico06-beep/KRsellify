@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import InfoPageLayout from '@/components/InfoPageLayout'
+import { usePayLinkConfig } from '@/lib/use-pay-link'
 
 const FAQS = [
   {
@@ -73,10 +74,16 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 }
 
 export default function FaqPage() {
+  const payLinkCfg = usePayLinkConfig()
+  // Drop the promo-code answer while coupons and VIP are switched off, so the
+  // FAQ never advertises a discount the checkout won't accept.
+  const faqs = payLinkCfg?.hidePromos
+    ? FAQS.filter(f => !/coupon|promo|discount|vip/i.test(`${f.q} ${f.a}`))
+    : FAQS
   return (
     <InfoPageLayout title="Frequently Asked Questions" subtitle="Can't find what you're looking for? Email us at support@themagaoffers.net" breadcrumb="FAQ">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {FAQS.map(f => <FaqItem key={f.q} q={f.q} a={f.a} />)}
+        {faqs.map(f => <FaqItem key={f.q} q={f.q} a={f.a} />)}
       </div>
     </InfoPageLayout>
   )

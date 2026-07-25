@@ -1934,8 +1934,23 @@ function AdminContent() {
                           One product at a time (hide &ldquo;Add to Cart&rdquo;)
                         </span>
                         <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5, display: 'block', marginTop: 3 }}>
-                          Hides every Add to Cart button. <strong>Buy Now</strong> replaces the cart with that one item and
-                          goes straight to checkout, so the total always matches one of the links below.
+                          Hides every Add to Cart button <em>and the cart icon in the header</em>. <strong>Buy Now</strong>
+                          replaces the cart with that one item and goes straight to checkout, so the total always matches
+                          one of the links below.
+                        </span>
+                      </span>
+                    </label>
+
+                    <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 20, cursor: 'pointer', background: payLinkForm.hidePromos ? '#eff6ff' : 'transparent', border: `1px solid ${payLinkForm.hidePromos ? '#bfdbfe' : 'transparent'}`, borderRadius: 8, padding: payLinkForm.hidePromos ? '10px 12px' : '0' }}>
+                      <input type="checkbox" checked={payLinkForm.hidePromos} onChange={e => setPayLinkForm({ ...payLinkForm, hidePromos: e.target.checked })} style={{ width: 18, height: 18, cursor: 'pointer', marginTop: 2 }} />
+                      <span>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: payLinkForm.hidePromos ? '#1d4ed8' : 'var(--text-dark)', display: 'block' }}>
+                          Hide all coupon &amp; VIP mentions
+                        </span>
+                        <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5, display: 'block', marginTop: 3 }}>
+                          Removes the promo-code box at checkout, the VIP header links, VIP prices on products, the FAQ
+                          discount answer and the loyalty panels. Discounts move totals off the fixed link amounts, so
+                          leave this on while pay links are live. Nothing is deleted — coupons and VIP still work in admin.
                         </span>
                       </span>
                     </label>

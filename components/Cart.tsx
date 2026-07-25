@@ -5,9 +5,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
+import { usePayLinkConfig } from '@/lib/use-pay-link'
 
 export default function Cart() {
   const { cart, cartOpen, setCartOpen, cartTotal, updateQty, removeFromCart } = useCart()
+  const payLinkCfg = usePayLinkConfig()
+  const showPromos = payLinkCfg !== null && !payLinkCfg.hidePromos
   const router = useRouter()
 
   function goToCheckout() {
@@ -110,6 +113,7 @@ export default function Cart() {
                   </div>
 
                   {/* VIP upsell */}
+                  {showPromos && (
                   <Link href="/vip" onClick={() => setCartOpen(false)}
                     style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'linear-gradient(90deg, #0f2441 0%, #1a3a5c 100%)', borderRadius: 14, padding: '13px 16px', textDecoration: 'none', marginBottom: 14, border: '1px solid rgba(77,217,184,0.2)' }}>
                     <i className="fa-solid fa-crown" style={{ color: '#fbbf24', fontSize: 18, flexShrink: 0 }} />
@@ -122,6 +126,7 @@ export default function Cart() {
                       </p>
                     </div>
                   </Link>
+                  )}
 
                   {/* Proceed to Checkout */}
                   <motion.button

@@ -159,6 +159,7 @@ export default function CheckoutPage() {
     ? findPayLink(payLinkCfg, cart.map(i => ({ id: i.id })), Number(finalTotal.toFixed(2)))
     : null
   const payLinkActive = !!matchedPayLink
+  const showPromos = payLinkCfg !== null && !payLinkCfg.hidePromos
 
   async function validateCoupon() {
     if (!couponCode.trim()) return
@@ -436,13 +437,13 @@ export default function CheckoutPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-dark)', letterSpacing: '0.04em' }}>ORDER TOTAL</span>
               <div style={{ textAlign: 'right' }}>
-                {isVip && (
+                {isVip && showPromos && (
                   <div style={{ fontSize: 14, color: '#d97706', fontWeight: 700, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <i className="fa-solid fa-crown" style={{ fontSize: 12 }} />
                     VIP 30% off — −${vipDiscountAmount.toFixed(2)}
                   </div>
                 )}
-                {couponDiscountAmount > 0 && (
+                {couponDiscountAmount > 0 && showPromos && (
                   <div style={{ fontSize: 14, color: '#059669', fontWeight: 700, marginBottom: 4 }}>
                     <i className="fa-solid fa-tag" style={{ marginRight: 5, fontSize: 12 }} />
                     Coupon −${couponDiscountAmount.toFixed(2)}
@@ -481,6 +482,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* Coupon code */}
+          {showPromos && (
           <div style={{ background: 'var(--white)', borderRadius: 12, border: '1px solid var(--gray)', padding: '20px 24px', marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <p style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-dark)', marginBottom: 14 }}>
               <i className="fa-solid fa-tag" style={{ marginRight: 8, color: 'var(--teal)' }} />
@@ -508,6 +510,7 @@ export default function CheckoutPage() {
               </p>
             )}
           </div>
+          )}
 
           <p style={{ fontSize: 15, color: 'var(--text-light)' }}>
             Want to add more items?{' '}

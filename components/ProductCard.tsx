@@ -62,6 +62,7 @@ export default function ProductCard({ product, index }: { product: Product; inde
   // link through to the product page, where Buy Now is the only route.
   const payLinkCfg = usePayLinkConfig()
   const showBuyButton = payLinkCfg !== null && !payLinkCfg.hideAddToCart
+  const showPromos = payLinkCfg !== null && !payLinkCfg.hidePromos
 
   return (
     <motion.div
@@ -157,10 +158,12 @@ export default function ProductCard({ product, index }: { product: Product; inde
                 ${product.old_price.toFixed(2)}
               </span>
             )}
-            <div style={{ fontSize: 11, color: '#4dd9b8', fontWeight: 700, marginTop: 3 }}>
-              <i className="fa-solid fa-crown" style={{ fontSize: 9, color: '#fbbf24', marginRight: 3 }} />
-              VIP: ${(product.price * 0.7).toFixed(2)}
-            </div>
+            {showPromos && (
+              <div style={{ fontSize: 11, color: '#4dd9b8', fontWeight: 700, marginTop: 3 }}>
+                <i className="fa-solid fa-crown" style={{ fontSize: 9, color: '#fbbf24', marginRight: 3 }} />
+                VIP: ${(product.price * 0.7).toFixed(2)}
+              </div>
+            )}
           </div>
 
           {!showBuyButton ? (

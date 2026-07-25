@@ -47,6 +47,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
   const payLinkCfg = usePayLinkConfig()
   const oneAtATime = payLinkCfg?.hideAddToCart === true
   const showAddToCart = payLinkCfg !== null && !payLinkCfg.hideAddToCart
+  const showPromos = payLinkCfg !== null && !payLinkCfg.hidePromos
   const addBtnRef = useRef<HTMLButtonElement>(null)
   const [qty, setQty] = useState(1)
   const [selectedTierIdx, setSelectedTierIdx] = useState(0)
@@ -229,6 +230,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           </div>
 
           {/* VIP savings callout */}
+          {showPromos && (
           <Link href="/vip" style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'linear-gradient(90deg, #0f2441 0%, #1a3a5c 100%)', borderRadius: 14, padding: '14px 20px', textDecoration: 'none', marginBottom: 24, border: '1px solid rgba(77,217,184,0.2)' }}>
             <i className="fa-solid fa-crown" style={{ color: '#fbbf24', fontSize: 20, flexShrink: 0 }} />
             <div>
@@ -242,6 +244,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
             </div>
             <i className="fa-solid fa-chevron-right" style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, marginLeft: 'auto', flexShrink: 0 }} />
           </Link>
+          )}
 
           {/* Stock */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>

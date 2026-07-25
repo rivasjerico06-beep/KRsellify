@@ -20,7 +20,8 @@ export interface PayLinkEntry {
 
 export interface SitePayLinkConfig {
   enabled: boolean
-  hideAddToCart: boolean // one-product-at-a-time mode: Buy Now only, no cart stacking
+  hideAddToCart: boolean // one-product-at-a-time mode: Buy Now only, no cart stacking or cart icon
+  hidePromos: boolean // hide every coupon and VIP mention across the storefront
   links: PayLinkEntry[]
   label: string // button text
   note: string // extra instruction shown under the button
@@ -29,6 +30,7 @@ export interface SitePayLinkConfig {
 export const DEFAULT_PAY_LINK_CONFIG: SitePayLinkConfig = {
   enabled: false,
   hideAddToCart: false,
+  hidePromos: false,
   links: [],
   label: 'Pay',
   note: '',
@@ -69,6 +71,7 @@ export function normalizePayLinkConfig(value: unknown): SitePayLinkConfig {
   return {
     enabled: v.enabled === true,
     hideAddToCart: v.hideAddToCart === true,
+    hidePromos: v.hidePromos === true,
     links: rawLinks.map(normalizeEntry).filter((e): e is PayLinkEntry => e !== null),
     label: str(v.label, DEFAULT_PAY_LINK_CONFIG.label) || DEFAULT_PAY_LINK_CONFIG.label,
     note: str(v.note),

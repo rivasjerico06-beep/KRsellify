@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import AuthGuard from '@/components/AuthGuard'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { Order, Coupon } from '@/lib/types'
+import { usePayLinkConfig } from '@/lib/use-pay-link'
 
 export default function AccountPage() {
   return (
@@ -28,6 +29,8 @@ function getTier(spent: number) {
 
 function AccountContent() {
   const { user, profile, agentProfile, isAdmin, isApprovedAgent, refreshProfile, signOut } = useAuth()
+  const payLinkCfg = usePayLinkConfig()
+  const showPromos = payLinkCfg !== null && !payLinkCfg.hidePromos
   const supabase = getBrowserSupabase()
 
   const [fullName, setFullName] = useState('')
@@ -166,7 +169,7 @@ function AccountContent() {
                   <span style={{ fontSize: 12, fontWeight: 700, background: profile?.role === 'admin' ? 'var(--navy)' : profile?.role === 'agent' ? 'var(--teal)' : 'var(--gray)', color: profile?.role === 'customer' ? 'var(--text-mid)' : 'white', padding: '2px 10px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                     {profile?.role ?? 'customer'}
                   </span>
-                  {isVip && (
+                  {isVip && showPromos && (
                     <span style={{ fontSize: 12, fontWeight: 700, background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: 'white', padding: '2px 10px', borderRadius: 20, letterSpacing: '0.06em', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                       <i className="fa-solid fa-crown" style={{ fontSize: 10 }} /> VIP
                     </span>
@@ -225,16 +228,18 @@ function AccountContent() {
               ) : (
                 <p style={{ fontSize: 12, color: currentTier.color, fontWeight: 700 }}>🏆 You&apos;ve reached the highest tier!</p>
               )}
+              {showPromos && (
               <div style={{ marginTop: 14, padding: '10px 14px', background: 'var(--off-white)', borderRadius: 12, fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6 }}>
                 <p style={{ fontWeight: 700, marginBottom: 4, color: 'var(--heading)' }}>Discount Tiers</p>
                 <p>Silver ($500+) → 30% off coupon</p>
                 <p>Gold ($1,000+) → 50% off coupon</p>
                 <p>Platinum ($2,000+) → VIP status + 50% off coupon</p>
               </div>
+              )}
             </div>
 
             {/* Available coupons */}
-            {coupons.length > 0 && (
+            {coupons.length > 0 && showPromos && (
               <div style={{ background: 'var(--white)', borderRadius: 20, padding: 28, boxShadow: '0 4px 24px rgba(9,52,89,0.08)' }}>
                 <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>
                   <i className="fa-solid fa-tag" style={{ marginRight: 6, color: 'var(--teal)' }} />
