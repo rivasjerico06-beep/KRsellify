@@ -11,6 +11,7 @@ import { useAuth } from '@/context/AuthContext'
 import { PAYMENTS_UNDER_MAINTENANCE } from '@/lib/payments-maintenance'
 import PaymentMaintenanceNotice from '@/components/PaymentMaintenanceNotice'
 import { SiteWireConfig, normalizeWireConfig } from '@/lib/wire-config'
+import { SitePayLinkConfig, normalizePayLinkConfig, payLinkMatches } from '@/lib/pay-link'
 
 const COUNTRIES = [
   'United States','Philippines','Canada','United Kingdom','Australia','New Zealand',
@@ -77,18 +78,28 @@ export default function CheckoutPage() {
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const receiptInputRef = useRef<HTMLInputElement>(null)
   const wireSucceeded = useRef(false)
+  const [payLinkCfg, setPayLinkCfg] = useState<SitePayLinkConfig | null>(null)
 
-  // Load bank-transfer config (admin-editable, from site_config)
+  // Load bank-transfer + pay-link config (admin-editable, from site_config)
   useEffect(() => {
     fetch('/api/site-config')
       .then(r => r.json())
       .then((rows: { key: string; value: unknown }[]) => {
-        const row = Array.isArray(rows) ? rows.find(x => x.key === 'wire_config') : null
+        if (!Array.isArray(rows)) return
+        const row = rows.find(x => x.key === 'wire_config')
         if (row) {
           const cfg = normalizeWireConfig(row.value)
           setWireCfg(cfg)
           // Bank transfer is the only payment method offered — force it when enabled
           if (cfg.enabled) setPayMethod('wire')
+        }
+        const plRow = rows.find(x => x.key === 'pay_link')
+        if (plRow) {
+          const pl = normalizePayLinkConfig(plRow.value)
+          setPayLinkCfg(pl)
+          // A live pay link also counts as an out-of-band method, so keep the
+          // customer off the PayPal branch even if bank details are switched off.
+          if (pl.enabled && pl.url) setPayMethod('wire')
         }
       })
       .catch(() => {})
@@ -139,6 +150,13 @@ export default function CheckoutPage() {
   const couponDiscountAmount = couponDiscount > 0 ? afterVipTotal * (couponDiscount / 100) : 0
   const discountAmount = vipDiscountAmount + couponDiscountAmount
   const finalTotal = cartTotal - discountAmount
+
+  // The hosted pay link collects a fixed amount, so it only applies when this
+  // exact cart totals exactly what the link charges. A VIP discount, a coupon
+  // or a quantity above one moves the total and sends the customer back to the
+  // bank-transfer flow rather than to a link that would take the wrong sum.
+  const payLinkActive = !!payLinkCfg
+    && payLinkMatches(payLinkCfg, cart.map(i => ({ id: i.id })), Number(finalTotal.toFixed(2)))
 
   async function validateCoupon() {
     if (!couponCode.trim()) return
@@ -224,6 +242,76 @@ export default function CheckoutPage() {
       clearCart()
       router.push('/order-success')
     } catch {
+      showToast('Could not place order. Please try again.')
+    } finally {
+      setWireSubmitting(false)
+    }
+  }
+
+  /**
+   * Pay-link checkout. The order is recorded FIRST — otherwise the customer
+   * pays on an external page and we have no name, address or line items to
+   * ship against — then the payment page is opened. It stays 'pending_payment'
+   * until an admin confirms the money arrived, exactly like a bank transfer.
+   */
+  async function submitPayLinkOrder() {
+    if (!requireEmail()) return
+    if (!requireShipping()) return
+    if (!payLinkCfg || !payLinkActive) return
+
+    // Opened synchronously so the browser still attributes it to the user's
+    // click; a window.open() after the await gets eaten by popup blockers.
+    const payWindow = window.open('', '_blank')
+    setWireSubmitting(true)
+    try {
+      const res = await fetch('/api/orders/create-wire', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          items: cart.map(i => ({
+            id: i.id, qty: i.qty, bundle_label: i.bundle_label,
+            name: i.name, img: i.img, via: i.via, category: i.category, price: i.bundle_price ?? i.price,
+          })),
+          coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
+          email: email.trim(),
+          shipping_address: ship,
+          agent_code: readAgentRef(),
+        }),
+      })
+      const order = await res.json()
+      if (!res.ok) {
+        payWindow?.close()
+        showToast(order.error ?? 'Could not place order. Please try again.')
+        return
+      }
+      const destination: string = order.pay_link_url ?? payLinkCfg.url
+      try {
+        localStorage.setItem('themaga_last_order', JSON.stringify({
+          id: order.id ?? '',
+          order_number: order.order_number ?? null,
+          total: order.total ?? finalTotal,
+          discount: order.discount_amount ?? discountAmount,
+          itemCount: cart.reduce((s, i) => s + i.qty, 0),
+          items: cart.map(i => ({ name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img })),
+          guest_email: email.trim(),
+          shipping_address: ship,
+          payment_method: 'wire',
+          reference: order.order_number ?? (order.id ? String(order.id).slice(0, 8).toUpperCase() : ''),
+          pay_link_url: destination,
+          receipt_uploaded: false,
+        }))
+      } catch {}
+      // If the popup was blocked the success page still shows the Pay button,
+      // so the customer is never stranded without a way to pay.
+      if (payWindow) payWindow.location.href = destination
+      wireSucceeded.current = true
+      clearCart()
+      router.push('/order-success')
+    } catch {
+      payWindow?.close()
       showToast('Could not place order. Please try again.')
     } finally {
       setWireSubmitting(false)
@@ -570,7 +658,43 @@ export default function CheckoutPage() {
           </label>
 
           {payMethod === 'wire' ? (
-            wireCfg?.maintenance ? (
+            payLinkActive ? (
+              <div>
+                <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 10, padding: '16px 18px', marginBottom: 14 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#15803d', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <i className="fa-solid fa-shield-halved" style={{ marginRight: 7 }} />
+                    Secure Payment
+                  </p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, paddingBottom: 12, borderBottom: '1px solid #bbf7d0' }}>
+                    <span style={{ fontSize: 13, color: 'var(--text-light)' }}>Amount due</span>
+                    <span style={{ fontSize: 22, fontWeight: 900, color: '#15803d' }}>${finalTotal.toFixed(2)}</span>
+                  </div>
+                  <p style={{ fontSize: 12.5, color: '#3f6212', marginTop: 12, lineHeight: 1.6 }}>
+                    {payLinkCfg?.note?.trim()
+                      || 'You’ll be taken to our secure payment page to finish this order. Please pay the exact amount shown above.'}
+                  </p>
+                </div>
+
+                {(emailMissing || shipMissing) && (
+                  <div style={{ background: '#fff8ec', border: '1.5px solid #fcd9a3', borderRadius: 10, padding: '14px 16px', marginBottom: 14 }}>
+                    <p style={{ fontSize: 12.5, color: '#92400e', lineHeight: 1.6 }}>
+                      <i className="fa-solid fa-lock" style={{ marginRight: 6 }} />
+                      Fill in your <strong>email</strong> and <strong>shipping address</strong> above so we know where to
+                      send your order — then you can pay.
+                    </p>
+                  </div>
+                )}
+
+                <button type="button" onClick={submitPayLinkOrder} disabled={wireSubmitting || emailMissing || shipMissing}
+                  style={{ width: '100%', background: '#16a34a', border: 'none', borderRadius: 10, color: 'white', fontSize: 17, fontWeight: 800, padding: '16px', cursor: wireSubmitting ? 'wait' : (emailMissing || shipMissing) ? 'not-allowed' : 'pointer', opacity: (wireSubmitting || emailMissing || shipMissing) ? 0.55 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <i className="fa-solid fa-lock" style={{ fontSize: 14 }} />
+                  {wireSubmitting ? 'Opening payment…' : `${payLinkCfg?.label || 'Pay'} $${finalTotal.toFixed(2)}`}
+                </button>
+                <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 10, lineHeight: 1.5, textAlign: 'center' }}>
+                  Your order isn&rsquo;t placed until The MAGA confirms your payment. You&rsquo;ll be notified by email once it is.
+                </p>
+              </div>
+            ) : !wireCfg?.enabled || wireCfg.maintenance ? (
               <PaymentMaintenanceNotice />
             ) : (
               <div>
@@ -736,7 +860,16 @@ export default function CheckoutPage() {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginTop: 18, padding: '12px 16px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)' }}>
             <i className="fa-solid fa-lock" style={{ color: '#059669', fontSize: 16, flexShrink: 0, marginTop: 2 }} />
             <div>
-              {payMethod === 'wire' ? (
+              {payLinkActive ? (
+                <>
+                  <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 700, display: 'block' }}>
+                    Secure checkout — encrypted payment page
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5, display: 'block', marginTop: 2 }}>
+                    Your order is reserved as soon as you continue. We confirm your payment and email you once your order is placed.
+                  </span>
+                </>
+              ) : payMethod === 'wire' ? (
                 <>
                   <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 700, display: 'block' }}>
                     Secure checkout — pay directly from your bank
@@ -778,10 +911,12 @@ export default function CheckoutPage() {
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--navy)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>3</div>
               <div>
                 <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>
-                  {payMethod === 'wire' ? 'Pay by bank transfer' : 'Pay with PayPal'}
+                  {payLinkActive ? 'Pay securely' : payMethod === 'wire' ? 'Pay by bank transfer' : 'Pay with PayPal'}
                 </p>
                 <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>
-                  {payMethod === 'wire'
+                  {payLinkActive
+                    ? 'Tap Pay to open our secure payment page and pay the exact total. We verify your payment and email you once your order is placed.'
+                    : payMethod === 'wire'
                     ? 'Wire the exact total to the account shown, then upload your transfer receipt. We verify your payment and email you once your order is placed.'
                     : 'Log in to your PayPal account to complete your purchase securely.'}
                 </p>

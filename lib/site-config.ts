@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { SiteWireConfig, DEFAULT_WIRE_CONFIG } from './wire-config'
+import { SitePayLinkConfig, DEFAULT_PAY_LINK_CONFIG } from './pay-link'
 
 export interface SiteAnnounceBar {
   visible: boolean
@@ -45,6 +46,7 @@ export interface SiteConfig {
   newsletter: SiteNewsletter
   vip_price: number
   wire_config: SiteWireConfig
+  pay_link: SitePayLinkConfig
 }
 
 export const DEFAULT_CONFIG: SiteConfig = {
@@ -108,6 +110,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
   },
   vip_price: 20,
   wire_config: DEFAULT_WIRE_CONFIG,
+  pay_link: DEFAULT_PAY_LINK_CONFIG,
 }
 
 export async function getSiteConfig(): Promise<SiteConfig> {

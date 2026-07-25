@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAdminSupabase } from '@/lib/supabase-admin'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { normalizeWireConfig } from '@/lib/wire-config'
+import { normalizePayLinkConfig, isSafePayLinkUrl, payLinkMatches } from '@/lib/pay-link'
 import { getSiteConfig } from '@/lib/site-config'
 import { sendWireInstructions } from '@/lib/email'
 
@@ -16,8 +17,15 @@ import { sendWireInstructions } from '@/lib/email'
  */
 export async function POST(request: Request) {
   try {
-    const wire = normalizeWireConfig((await getSiteConfig()).wire_config)
-    if (!wire.enabled || wire.maintenance)
+    // Two ways to pay out-of-band: the bank details, or a hosted pay link.
+    // Either being live is enough to accept the order; which one applies to
+    // THIS cart is decided further down, once the total is known.
+    const siteCfg = await getSiteConfig()
+    const wire = normalizeWireConfig(siteCfg.wire_config)
+    const payLink = normalizePayLinkConfig(siteCfg.pay_link)
+    const wireAvailable = wire.enabled && !wire.maintenance
+    const payLinkAvailable = payLink.enabled && !!payLink.url && isSafePayLinkUrl(payLink.url)
+    if (!wireAvailable && !payLinkAvailable)
       return NextResponse.json({ error: 'Wire transfer is not available' }, { status: 400 })
 
     const { items, coupon_code, email, shipping_address, agent_code } = await request.json() as {
@@ -118,6 +126,18 @@ export async function POST(request: Request) {
     if (!isFinite(amount) || amount <= 0)
       return NextResponse.json({ error: 'Invalid order total' }, { status: 400 })
 
+    // The pay link collects a fixed amount, so re-check server-side that this
+    // cart really is the product it covers at the price it charges. Without
+    // this, a crafted request could bank a discounted order against a link
+    // that would take the full price (or vice versa).
+    const payableTotal = Number(amount.toFixed(2))
+    const payLinkOk = payLinkAvailable && payLinkMatches(payLink, lineItems, payableTotal)
+    if (!wireAvailable && !payLinkOk)
+      return NextResponse.json(
+        { error: 'This order can’t be paid online right now. Please contact support.' },
+        { status: 400 },
+      )
+
     const discountAmount = Math.max(0, grossAmount - amount)
     const orderNumber = Math.floor(10000 + Math.random() * 90000)
 
@@ -151,14 +171,16 @@ export async function POST(request: Request) {
       name: (shipping_address?.firstName?.trim() || email.split('@')[0]),
       orderId: order.id,
       orderNumber: order.order_number,
-      total: Number(amount.toFixed(2)),
+      total: payableTotal,
+      payLinkUrl: payLinkOk ? payLink.url : undefined,
     }).catch(() => {})
 
     return NextResponse.json({
       id: order.id,
       order_number: order.order_number,
-      total: Number(amount.toFixed(2)),
+      total: payableTotal,
       discount_amount: Number(discountAmount.toFixed(2)),
+      pay_link_url: payLinkOk ? payLink.url : null,
     })
   } catch (err) {
     console.error('[orders/create-wire]', err)

@@ -10,6 +10,7 @@ import AuthGuard from '@/components/AuthGuard'
 import { Product, Order, Profile, AgentProfile, AnalyticsData, CustomerTierRow, Lead } from '@/lib/types'
 import { SiteConfig, DEFAULT_CONFIG } from '@/lib/site-config'
 import { SiteWireConfig, DEFAULT_WIRE_CONFIG, normalizeWireConfig } from '@/lib/wire-config'
+import { SitePayLinkConfig, DEFAULT_PAY_LINK_CONFIG, normalizePayLinkConfig, isSafePayLinkUrl } from '@/lib/pay-link'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 
 const AdminCharts   = dynamic(() => import('@/components/AdminCharts'),  { ssr: false })
@@ -390,6 +391,9 @@ function AdminContent() {
   const [savingVipPrice, setSavingVipPrice] = useState(false)
   const [wireForm, setWireForm] = useState<SiteWireConfig>(DEFAULT_WIRE_CONFIG)
   const [savingWire, setSavingWire] = useState(false)
+  const [payLinkForm, setPayLinkForm] = useState<SitePayLinkConfig>(DEFAULT_PAY_LINK_CONFIG)
+  const [savingPayLink, setSavingPayLink] = useState(false)
+  const [payLinkProducts, setPayLinkProducts] = useState<{ id: string; name: string; price: number }[]>([])
 
   // New lead form
   const [showNewLead, setShowNewLead]       = useState(false)
@@ -497,6 +501,13 @@ function AdminContent() {
       setVipPriceInput(String(price))
       const wireRow = rows.find(r => r.key === 'wire_config')
       setWireForm(normalizeWireConfig(wireRow?.value))
+      const payLinkRow = rows.find(r => r.key === 'pay_link')
+      setPayLinkForm(normalizePayLinkConfig(payLinkRow?.value))
+      // Product list for the pay-link picker (public route — no admin fields needed)
+      try {
+        const pub: { id: string; name: string; price: number }[] = await fetch('/api/products').then(r => r.json())
+        if (Array.isArray(pub)) setPayLinkProducts(pub.map(p => ({ id: p.id, name: p.name, price: Number(p.price) })))
+      } catch {}
     } else {
       const [p, o, c, a, an] = await Promise.all([
         fetch('/api/admin/products',  { headers: authHeaders() }).then(r => r.json()),
@@ -1894,6 +1905,86 @@ function AdminContent() {
                     </button>
                     <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 12 }}>
                       Changes take effect immediately — no redeploy needed. Any field left blank is hidden from customers.
+                    </p>
+                  </div>
+
+                  {/* Pay Link (hosted checkout, e.g. Wise) */}
+                  <div style={{ background: 'var(--white)', border: '1px solid var(--gray)', borderRadius: 12, padding: 24 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                      <i className="fa-solid fa-link" style={{ color: '#16a34a' }} />
+                      <h3 style={{ fontSize: 17, fontWeight: 800, color: 'var(--heading)', margin: 0 }}>Pay Link (hosted checkout)</h3>
+                    </div>
+                    <p style={{ fontSize: 12.5, color: 'var(--text-light)', lineHeight: 1.6, marginBottom: 18 }}>
+                      Replaces the bank details with a <strong>Pay</strong> button that sends the customer to an outside
+                      payment page. These links charge a <strong>fixed amount</strong>, so the button only appears when the
+                      cart is exactly the product below at exactly the amount below. Any other cart — a different product,
+                      quantity 2, a VIP or coupon discount — falls back to bank transfer so nobody is charged the wrong sum.
+                    </p>
+
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18, cursor: 'pointer' }}>
+                      <input type="checkbox" checked={payLinkForm.enabled} onChange={e => setPayLinkForm({ ...payLinkForm, enabled: e.target.checked })} style={{ width: 18, height: 18, cursor: 'pointer' }} />
+                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-dark)' }}>Enable pay link at checkout</span>
+                    </label>
+
+                    <div style={{ display: 'grid', gap: 12 }}>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', display: 'block', marginBottom: 5 }}>Payment URL</label>
+                        <input value={payLinkForm.url} onChange={e => setPayLinkForm({ ...payLinkForm, url: e.target.value })} placeholder="https://wise.com/pay/r/…"
+                          style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 8, padding: '11px 14px', fontSize: 14, color: 'var(--text-dark)', outline: 'none', background: 'var(--white)', boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', display: 'block', marginBottom: 5 }}>Applies to product</label>
+                        <select value={payLinkForm.productId} onChange={e => {
+                          const p = payLinkProducts.find(x => x.id === e.target.value)
+                          setPayLinkForm({ ...payLinkForm, productId: e.target.value, amount: p ? p.price : payLinkForm.amount })
+                        }}
+                          style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 8, padding: '11px 14px', fontSize: 14, color: 'var(--text-dark)', outline: 'none', background: 'var(--white)', boxSizing: 'border-box', fontFamily: 'inherit', cursor: 'pointer' }}>
+                          <option value="">— Any product (not recommended) —</option>
+                          {payLinkProducts.map(p => (
+                            <option key={p.id} value={p.id}>{p.name} — ${p.price}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', display: 'block', marginBottom: 5 }}>Exact amount the link collects (USD)</label>
+                        <input type="number" step="0.01" min="0" value={payLinkForm.amount || ''} onChange={e => setPayLinkForm({ ...payLinkForm, amount: Number(e.target.value) })} placeholder="999"
+                          style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 8, padding: '11px 14px', fontSize: 14, color: 'var(--text-dark)', outline: 'none', background: 'var(--white)', boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                        <p style={{ fontSize: 11.5, color: 'var(--text-light)', marginTop: 5 }}>Must match the amount set on the payment link itself. Leave 0 to skip the check.</p>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', display: 'block', marginBottom: 5 }}>Button label</label>
+                        <input value={payLinkForm.label} onChange={e => setPayLinkForm({ ...payLinkForm, label: e.target.value })} placeholder="Pay"
+                          style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 8, padding: '11px 14px', fontSize: 14, color: 'var(--text-dark)', outline: 'none', background: 'var(--white)', boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', display: 'block', marginBottom: 5 }}>Note shown to the customer</label>
+                        <input value={payLinkForm.note} onChange={e => setPayLinkForm({ ...payLinkForm, note: e.target.value })} placeholder="Leave blank for the default wording"
+                          style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 8, padding: '11px 14px', fontSize: 14, color: 'var(--text-dark)', outline: 'none', background: 'var(--white)', boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={async () => {
+                        if (payLinkForm.enabled && !isSafePayLinkUrl(payLinkForm.url)) {
+                          flash('Enter a valid https:// payment URL before enabling'); return
+                        }
+                        setSavingPayLink(true)
+                        const r = await fetch('/api/admin/site-config', {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+                          body: JSON.stringify({ key: 'pay_link', value: payLinkForm }),
+                        })
+                        setSavingPayLink(false)
+                        if (r.ok) flash(payLinkForm.enabled ? 'Pay link saved & enabled' : 'Pay link saved')
+                        else flash('Failed to save pay link')
+                      }}
+                      disabled={savingPayLink}
+                      style={{ marginTop: 20, background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, padding: '12px 22px', fontSize: 14, fontWeight: 700, cursor: savingPayLink ? 'not-allowed' : 'pointer', opacity: savingPayLink ? 0.6 : 1, fontFamily: 'inherit' }}>
+                      {savingPayLink ? 'Saving…' : 'Save Pay Link'}
+                    </button>
+                    <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 12, lineHeight: 1.6 }}>
+                      Orders still arrive as <strong>Verifying Payment</strong> — the customer pays outside the site, so you
+                      confirm the money landed and hit <strong>Mark as Paid</strong> to place the order.
                     </p>
                   </div>
                 </div>

@@ -58,6 +58,7 @@ interface OrderInfo {
   reference?: string | number
   wire?: SiteWireConfig | null
   receipt_uploaded?: boolean
+  pay_link_url?: string | null
 }
 
 function GiftCardBonusModal({ authToken, onClose }: { authToken?: string; onClose: () => void }) {
@@ -397,14 +398,18 @@ export default function OrderSuccessPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 900, color: 'var(--heading)', marginBottom: 10 }}>
-          {order?.payment_method === 'wire'
+          {order?.pay_link_url
+            ? 'Almost Done!'
+            : order?.payment_method === 'wire'
             ? (order?.receipt_uploaded ? 'Receipt Received!' : 'Order Received!')
             : 'Order Placed!'}
         </motion.h1>
 
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
           style={{ fontSize: 15, color: 'var(--text-mid)', lineHeight: 1.6, marginBottom: 28 }}>
-          {order?.payment_method === 'wire'
+          {order?.pay_link_url
+            ? 'Your order is reserved. Finish your payment on the secure page that opened — if it didn’t open, use the button below.'
+            : order?.payment_method === 'wire'
             ? (order?.receipt_uploaded
                 ? 'The MAGA has received your transfer receipt. We’ll verify your payment, and you’ll be notified at your email once your order is placed.'
                 : 'One more step — complete your bank transfer below and upload your receipt to finish your order.')
@@ -416,10 +421,22 @@ export default function OrderSuccessPage() {
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
             style={{ background: '#fff8ec', border: '1.5px solid #fcd9a3', borderRadius: 16, padding: 20, marginBottom: 28, textAlign: 'left' }}>
             <p style={{ fontSize: 13, fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
-              <i className="fa-solid fa-building-columns" style={{ marginRight: 7 }} />
-              {order.receipt_uploaded ? 'Your Bank Transfer Details' : 'Complete Your Bank Transfer'}
+              <i className={`fa-solid ${order.pay_link_url ? 'fa-lock' : 'fa-building-columns'}`} style={{ marginRight: 7 }} />
+              {order.pay_link_url
+                ? 'Complete Your Payment'
+                : order.receipt_uploaded ? 'Your Bank Transfer Details' : 'Complete Your Bank Transfer'}
             </p>
-            {([
+            {order.pay_link_url && (
+              <a href={order.pay_link_url} target="_blank" rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: '#16a34a', color: 'white', textDecoration: 'none', borderRadius: 10, padding: '15px 20px', fontSize: 17, fontWeight: 800, marginBottom: 16 }}>
+                <i className="fa-solid fa-lock" style={{ fontSize: 14 }} />
+                Pay ${order.total.toFixed(2)}
+              </a>
+            )}
+            {(order.pay_link_url ? ([
+              ['Amount', `$${order.total.toFixed(2)}`],
+              ['Reference', `#${order.reference ?? order.order_number ?? order.id.slice(0, 8).toUpperCase()}`],
+            ] as [string, string][]) : ([
               ['Bank', order.wire?.bankName ?? ''],
               ['Bank Address', order.wire?.bankAddress ?? ''],
               ['Beneficiary Name', order.wire?.accountName ?? ''],
@@ -429,24 +446,30 @@ export default function OrderSuccessPage() {
               ['SWIFT / BIC', order.wire?.swift ?? ''],
               ['Amount', `$${order.total.toFixed(2)}`],
               ['Reference', `#${order.reference ?? order.order_number ?? order.id.slice(0, 8).toUpperCase()}`],
-            ] as [string, string][]).filter(([, v]) => v && v.trim()).map(([k, v]) => (
+            ] as [string, string][])).filter(([, v]) => v && v.trim()).map(([k, v]) => (
               <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '7px 0', borderBottom: '1px solid #fcd9a3' }}>
                 <span style={{ fontSize: 13, color: '#92400e' }}>{k}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#7c2d12', fontFamily: 'monospace', textAlign: 'right' }}>{v}</span>
               </div>
             ))}
             <p style={{ fontSize: 12, color: '#92400e', marginTop: 12, lineHeight: 1.6 }}>
-              {order.wire?.memoNote?.trim() ? <><strong>Important:</strong> {order.wire.memoNote.trim()}{' '}</> : null}
-              {order.receipt_uploaded
-                ? <>We&apos;ve emailed these details to you for your records. Your order ships once we verify your payment.</>
-                : <>We&apos;ve also emailed these details to you. Your order ships once we confirm the transfer.</>}
+              {order.pay_link_url ? (
+                <>We&apos;ve emailed you this payment link as well, so you can finish any time. Your order is placed once we confirm your payment.</>
+              ) : (
+                <>
+                  {order.wire?.memoNote?.trim() ? <><strong>Important:</strong> {order.wire.memoNote.trim()}{' '}</> : null}
+                  {order.receipt_uploaded
+                    ? <>We&apos;ve emailed these details to you for your records. Your order ships once we verify your payment.</>
+                    : <>We&apos;ve also emailed these details to you. Your order ships once we confirm the transfer.</>}
+                </>
+              )}
             </p>
 
             {/* Upload transfer receipt */}
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #fcd9a3' }}>
               <p style={{ fontSize: 13, fontWeight: 800, color: '#92400e', marginBottom: 6 }}>
                 <i className="fa-solid fa-receipt" style={{ marginRight: 7 }} />
-                Upload your transfer receipt
+                {order.pay_link_url ? 'Upload your payment receipt' : 'Upload your transfer receipt'}
               </p>
               {receiptDone ? (
                 <p style={{ fontSize: 13, color: '#15803d', fontWeight: 700, lineHeight: 1.6 }}>
@@ -456,7 +479,9 @@ export default function OrderSuccessPage() {
               ) : (
                 <>
                   <p style={{ fontSize: 12, color: '#7c5b16', lineHeight: 1.6, marginBottom: 10 }}>
-                    After you send the wire, upload a screenshot or PDF of the receipt here so we can confirm your order faster. (JPG / PNG / PDF, max 5MB.)
+                    {order.pay_link_url
+                      ? 'Optional — after you pay, upload a screenshot or PDF of your payment confirmation here so we can verify your order faster. (JPG / PNG / PDF, max 5MB.)'
+                      : 'After you send the wire, upload a screenshot or PDF of the receipt here so we can confirm your order faster. (JPG / PNG / PDF, max 5MB.)'}
                   </p>
                   <input ref={receiptInputRef} type="file" accept="image/*,application/pdf" style={{ display: 'none' }}
                     onChange={e => { const f = e.target.files?.[0]; if (f) uploadReceipt(f) }} />
@@ -532,7 +557,9 @@ export default function OrderSuccessPage() {
 
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
           style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 20 }}>
-          {order?.payment_method === 'wire'
+          {order?.pay_link_url
+            ? <>We&apos;ve emailed your payment link. You can track this order once we confirm your payment.</>
+            : order?.payment_method === 'wire'
             ? <>We&apos;ve emailed your bank transfer instructions. You can track this order once we confirm your payment.</>
             : <>A confirmation has been sent to your email.{isLoggedIn && <> You can view order status in <Link href="/account" style={{ color: 'var(--teal)', fontWeight: 700 }}>My Account</Link>.</>}</>}
         </motion.p>

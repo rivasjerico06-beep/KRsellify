@@ -154,18 +154,26 @@ export async function sendWireInstructions({
   orderId,
   orderNumber,
   total,
+  payLinkUrl,
 }: {
   to: string
   name: string
   orderId: string
   orderNumber?: number | null
   total: number
+  payLinkUrl?: string
 }) {
   if (!process.env.RESEND_API_KEY) return
 
   const ref = orderNumber ?? orderId.slice(0, 8).toUpperCase()
   const b = normalizeWireConfig((await getSiteConfig()).wire_config)
-  const rows: [string, string][] = ([
+  // When the order is paid through a hosted link, the bank rows would only
+  // confuse — the customer pays on the link, not by manual transfer.
+  const viaLink = !!payLinkUrl
+  const rows: [string, string][] = (viaLink ? ([
+    ['Amount', `$${total.toFixed(2)}`],
+    ['Payment Reference', `#${ref}`],
+  ] as [string, string][]) : ([
     ['Bank', b.bankName],
     ['Bank Address', b.bankAddress],
     ['Beneficiary Name', b.accountName],
@@ -175,7 +183,7 @@ export async function sendWireInstructions({
     ['SWIFT / BIC', b.swift],
     ['Amount', `$${total.toFixed(2)}`],
     ['Payment Reference', `#${ref}`],
-  ] as [string, string][]).filter(([, v]) => v && v.trim())
+  ] as [string, string][])).filter(([, v]) => v && v.trim())
   const detailRows = rows.map(([k, v]) =>
     `<tr>
       <td style="padding:10px 0;border-bottom:1px solid #e8eff0;font-size:13px;color:#4a6170">${k}</td>
@@ -193,21 +201,33 @@ export async function sendWireInstructions({
       <p style="font-size:26px;font-weight:900;color:#ffffff;margin:0;letter-spacing:-0.02em">
         Maga <span style="color:#f59e0b">Offers</span>
       </p>
-      <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:6px 0 0;letter-spacing:0.15em;text-transform:uppercase">Bank Transfer Instructions</p>
+      <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:6px 0 0;letter-spacing:0.15em;text-transform:uppercase">${viaLink ? 'Payment Instructions' : 'Bank Transfer Instructions'}</p>
     </div>
 
     <div style="padding:36px">
       <h1 style="font-size:22px;font-weight:900;color:#093459;margin:0 0 8px">Complete your payment</h1>
       <p style="font-size:14px;color:#4a6170;margin:0 0 24px;line-height:1.7">
-        Thank you, <strong>${name}</strong>. Your order <strong>#${ref}</strong> is reserved. To finish, please wire
-        <strong>$${total.toFixed(2)}</strong> to the account below and include your reference number in the memo.
+        Thank you, <strong>${name}</strong>. Your order <strong>#${ref}</strong> is reserved. ${viaLink
+          ? `To finish, tap the button below and pay <strong>$${total.toFixed(2)}</strong> securely.`
+          : `To finish, please wire <strong>$${total.toFixed(2)}</strong> to the account below and include your reference number in the memo.`}
       </p>
+
+      ${viaLink ? `
+      <div style="text-align:center;margin-bottom:24px">
+        <a href="${payLinkUrl}"
+          style="display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;font-size:17px;font-weight:800;padding:16px 44px;border-radius:10px">
+          Pay $${total.toFixed(2)}
+        </a>
+        <p style="font-size:12px;color:#8ba0aa;margin:10px 0 0;line-height:1.6">
+          Your order isn&rsquo;t placed until your payment is confirmed.
+        </p>
+      </div>` : ''}
 
       <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
         <tbody>${detailRows}</tbody>
       </table>
 
-      ${b.memoNote.trim() ? `
+      ${!viaLink && b.memoNote.trim() ? `
       <div style="background:#fff8ec;border:1px solid #fcd9a3;border-radius:12px;padding:16px 20px;margin-bottom:20px">
         <p style="font-size:13px;color:#92400e;margin:0;line-height:1.6">
           <strong>Important:</strong> ${b.memoNote}
@@ -220,12 +240,14 @@ export async function sendWireInstructions({
           📎 Upload your payment receipt
         </a>
         <p style="font-size:12px;color:#8ba0aa;margin:10px 0 0;line-height:1.6">
-          Already uploaded your receipt at checkout? You&rsquo;re all set — we&rsquo;ll email you once your order is placed.<br>Otherwise (or to replace it), you can use this link any time.
+          ${viaLink
+            ? 'Optional, but it helps us confirm your order faster — attach the receipt your payment provider gave you.'
+            : 'Already uploaded your receipt at checkout? You&rsquo;re all set — we&rsquo;ll email you once your order is placed.<br>Otherwise (or to replace it), you can use this link any time.'}
         </p>
       </div>
 
       <p style="font-size:13px;color:#8ba0aa;margin:0;text-align:center;line-height:1.6">
-        Your order ships once we confirm the transfer (usually 1–3 business days).<br>
+        Your order ships once we confirm your payment (usually 1–3 business days).<br>
         Questions? <a href="mailto:support@themagaoffers.net" style="color:#f59e0b;font-weight:600">support@themagaoffers.net</a>
       </p>
     </div>
@@ -241,7 +263,9 @@ export async function sendWireInstructions({
     from: FROM,
     to,
     replyTo: 'support@themagaoffers.net',
-    subject: `Bank transfer instructions — Maga Offers (Ref: #${ref})`,
+    subject: viaLink
+      ? `Complete your payment — Maga Offers (Ref: #${ref})`
+      : `Bank transfer instructions — Maga Offers (Ref: #${ref})`,
     html,
   })
 
@@ -249,9 +273,9 @@ export async function sendWireInstructions({
   await getResend().emails.send({
     from: FROM,
     to: ADMIN_EMAIL,
-    subject: `⏳ Wire order pending — $${total.toFixed(2)} (Ref #${ref})`,
+    subject: `⏳ ${viaLink ? 'Pay-link' : 'Wire'} order pending — $${total.toFixed(2)} (Ref #${ref})`,
     html: `<p style="font-family:Arial,sans-serif;font-size:15px;color:#093459">
-      <strong>New bank-transfer order awaiting payment.</strong><br><br>
+      <strong>New ${viaLink ? 'pay-link' : 'bank-transfer'} order awaiting payment.</strong><br><br>
       Customer: <strong>${name}</strong> (${to})<br>
       Reference: <code>#${ref}</code><br>
       Amount: <strong>$${total.toFixed(2)}</strong><br><br>
