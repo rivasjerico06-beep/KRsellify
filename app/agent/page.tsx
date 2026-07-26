@@ -598,7 +598,7 @@ function AgentContent() {
                     </div>
                     <div>
                       <p style={{ fontWeight: 900, fontSize: 17, color: 'white' }}>Agent Guide — Closing Sales, Dialer & Rules</p>
-                      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>The store now takes payment by bank transfer only. Read how a sale works before making any calls.</p>
+                      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>Customers now pay on a secure payment page, one product at a time. Read how a sale works before making any calls.</p>
                     </div>
                   </div>
 
@@ -611,19 +611,19 @@ function AgentContent() {
                           <i className="fa-solid fa-sack-dollar" style={{ color: 'white', fontSize: 14 }} />
                         </div>
                         <div>
-                          <p style={{ fontSize: 15, fontWeight: 900, color: D.text }}>HOW TO CLOSE A SALE — BANK TRANSFER CHECKOUT</p>
-                          <p style={{ fontSize: 12, color: D.muted }}>PayPal &amp; card are OFF. Every purchase is paid by bank wire — walk your customer through these exact steps</p>
+                          <p style={{ fontSize: 15, fontWeight: 900, color: D.text }}>HOW TO CLOSE A SALE — PAY LINK CHECKOUT</p>
+                          <p style={{ fontSize: 12, color: D.muted }}>PayPal &amp; card are OFF. The customer pays on a secure payment page — walk them through these exact steps</p>
                         </div>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
                         {[
-                          { n: 1, text: 'Send your product link (Generate Link on any product page) — purchases through your link are credited to you automatically', bold: true },
-                          { n: 2, text: 'Customer adds products to the cart and opens Checkout' },
-                          { n: 3, text: 'Customer fills in their EMAIL and full SHIPPING ADDRESS — the same email or phone you have on their lead, or the sale may not credit to you', bold: true },
-                          { n: 4, text: 'Checkout shows The MAGA’s bank details — the customer wires the EXACT order total from their bank' },
-                          { n: 5, text: 'The receipt upload unlocks once email + address are filled. Customer uploads a screenshot or PDF of the transfer receipt — required, no receipt = no order', bold: true },
-                          { n: 6, text: 'Customer taps “Submit Order & Receipt”. The order is NOT placed yet — it shows as “Verifying Payment”' },
-                          { n: 7, text: 'The MAGA verifies the money arrived, then the customer gets the “Order Confirmed” email. ONLY THEN is it a real sale — and it appears in your My Sales', bold: true },
+                          { n: 1, text: 'On the product page, FIRST pick the exact package the customer agreed to (1 PCS / 3 PCS / 10 PCS). Each package has its own price and its own payment page', bold: true },
+                          { n: 2, text: 'Then tap Generate Link and send it. It opens that product with the right package already selected, and credits the sale to you automatically', bold: true },
+                          { n: 3, text: 'There is NO Add to Cart any more — one product per order. The customer taps BUY NOW, which takes them straight to checkout' },
+                          { n: 4, text: 'Customer fills in their EMAIL and full SHIPPING ADDRESS — use the same email or phone you have on their lead, or the sale may not credit to you', bold: true },
+                          { n: 5, text: 'A green “Pay $___” button appears. Tapping it opens the secure payment page in a new tab and reserves the order' },
+                          { n: 6, text: 'Customer pays the EXACT amount shown. The order is NOT placed yet — it sits at “Verifying Payment”', bold: true },
+                          { n: 7, text: 'The MAGA confirms the money arrived, then the customer gets the “Order Confirmed” email. ONLY THEN is it a real sale — and it appears in your My Sales', bold: true },
                           { n: 8, text: 'Log the call as “Converted / Ordered” and write the exact email the customer used in your Notes' },
                         ].map(s => (
                           <div key={s.n} style={{
@@ -645,7 +645,15 @@ function AgentContent() {
                       <div style={{ marginTop: 12, padding: '12px 16px', borderRadius: 12, background: isDark ? '#221605' : '#fffbeb', border: `1.5px solid ${isDark ? '#4a3010' : '#fde68a'}` }}>
                         <p style={{ fontSize: 12.5, color: isDark ? '#fcd34d' : '#92400e', lineHeight: 1.65 }}>
                           <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }} />
-                          <strong>Remember:</strong> an order stuck at &ldquo;Verifying Payment&rdquo; is <strong>not a sale yet</strong> — no money received, no credit. If the customer couldn&rsquo;t upload the receipt at checkout, their instructions email has an upload link they can use any time. They can watch their status in <strong>Track My Order</strong> (&ldquo;Verifying Payment&rdquo; &rarr; &ldquo;Paid&rdquo;).
+                          <strong>Remember:</strong> an order stuck at &ldquo;Verifying Payment&rdquo; is <strong>not a sale yet</strong> — no money received, no credit. If the payment tab was blocked or closed, the same <strong>Pay</strong> button is on their order page and in their email, so they can finish any time. They can watch their status in <strong>Track My Order</strong> (&ldquo;Verifying Payment&rdquo; &rarr; &ldquo;Paid&rdquo;).
+                        </p>
+                      </div>
+                      <div style={{ marginTop: 10, padding: '12px 16px', borderRadius: 12, background: isDark ? '#2a0f0f' : '#fef2f2', border: `1.5px solid ${isDark ? '#5c1d1d' : '#fecaca'}` }}>
+                        <p style={{ fontSize: 12.5, color: isDark ? '#fca5a5' : '#991b1b', lineHeight: 1.65 }}>
+                          <i className="fa-solid fa-ban" style={{ marginRight: 6 }} />
+                          <strong>Never promise a discount, coupon code or VIP price.</strong> Every payment page is locked to one
+                          exact amount. A discount changes the total, the <strong>Pay</strong> button disappears, and your customer
+                          gets stuck at checkout. Quote the package price exactly as shown on the product page — nothing lower.
                         </p>
                       </div>
                     </div>
