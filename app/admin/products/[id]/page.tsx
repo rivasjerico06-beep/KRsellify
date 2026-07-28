@@ -88,6 +88,10 @@ function ProductEditor({ id }: { id: string }) {
   const [catLabel, setCatLabel]     = useState('Collectibles')
   const [price, setPrice]           = useState('')
   const [oldPrice, setOldPrice]     = useState('')
+  // Package/bundle rows. When a product has any of these, BOTH the product page
+  // and the server price the order from the selected row's bundle_total — the
+  // base Price field above is then only used for display on cards.
+  const [tiers, setTiers] = useState<{ label: string; qty: number; bundle_total: number }[]>([])
   const [gallery, setGallery]       = useState<string[]>([])
   const [pasteUrl, setPasteUrl]     = useState('')
   const [description, setDescription] = useState('')
@@ -124,6 +128,7 @@ function ProductEditor({ id }: { id: string }) {
           setIsSale(p.is_sale); setIsNew_(p.is_new)
           setInStock(p.in_stock); setRating(p.rating); setReviews(p.reviews_count)
           setDescription(p.description ?? '')
+          setTiers(Array.isArray(p.quantity_options) ? p.quantity_options : [])
         }
         setLoading(false)
       })
@@ -208,6 +213,8 @@ function ProductEditor({ id }: { id: string }) {
       description: description || null,
       is_sale: isSale, is_new: isNew_,
       in_stock: inStock, rating, reviews_count: reviews,
+      // Drop blank rows so a half-filled package can never be sold at $0
+      quantity_options: tiers.filter(t => t.label.trim() && t.qty > 0 && t.bundle_total > 0),
     }
     const res = await fetch('/api/admin/products', {
       method: isNew ? 'POST' : 'PUT',
@@ -298,6 +305,66 @@ function ProductEditor({ id }: { id: string }) {
                   <input style={inputCls} type="number" min="0" step="0.01" value={oldPrice} onChange={e => setOldPrice(e.target.value)} placeholder="999.00" />
                 </div>
               </div>
+
+              {tiers.length > 0 && (
+                <div style={{ marginTop: 16, padding: '12px 14px', borderRadius: 10, background: '#fffbeb', border: '1.5px solid #fde68a' }}>
+                  <p style={{ fontSize: 12.5, color: '#92400e', lineHeight: 1.6 }}>
+                    <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }} />
+                    This product sells by package, so the <strong>Price</strong> above is only shown on product cards.
+                    Customers are charged the package price below — edit those to change what they actually pay.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Package / bundle pricing */}
+            <div style={{ background: 'var(--white)', borderRadius: 16, padding: 28, boxShadow: '0 2px 12px rgba(9,52,89,0.06)', marginBottom: 20 }}>
+              <p style={{ fontWeight: 700, color: 'var(--heading)', marginBottom: 4, fontSize: 14 }}>Package Prices</p>
+              <p style={{ fontSize: 12.5, color: 'var(--text-light)', lineHeight: 1.6, marginBottom: 16 }}>
+                The options a customer picks from on the product page. <strong>The first row is what Buy Now charges by
+                default.</strong> Leave this empty to sell the product at the single Price above.
+              </p>
+
+              {tiers.length === 0 && (
+                <p style={{ fontSize: 13, color: 'var(--text-light)', fontStyle: 'italic', marginBottom: 14 }}>
+                  No packages — this product sells at the single price above.
+                </p>
+              )}
+
+              {tiers.map((t, i) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 120px 70px', gap: 10, alignItems: 'end', marginBottom: 10 }}>
+                  <div>
+                    {i === 0 && <label style={labelCls}>Label shown to customer</label>}
+                    <input style={inputCls} value={t.label} placeholder="e.g. 3 PCS"
+                      onChange={e => setTiers(ts => ts.map((x, idx) => idx === i ? { ...x, label: e.target.value } : x))} />
+                  </div>
+                  <div>
+                    {i === 0 && <label style={labelCls}>Units</label>}
+                    <input style={inputCls} type="number" min="1" step="1" value={t.qty || ''} placeholder="3"
+                      onChange={e => setTiers(ts => ts.map((x, idx) => idx === i ? { ...x, qty: Number(e.target.value) } : x))} />
+                  </div>
+                  <div>
+                    {i === 0 && <label style={labelCls}>Customer pays ($)</label>}
+                    <input style={inputCls} type="number" min="0" step="0.01" value={t.bundle_total || ''} placeholder="599.00"
+                      onChange={e => setTiers(ts => ts.map((x, idx) => idx === i ? { ...x, bundle_total: Number(e.target.value) } : x))} />
+                  </div>
+                  <button type="button" onClick={() => setTiers(ts => ts.filter((_, idx) => idx !== i))}
+                    style={{ background: '#fee2e2', border: 'none', borderRadius: 8, padding: '11px 0', fontSize: 12, fontWeight: 700, color: '#b91c1c', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    Remove
+                  </button>
+                </div>
+              ))}
+
+              <button type="button"
+                onClick={() => setTiers(ts => [...ts, { label: '', qty: 1, bundle_total: 0 }])}
+                style={{ marginTop: 6, background: 'var(--off-white)', border: '2px dashed var(--gray)', borderRadius: 8, padding: '10px 16px', fontSize: 13, fontWeight: 700, color: 'var(--text-mid)', cursor: 'pointer', fontFamily: 'inherit' }}>
+                + Add package
+              </button>
+
+              <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 14, lineHeight: 1.6 }}>
+                If a package is covered by a pay link, its price must match that link&apos;s amount exactly — otherwise the
+                customer falls back to bank transfer. Update both together in <strong>Settings &rarr; Pay Link</strong>.
+              </p>
             </div>
 
             {/* Gallery */}
