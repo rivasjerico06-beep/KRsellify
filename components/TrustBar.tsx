@@ -25,7 +25,10 @@ export default function TrustBar({ items = DEFAULT }: { items?: SiteTrustItem[] 
         transition={{ duration: 5.5, repeat: Infinity, ease: 'linear', repeatDelay: 7 }}
         style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 20%, rgba(202,138,4,0.04) 50%, transparent 80%)', pointerEvents: 'none', zIndex: 0 }} />
 
-      <div style={{ maxWidth: 1340, margin: '0 auto', padding: '0 28px', display: 'grid', gridTemplateColumns: `repeat(${list.length}, 1fr)`, gap: 0, position: 'relative', zIndex: 1 }}>
+      {/* One column per item only while they still fit. Forcing all four onto
+          a phone gave each ~80px, which wrapped "Free Shipping" onto three
+          lines and squeezed the last item down to its icon. */}
+      <div style={{ maxWidth: 1340, margin: '0 auto', padding: '0 28px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 0, position: 'relative', zIndex: 1 }}>
         {list.map((item, i) => (
           <motion.div key={item.title}
             initial={{ opacity: 0, y: 14 }}

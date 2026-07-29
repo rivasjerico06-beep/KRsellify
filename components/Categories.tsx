@@ -109,7 +109,12 @@ export default function Categories({ products }: { products: Product[] }) {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-       style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 200px)', gap: 16, justifyContent: 'center' }}>
+        // Four hard 200px columns plus gaps needs 848px, so on a phone the row
+        // ran off the side and dragged the whole page wider than the screen.
+        // .mo-cat-grid drops it to two flexible columns under 768px; desktop
+        // keeps the original 4 × 200px exactly.
+        className="mo-cat-grid"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 200px)', gap: 16, justifyContent: 'center' }}>
         {catsWithCounts.map(c => <CategoryCard key={c.cat} c={c} />)}
       </motion.div>
     </div>

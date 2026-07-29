@@ -254,6 +254,13 @@ html.theme-transition *::after {
     gap: 32px !important;
   }
 
+  /* Floating hero badge is pinned to the right of the slide — on a phone it
+     lands on top of the headline, so drop it rather than overlap the copy */
+  .mo-hero-badge    { display: none !important; }
+
+  /* Four 200px category cards need 848px; two flexible columns instead */
+  .mo-cat-grid      { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+
   .mo-cart-panel    { width: 100vw !important; }
   .mo-detail-trust  { grid-template-columns: 1fr !important; gap: 8px !important; }
   .mo-section-pad   { padding-left: 16px !important; padding-right: 16px !important; }

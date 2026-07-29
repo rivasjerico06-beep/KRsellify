@@ -175,7 +175,9 @@ export default function Hero({ slides = DEFAULT_SLIDES }: { slides?: SiteHeroSli
             </motion.div>
 
             {/* Title — Cormorant Garamond */}
-            <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(44px, 6vw, 88px)', fontWeight: 700, color: '#fff', lineHeight: 1.0, marginBottom: 22, display: 'flex', flexWrap: 'wrap', columnGap: '0.2em', rowGap: '0.04em' }}>
+            {/* 44px was the floor, which pushed a long word like
+                "Commemorative" past the right edge on a phone */}
+            <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(34px, 6vw, 88px)', fontWeight: 700, color: '#fff', lineHeight: 1.0, marginBottom: 22, display: 'flex', flexWrap: 'wrap', columnGap: '0.2em', rowGap: '0.04em' }}>
               {words.map((word, i) => (
                 <motion.span key={`${current}-w${i}`}
                   initial={{ opacity: 0, y: 64, filter: 'blur(6px)' }}
@@ -246,6 +248,7 @@ export default function Hero({ slides = DEFAULT_SLIDES }: { slides?: SiteHeroSli
 
       {/* Floating badge */}
       <motion.div
+        className="mo-hero-badge"
         initial={{ opacity: 0, scale: 0.72 }} animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 1.1, type: 'spring', stiffness: 180, damping: 16 }}
         style={{ position: 'absolute', right: 'clamp(20px, 5vw, 60px)', top: '28%', zIndex: 6 }}>

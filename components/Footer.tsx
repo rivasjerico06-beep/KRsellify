@@ -102,14 +102,16 @@ export default function Footer() {
           © 2026 Maga Offers. All rights reserved. Made with{' '}
           <i className="fa-solid fa-heart" style={{ color: 'var(--teal-light)' }} />
         </p>
-        <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
+        {/* wraps so the links and card badges don't push the page wider than
+            the screen on a phone */}
+        <div style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
           <Link href="/privacy" style={{ fontSize: 14, color: 'rgba(255,255,255,0.70)', textDecoration: 'none' }}
             onMouseEnter={e => (e.currentTarget.style.color = 'var(--teal-light)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.70)')}>Privacy</Link>
           <Link href="/terms" style={{ fontSize: 14, color: 'rgba(255,255,255,0.70)', textDecoration: 'none' }}
             onMouseEnter={e => (e.currentTarget.style.color = 'var(--teal-light)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.70)')}>Terms</Link>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {['VISA', 'MC', 'AMEX', 'PayPal'].map(p => (
               <span key={p} style={{ background: 'rgba(255,255,255,0.12)', padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 800, color: 'rgba(255,255,255,0.80)', letterSpacing: '0.05em' }}>{p}</span>
             ))}
