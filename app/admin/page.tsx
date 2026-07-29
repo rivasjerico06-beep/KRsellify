@@ -410,6 +410,7 @@ function AdminContent() {
   const [gateEmail, setGateEmail]               = useState('')
   const [gatePassword, setGatePassword]         = useState('')
   const [gateBusy, setGateBusy]                 = useState(false)
+  const [testingNotify, setTestingNotify]       = useState(false)
   const [gateError, setGateError]               = useState('')
   const [conversations, setConversations]       = useState<SupportConversationRow[]>([])
   const [activeChat, setActiveChat]             = useState<SupportConversationRow | null>(null)
@@ -825,6 +826,19 @@ function AdminContent() {
       setGateError('Could not reach the server.')
     }
     setGateBusy(false)
+  }
+
+  async function testNotify() {
+    if (testingNotify) return
+    setTestingNotify(true)
+    try {
+      const r = await fetch('/api/admin/support/notify-test', { method: 'POST', headers: supportHeaders() })
+      const d = await r.json()
+      flash(r.ok ? '✓ Test alert sent — check Telegram' : (d.error ?? 'Could not send test alert'))
+    } catch {
+      flash('Could not reach the server')
+    }
+    setTestingNotify(false)
   }
 
   function lockSupport() {
@@ -1244,10 +1258,16 @@ function AdminContent() {
                         </span>
                       )}
                     </h2>
-                    <button onClick={lockSupport}
-                      style={{ background: 'var(--gray)', color: 'var(--text-mid)', border: 'none', padding: '9px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7 }}>
-                      <i className="fa-solid fa-lock" /> Lock
-                    </button>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <button onClick={testNotify} disabled={testingNotify}
+                        style={{ background: 'var(--gray)', color: 'var(--text-mid)', border: 'none', padding: '9px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: testingNotify ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7, opacity: testingNotify ? 0.6 : 1 }}>
+                        <i className="fa-solid fa-bell" /> {testingNotify ? 'Sending…' : 'Test alert'}
+                      </button>
+                      <button onClick={lockSupport}
+                        style={{ background: 'var(--gray)', color: 'var(--text-mid)', border: 'none', padding: '9px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <i className="fa-solid fa-lock" /> Lock
+                      </button>
+                    </div>
                   </div>
 
                   {conversations.length === 0 ? (

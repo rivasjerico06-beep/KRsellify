@@ -5,6 +5,7 @@ import {
   normalizeSupportEmail,
   normalizeMessageBody,
 } from '@/lib/support'
+import { sendTelegramAlert, supportMessageAlert } from '@/lib/notify'
 
 type Supa = ReturnType<typeof getAdminSupabase>
 
@@ -95,6 +96,16 @@ export async function POST(request: Request) {
       status: 'open',
     })
     .eq('id', conversation.id)
+
+  // Ping Telegram so a message doesn't sit unseen until someone happens to
+  // open the dashboard. Deliberately not awaited: the customer's message is
+  // already saved, and the reply must not wait on — or fail with — Telegram.
+  sendTelegramAlert(supportMessageAlert({
+    email: conversation.email,
+    body: messageBody,
+    origin: new URL(request.url).origin,
+    isFirstMessage: conversation.admin_unread === 0,
+  })).catch(() => {})
 
   return NextResponse.json({ message })
 }
