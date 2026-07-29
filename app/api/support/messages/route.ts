@@ -5,7 +5,7 @@ import {
   normalizeSupportEmail,
   normalizeMessageBody,
 } from '@/lib/support'
-import { sendNtfyAlert, supportMessageAlert } from '@/lib/notify'
+import { sendDiscordAlert, supportMessageAlert } from '@/lib/notify'
 
 type Supa = ReturnType<typeof getAdminSupabase>
 
@@ -97,10 +97,10 @@ export async function POST(request: Request) {
     })
     .eq('id', conversation.id)
 
-  // Ping ntfy so a message doesn't sit unseen until someone happens to open
-  // the dashboard. Deliberately not awaited: the customer's message is
-  // already saved, and the reply must not wait on — or fail with — ntfy.
-  sendNtfyAlert(supportMessageAlert({
+  // Ping Discord so a message doesn't sit unseen until someone happens to
+  // open the dashboard. Deliberately not awaited: the customer's message is
+  // already saved, and the reply must not wait on — or fail with — Discord.
+  sendDiscordAlert(supportMessageAlert({
     email: conversation.email,
     body: messageBody,
     origin: new URL(request.url).origin,

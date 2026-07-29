@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server'
 import { requireAdmin, isNextResponse } from '@/lib/require-admin'
 import { verifySupportToken } from '@/lib/support-gate'
-import { sendNtfyAlert, isNtfyConfigured, testAlert } from '@/lib/notify'
+import { sendDiscordAlert, isDiscordConfigured, testAlert } from '@/lib/notify'
 
 /**
- * Sends a test alert so ntfy setup can be confirmed from the dashboard,
+ * Sends a test alert so Discord setup can be confirmed from the dashboard,
  * rather than by waiting for a real customer and hoping.
  *
- * Distinguishes "not configured" from "configured but ntfy rejected it",
- * because those need different fixes — a missing or malformed topic versus a
- * server that refused the publish.
+ * Distinguishes "not configured" from "configured but Discord rejected it",
+ * because those need different fixes — a missing or malformed webhook URL
+ * versus one that has since been deleted in Discord.
  */
 export async function POST(request: Request) {
   const auth = await requireAdmin(request)
@@ -17,17 +17,17 @@ export async function POST(request: Request) {
   if (!verifySupportToken(request.headers.get('x-support-token')))
     return NextResponse.json({ error: 'Support chat is locked.' }, { status: 403 })
 
-  if (!isNtfyConfigured())
+  if (!isDiscordConfigured())
     return NextResponse.json(
-      { error: 'Not set up. Add NTFY_TOPIC in Vercel, then redeploy.' },
+      { error: 'Not set up. Add a valid DISCORD_WEBHOOK_URL in Vercel, then redeploy.' },
       { status: 503 },
     )
 
-  const sent = await sendNtfyAlert(testAlert(new URL(request.url).origin))
+  const sent = await sendDiscordAlert(testAlert(new URL(request.url).origin))
 
   if (!sent)
     return NextResponse.json(
-      { error: 'ntfy refused the message. Check NTFY_TOPIC, and NTFY_TOKEN if the topic is reserved.' },
+      { error: 'Discord rejected the message. The webhook may have been deleted — try creating a new one.' },
       { status: 502 },
     )
 
