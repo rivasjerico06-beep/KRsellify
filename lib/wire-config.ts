@@ -57,19 +57,27 @@ export function normalizeWireConfig(value: unknown): SiteWireConfig {
   }
 }
 
-// Ordered [label, value] pairs for rendering. Blank fields are omitted so a
-// half-configured setup never shows an empty "SWIFT: —" row to a customer.
-export function wireFieldList(
-  cfg: SiteWireConfig = DEFAULT_WIRE_CONFIG,
-): { label: string; value: string }[] {
-  return [
-    { label: 'Bank Name',                  value: cfg.bankName },
-    { label: 'Bank Address',               value: cfg.bankAddress },
-    { label: 'Beneficiary / Account Name', value: cfg.accountName },
-    { label: 'Account Number',             value: cfg.accountNumber },
-    { label: 'Account Type',               value: cfg.accountType },
-    { label: 'Routing / ABA Number',       value: cfg.routingNumber },
-    { label: 'SWIFT / BIC',                value: cfg.swift },
-    { label: 'Memo / Note',                value: cfg.memoNote },
-  ].filter(f => f.value !== '')
+/**
+ * The bank rows shown to a customer, in the exact order and wording the bank
+ * itself lists them — so what's on the checkout page, the order-success page
+ * and the instructions email can be compared line-for-line against the
+ * account details without anyone having to translate field names.
+ *
+ * This is the ONE place the wire format is defined; all three render sites
+ * call it. Blank fields are dropped so a half-configured setup never shows an
+ * empty "Swift/BIC: —" row.
+ *
+ * `memoNote` is deliberately not here — it's an instruction, not a bank
+ * detail, and each surface renders it as its own "Important:" callout.
+ */
+export function wireFieldList(cfg?: SiteWireConfig | null): [string, string][] {
+  if (!cfg) return []
+  return ([
+    ['Account Name',                      cfg.accountName],
+    ['Account type',                      cfg.accountType],
+    ['Routing number (for wire and ACH)', cfg.routingNumber],
+    ['Account number',                    cfg.accountNumber],
+    ['Address',                           cfg.bankAddress],
+    ['Swift/BIC',                         cfg.swift],
+  ] as [string, string][]).filter(([, v]) => v && v.trim() !== '')
 }

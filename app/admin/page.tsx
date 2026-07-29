@@ -1868,16 +1868,17 @@ function AdminContent() {
                     </label>
 
                     <div style={{ display: 'grid', gap: 12 }}>
+                      {/* Same order and wording customers see — so these can be
+                          filled straight off the bank's account details page */}
                       {([
-                        { key: 'bankName',      label: 'Bank Name',                  ph: 'e.g. Chase Bank' },
-                        { key: 'bankAddress',   label: 'Bank Address',               ph: 'Bank / branch address' },
-                        { key: 'accountName',   label: 'Beneficiary / Account Name', ph: 'Name on the account' },
-                        { key: 'accountNumber', label: 'Account Number',             ph: 'Account or IBAN number' },
-                        { key: 'accountType',   label: 'Account Type',               ph: 'e.g. Checking' },
-                        { key: 'routingNumber', label: 'Routing / ABA Number',       ph: 'Routing number' },
-                        { key: 'swift',         label: 'SWIFT / BIC',                ph: 'For international wires' },
-                        { key: 'memoNote',      label: 'Memo / Note',                ph: 'e.g. Include your order number' },
-                      ] as { key: 'bankName' | 'bankAddress' | 'accountName' | 'accountNumber' | 'accountType' | 'routingNumber' | 'swift' | 'memoNote'; label: string; ph: string }[]).map(f => (
+                        { key: 'accountName',   label: 'Account Name',                      ph: 'Name on the account' },
+                        { key: 'accountType',   label: 'Account type',                      ph: 'e.g. Checking' },
+                        { key: 'routingNumber', label: 'Routing number (for wire and ACH)', ph: 'Routing number' },
+                        { key: 'accountNumber', label: 'Account number',                    ph: 'Account or IBAN number' },
+                        { key: 'bankAddress',   label: 'Address',                           ph: 'Bank address' },
+                        { key: 'swift',         label: 'Swift/BIC',                         ph: 'For international wires' },
+                        { key: 'memoNote',      label: 'Memo / Note — shown as a separate reminder, not a bank row', ph: 'e.g. Include your order number' },
+                      ] as { key: 'bankAddress' | 'accountName' | 'accountNumber' | 'accountType' | 'routingNumber' | 'swift' | 'memoNote'; label: string; ph: string }[]).map(f => (
                         <div key={f.key}>
                           <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', display: 'block', marginBottom: 5 }}>{f.label}</label>
                           <input value={wireForm[f.key]} onChange={e => setWireForm({ ...wireForm, [f.key]: e.target.value })} placeholder={f.ph}

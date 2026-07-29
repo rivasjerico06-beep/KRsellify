@@ -7,7 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
-import { SiteWireConfig } from '@/lib/wire-config'
+import { SiteWireConfig, wireFieldList } from '@/lib/wire-config'
 import { usePayLinkConfig } from '@/lib/use-pay-link'
 
 const COLORS = ['#58948F', '#093459', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981', '#f97316', '#06b6d4']
@@ -442,13 +442,7 @@ export default function OrderSuccessPage() {
               ['Amount', `$${order.total.toFixed(2)}`],
               ['Reference', `#${order.reference ?? order.order_number ?? order.id.slice(0, 8).toUpperCase()}`],
             ] as [string, string][]) : ([
-              ['Bank', order.wire?.bankName ?? ''],
-              ['Bank Address', order.wire?.bankAddress ?? ''],
-              ['Beneficiary Name', order.wire?.accountName ?? ''],
-              ['Account Number', order.wire?.accountNumber ?? ''],
-              ['Account Type', order.wire?.accountType ?? ''],
-              ['Routing / ABA', order.wire?.routingNumber ?? ''],
-              ['SWIFT / BIC', order.wire?.swift ?? ''],
+              ...wireFieldList(order.wire),
               ['Amount', `$${order.total.toFixed(2)}`],
               ['Reference', `#${order.reference ?? order.order_number ?? order.id.slice(0, 8).toUpperCase()}`],
             ] as [string, string][])).filter(([, v]) => v && v.trim()).map(([k, v]) => (

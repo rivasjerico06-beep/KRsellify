@@ -10,7 +10,7 @@ import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 import { PAYMENTS_UNDER_MAINTENANCE } from '@/lib/payments-maintenance'
 import PaymentMaintenanceNotice from '@/components/PaymentMaintenanceNotice'
-import { SiteWireConfig, normalizeWireConfig } from '@/lib/wire-config'
+import { SiteWireConfig, normalizeWireConfig, wireFieldList } from '@/lib/wire-config'
 import { SitePayLinkConfig, normalizePayLinkConfig, findPayLink } from '@/lib/pay-link'
 
 const COUNTRIES = [
@@ -708,15 +708,7 @@ export default function CheckoutPage() {
                     <i className="fa-solid fa-building-columns" style={{ marginRight: 7, color: 'var(--teal)' }} />
                     Bank Transfer
                   </p>
-                  {([
-                    ['Bank', wireCfg?.bankName ?? ''],
-                    ['Bank Address', wireCfg?.bankAddress ?? ''],
-                    ['Beneficiary Name', wireCfg?.accountName ?? ''],
-                    ['Account Number', wireCfg?.accountNumber ?? ''],
-                    ['Account Type', wireCfg?.accountType ?? ''],
-                    ['Routing / ABA', wireCfg?.routingNumber ?? ''],
-                    ['SWIFT / BIC', wireCfg?.swift ?? ''],
-                  ] as [string, string][]).filter(([, v]) => v && v.trim()).map(([k, v]) => (
+                  {wireFieldList(wireCfg).map(([k, v]) => (
                     <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '6px 0', borderBottom: '1px solid var(--gray)' }}>
                       <span style={{ fontSize: 13, color: 'var(--text-light)' }}>{k}</span>
                       <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)', fontFamily: 'monospace', textAlign: 'right' }}>{v}</span>

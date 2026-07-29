@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 import { CartItem } from './types'
-import { normalizeWireConfig } from './wire-config'
+import { normalizeWireConfig, wireFieldList } from './wire-config'
 import { getSiteConfig } from './site-config'
 
 let _resend: Resend | null = null
@@ -174,13 +174,7 @@ export async function sendWireInstructions({
     ['Amount', `$${total.toFixed(2)}`],
     ['Payment Reference', `#${ref}`],
   ] as [string, string][]) : ([
-    ['Bank', b.bankName],
-    ['Bank Address', b.bankAddress],
-    ['Beneficiary Name', b.accountName],
-    ['Account Number', b.accountNumber],
-    ['Account Type', b.accountType],
-    ['Routing / ABA', b.routingNumber],
-    ['SWIFT / BIC', b.swift],
+    ...wireFieldList(b),
     ['Amount', `$${total.toFixed(2)}`],
     ['Payment Reference', `#${ref}`],
   ] as [string, string][])).filter(([, v]) => v && v.trim())
