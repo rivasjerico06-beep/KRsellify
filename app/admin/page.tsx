@@ -876,7 +876,7 @@ function AdminContent() {
     try {
       const r = await fetch('/api/admin/support/notify-test', { method: 'POST', headers: supportHeaders() })
       const d = await r.json()
-      flash(r.ok ? '✓ Test alert sent — check Discord' : (d.error ?? 'Could not send test alert'))
+      flash(r.ok ? '✓ Test alert sent — check your phone' : (d.error ?? 'Could not send test alert'))
     } catch {
       flash('Could not reach the server')
     }
