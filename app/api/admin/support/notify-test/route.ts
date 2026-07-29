@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server'
 import { requireAdmin, isNextResponse } from '@/lib/require-admin'
 import { verifySupportToken } from '@/lib/support-gate'
-import { sendTelegramAlert, isTelegramConfigured } from '@/lib/notify'
+import { sendDiscordAlert, isDiscordConfigured, testAlert } from '@/lib/notify'
 
 /**
- * Sends a test alert so Telegram setup can be confirmed from the dashboard,
+ * Sends a test alert so Discord setup can be confirmed from the dashboard,
  * rather than by waiting for a real customer and hoping.
  *
- * Distinguishes "not configured" from "configured but Telegram rejected it",
- * because those need different fixes — a missing variable versus a bad token
- * or the wrong chat id.
+ * Distinguishes "not configured" from "configured but Discord rejected it",
+ * because those need different fixes — a missing or malformed webhook URL
+ * versus one that has since been deleted in Discord.
  */
 export async function POST(request: Request) {
   const auth = await requireAdmin(request)
@@ -17,26 +17,17 @@ export async function POST(request: Request) {
   if (!verifySupportToken(request.headers.get('x-support-token')))
     return NextResponse.json({ error: 'Support chat is locked.' }, { status: 403 })
 
-  if (!isTelegramConfigured())
+  if (!isDiscordConfigured())
     return NextResponse.json(
-      { error: 'Not set up. Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in Vercel, then redeploy.' },
+      { error: 'Not set up. Add a valid DISCORD_WEBHOOK_URL in Vercel, then redeploy.' },
       { status: 503 },
     )
 
-  const origin = new URL(request.url).origin
-  const sent = await sendTelegramAlert(
-    [
-      '✅ <b>Test alert from KRSELLIFY</b>',
-      '',
-      'Notifications are working. This is what a customer message will look like.',
-      '',
-      `<a href="${origin}/admin">Open the Support tab →</a>`,
-    ].join('\n'),
-  )
+  const sent = await sendDiscordAlert(testAlert(new URL(request.url).origin))
 
   if (!sent)
     return NextResponse.json(
-      { error: 'Telegram rejected the message. Check the bot token and chat id.' },
+      { error: 'Discord rejected the message. The webhook may have been deleted — try creating a new one.' },
       { status: 502 },
     )
 
