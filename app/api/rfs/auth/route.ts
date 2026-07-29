@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server'
 import { getAdminSupabase } from '@/lib/supabase-admin'
+import { RFS_UNDER_MAINTENANCE } from '@/lib/rfs-maintenance'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 export async function POST(request: Request) {
+  // Refused here as well as on the page: this is the endpoint that actually
+  // returns a customer's reward profile, and it can be called directly.
+  if (RFS_UNDER_MAINTENANCE)
+    return NextResponse.json(
+      { error: 'The RFS portal is temporarily unavailable. Please check back soon.' },
+      { status: 503 },
+    )
+
   const { email } = await request.json()
   if (!email || typeof email !== 'string') {
     return NextResponse.json({ error: 'Valid email required' }, { status: 400 })

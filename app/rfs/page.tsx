@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, FormEvent } from 'react'
+import { RFS_UNDER_MAINTENANCE } from '@/lib/rfs-maintenance'
 
 interface ProductInfo { id: string; name: string; price: number; img: string; quantity: number }
 interface RFSProfile {
@@ -109,7 +110,63 @@ const PARTICLES = Array.from({ length: 30 }, (_, i) => ({
   color: i % 6 === 0 ? '#10b981' : i % 4 === 0 ? '#3b82f6' : '#d4af37',
 }))
 
+/**
+ * The portal is switched off through a module constant, so this branch is
+ * fixed for the life of the page — the hooks below always run in the same
+ * order. Flipping it needs a redeploy, which is the point: it is not
+ * something a stray click should be able to change.
+ */
 export default function RFSPage() {
+  if (RFS_UNDER_MAINTENANCE) return <RFSUnavailable />
+  return <RFSPortal />
+}
+
+function RFSUnavailable() {
+  useEffect(() => {
+    document.body.classList.add('rfs-active')
+    return () => { document.body.classList.remove('rfs-active') }
+  }, [])
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#05070d', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: 'var(--font-dm-sans), sans-serif' }}>
+      <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: 600, height: 600, background: 'radial-gradient(circle,rgba(212,175,55,0.06) 0%,transparent 65%)', borderRadius: '50%', pointerEvents: 'none' }} />
+
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 460, width: '100%', textAlign: 'center' }}>
+        <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: 4, color: 'white', marginBottom: 10 }}>
+          MAGA <span style={{ color: '#d4af37' }}>OFFERS</span>
+        </div>
+        <div style={{ width: 56, height: 3, background: 'linear-gradient(90deg,#d4af37,#f5d87a)', margin: '0 auto 44px', borderRadius: 2 }} />
+
+        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.22)', borderRadius: 22, padding: '52px 40px', backdropFilter: 'blur(14px)' }}>
+          <div style={{ width: 68, height: 68, borderRadius: '50%', background: 'linear-gradient(135deg,#d4af37,#f5d87a)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+            <i className="fa-solid fa-screwdriver-wrench" style={{ fontSize: 26, color: '#05070d' }} />
+          </div>
+
+          <h1 style={{ fontSize: 23, fontWeight: 800, color: 'white', marginBottom: 12, letterSpacing: 0.5 }}>
+            Temporarily Unavailable
+          </h1>
+          <p style={{ fontSize: 14.5, color: 'rgba(255,255,255,0.62)', lineHeight: 1.75, margin: 0 }}>
+            The RFS portal is down for maintenance right now. Your profile and
+            benefits are unaffected — please check back shortly.
+          </p>
+
+          <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid rgba(212,175,55,0.15)' }}>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: 1.7 }}>
+              Need help in the meantime? Contact your representative, or reach us at{' '}
+              <a href="/contact" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 600 }}>themagaoffers.net/contact</a>.
+            </p>
+          </div>
+        </div>
+
+        <a href="/" style={{ display: 'inline-block', marginTop: 28, fontSize: 13, color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>
+          ← Back to store
+        </a>
+      </div>
+    </div>
+  )
+}
+
+function RFSPortal() {
   const [email, setEmail]       = useState('')
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState('')
