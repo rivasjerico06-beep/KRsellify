@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server'
 import { getAdminSupabase } from './supabase-admin'
 import { getBrowserSupabase } from './supabase-browser'
 
-type AdminCheckResult = { userId: string } | NextResponse
+// The email comes along so routes can apply owner-only rules on top of the
+// role check (see RFS_OWNER_EMAIL).
+type AdminCheckResult = { userId: string; email: string | null } | NextResponse
 
 export async function requireAdmin(request: Request): Promise<AdminCheckResult> {
   const token = request.headers.get('authorization')?.replace('Bearer ', '').trim()
@@ -19,7 +21,7 @@ export async function requireAdmin(request: Request): Promise<AdminCheckResult> 
 
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  return { userId: user.id }
+  return { userId: user.id, email: user.email ?? null }
 }
 
 export function isNextResponse(v: AdminCheckResult): v is NextResponse {

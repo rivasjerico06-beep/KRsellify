@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server'
 import { getAdminSupabase } from '@/lib/supabase-admin'
-import { RFS_UNDER_MAINTENANCE } from '@/lib/rfs-maintenance'
+import { getSiteConfig } from '@/lib/site-config'
+import { normalizeRfsConfig } from '@/lib/rfs-config'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 export async function POST(request: Request) {
-  // Refused here as well as on the page: this is the endpoint that actually
-  // returns a customer's reward profile, and it can be called directly.
-  if (RFS_UNDER_MAINTENANCE)
+  // Checked here as well as on the page: this is the endpoint that actually
+  // returns a customer's reward profile, and it can be called directly, so
+  // closing only the page would leave the data reachable.
+  const rfs = normalizeRfsConfig((await getSiteConfig()).rfs_config)
+  if (!rfs.enabled)
     return NextResponse.json(
       { error: 'The RFS portal is temporarily unavailable. Please check back soon.' },
       { status: 503 },

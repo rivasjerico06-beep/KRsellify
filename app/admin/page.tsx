@@ -11,6 +11,7 @@ import { Product, Order, Profile, AgentProfile, AnalyticsData, CustomerTierRow, 
 import { SiteConfig, DEFAULT_CONFIG } from '@/lib/site-config'
 import { SiteWireConfig, DEFAULT_WIRE_CONFIG, normalizeWireConfig } from '@/lib/wire-config'
 import { SitePayLinkConfig, DEFAULT_PAY_LINK_CONFIG, normalizePayLinkConfig, isSafePayLinkUrl } from '@/lib/pay-link'
+import { SiteRfsConfig, DEFAULT_RFS_CONFIG, normalizeRfsConfig, isRfsOwner } from '@/lib/rfs-config'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { SupportConversationRow, SupportMessage } from '@/lib/support'
 
@@ -401,6 +402,8 @@ function AdminContent() {
   const [payLinkForm, setPayLinkForm] = useState<SitePayLinkConfig>(DEFAULT_PAY_LINK_CONFIG)
   const [savingPayLink, setSavingPayLink] = useState(false)
   const [payLinkProducts, setPayLinkProducts] = useState<{ id: string; name: string; price: number }[]>([])
+  const [rfsForm, setRfsForm] = useState<SiteRfsConfig>(DEFAULT_RFS_CONFIG)
+  const [savingRfs, setSavingRfs] = useState(false)
 
   // Support chat — locked behind its own sign-in on top of the admin session.
   // The token lives in sessionStorage so it's re-entered when the browser is
@@ -554,6 +557,8 @@ function AdminContent() {
       setWireForm(normalizeWireConfig(wireRow?.value))
       const payLinkRow = rows.find(r => r.key === 'pay_link')
       setPayLinkForm(normalizePayLinkConfig(payLinkRow?.value))
+      const rfsRow = rows.find(r => r.key === 'rfs_config')
+      setRfsForm(normalizeRfsConfig(rfsRow?.value))
       // Product list for the pay-link picker (public route — no admin fields needed)
       try {
         const pub: { id: string; name: string; price: number }[] = await fetch('/api/products').then(r => r.json())
@@ -2218,6 +2223,57 @@ function AdminContent() {
                       </button>
                     </form>
                   </div>
+
+                  {/* RFS portal on/off — owner only. Hiding it is a courtesy;
+                      the real check is in /api/admin/site-config. */}
+                  {isRfsOwner(user?.email) && (
+                  <div style={{ background: 'var(--white)', borderRadius: 14, border: '1px solid var(--gray)', padding: '28px 32px', marginBottom: 20 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                      <i className="fa-solid fa-star" style={{ color: '#d4af37', fontSize: 17 }} />
+                      <h3 style={{ fontSize: 17, fontWeight: 800, color: 'var(--heading)', margin: 0 }}>RFS Portal</h3>
+                      <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 10px', borderRadius: 20, background: rfsForm.enabled ? '#d1fae5' : '#f3f4f6', color: rfsForm.enabled ? '#065f46' : '#374151' }}>
+                        {rfsForm.enabled ? 'Live' : 'Unavailable'}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: 14, color: 'var(--text-light)', marginBottom: 18, lineHeight: 1.6 }}>
+                      Controls the customer-facing <strong style={{ color: 'var(--text-dark)' }}>/rfs</strong> portal. Turned off, visitors see a
+                      &ldquo;temporarily unavailable&rdquo; notice and profile lookups are refused.
+                      The <strong style={{ color: 'var(--text-dark)' }}>RFS Portal</strong> tab here keeps working either way.
+                    </p>
+
+                    <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 18, cursor: 'pointer' }}>
+                      <input type="checkbox" checked={rfsForm.enabled}
+                        onChange={e => setRfsForm({ ...rfsForm, enabled: e.target.checked })}
+                        style={{ width: 18, height: 18, cursor: 'pointer', marginTop: 2 }} />
+                      <span>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-dark)', display: 'block' }}>
+                          Portal is open to customers
+                        </span>
+                        <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5 }}>
+                          Takes effect immediately — no redeploy needed.
+                        </span>
+                      </span>
+                    </label>
+
+                    <button
+                      onClick={async () => {
+                        setSavingRfs(true)
+                        const r = await fetch('/api/admin/site-config', {
+                          method: 'PUT',
+                          headers: authHeaders(),
+                          body: JSON.stringify({ key: 'rfs_config', value: rfsForm }),
+                        })
+                        setSavingRfs(false)
+                        flash(r.ok
+                          ? (rfsForm.enabled ? '✓ RFS portal is now live' : '✓ RFS portal is now unavailable')
+                          : 'Failed to save')
+                      }}
+                      disabled={savingRfs}
+                      style={{ background: 'var(--navy)', color: 'white', border: 'none', borderRadius: 8, padding: '12px 22px', fontSize: 14, fontWeight: 700, cursor: savingRfs ? 'not-allowed' : 'pointer', opacity: savingRfs ? 0.6 : 1, fontFamily: 'inherit' }}>
+                      {savingRfs ? 'Saving…' : 'Save RFS Setting'}
+                    </button>
+                  </div>
+                  )}
 
                   {/* VIP Price */}
                   <div style={{ background: 'var(--white)', borderRadius: 14, border: '1px solid var(--gray)', padding: '28px 32px', marginBottom: 20 }}>
