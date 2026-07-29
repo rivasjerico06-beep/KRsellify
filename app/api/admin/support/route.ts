@@ -6,18 +6,38 @@ import {
   SupportConversationRow,
   SupportMessage,
 } from '@/lib/support'
+import { verifySupportToken } from '@/lib/support-gate'
 
 /**
- * Admin side of the support chat. Everything here is behind requireAdmin.
+ * Admin side of the support chat.
+ *
+ * Two checks, not one: requireAdmin, then the Support-tab unlock token from
+ * /api/admin/support/unlock. The token is enforced here rather than only in
+ * the dashboard, because a lock the UI applies on its own is bypassed by
+ * calling this route directly.
  *
  * GET  — the conversation list, or one thread's messages with ?conversation_id=
  * POST — send a reply
  * PATCH— open / close a thread
  */
 
+function unlocked(request: Request): boolean {
+  return verifySupportToken(request.headers.get('x-support-token'))
+}
+
+// A fresh response each time — a NextResponse body can only be consumed once,
+// so a shared instance would break every request after the first.
+function locked() {
+  return NextResponse.json(
+    { error: 'Support chat is locked. Sign in on the Support tab.' },
+    { status: 403 },
+  )
+}
+
 export async function GET(request: Request) {
   const auth = await requireAdmin(request)
   if (isNextResponse(auth)) return auth
+  if (!unlocked(request)) return locked()
 
   const admin = getAdminSupabase()
   const { searchParams } = new URL(request.url)
@@ -91,6 +111,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const auth = await requireAdmin(request)
   if (isNextResponse(auth)) return auth
+  if (!unlocked(request)) return locked()
 
   const { conversation_id, body } = await request.json()
   const messageBody = normalizeMessageBody(body)
@@ -132,6 +153,7 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   const auth = await requireAdmin(request)
   if (isNextResponse(auth)) return auth
+  if (!unlocked(request)) return locked()
 
   const { conversation_id, status } = await request.json()
   if (!conversation_id || (status !== 'open' && status !== 'closed'))

@@ -14,6 +14,12 @@ import { SitePayLinkConfig, DEFAULT_PAY_LINK_CONFIG, normalizePayLinkConfig, isS
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { SupportConversationRow, SupportMessage } from '@/lib/support'
 
+// Support-tab unlock token. sessionStorage, so closing the browser re-locks it.
+const SUPPORT_TOKEN_KEY = 'krsellify_support_token'
+function readSupportToken(): string | null {
+  try { return sessionStorage.getItem(SUPPORT_TOKEN_KEY) } catch { return null }
+}
+
 const AdminCharts   = dynamic(() => import('@/components/AdminCharts'),  { ssr: false })
 const LandingEditor = dynamic(() => import('@/components/LandingEditor'), { ssr: false })
 const RFSTab        = dynamic(() => import('./rfs-tab'),                  { ssr: false })
@@ -396,7 +402,15 @@ function AdminContent() {
   const [savingPayLink, setSavingPayLink] = useState(false)
   const [payLinkProducts, setPayLinkProducts] = useState<{ id: string; name: string; price: number }[]>([])
 
-  // Support chat
+  // Support chat — locked behind its own sign-in on top of the admin session.
+  // The token lives in sessionStorage so it's re-entered when the browser is
+  // reopened, but survives moving between tabs in the dashboard.
+  const [supportToken, setSupportToken]         = useState<string | null>(null)
+  const [supportConfigured, setSupportConfigured] = useState(true)
+  const [gateEmail, setGateEmail]               = useState('')
+  const [gatePassword, setGatePassword]         = useState('')
+  const [gateBusy, setGateBusy]                 = useState(false)
+  const [gateError, setGateError]               = useState('')
   const [conversations, setConversations]       = useState<SupportConversationRow[]>([])
   const [activeChat, setActiveChat]             = useState<SupportConversationRow | null>(null)
   const [chatMessages, setChatMessages]         = useState<SupportMessage[]>([])
@@ -465,6 +479,15 @@ function AdminContent() {
     'Content-Type': 'application/json',
   }), [session])
 
+  // Support routes need the tab's unlock token on top of the admin session.
+  // Read from storage rather than state so callbacks can't close over a stale
+  // token after an unlock.
+  const supportHeaders = useCallback((): HeadersInit => ({
+    'Authorization': `Bearer ${session?.access_token ?? ''}`,
+    'Content-Type': 'application/json',
+    'x-support-token': readSupportToken() ?? '',
+  }), [session])
+
   const load = useCallback(async (t: Tab, silent = false) => {
     if (!silent) setLoading(true)
     if (t === 'products') {
@@ -490,7 +513,16 @@ function AdminContent() {
       setLeads(Array.isArray(lr) ? lr : [])
       setApprovedAgents((Array.isArray(ar) ? ar as AgentProfile[] : []).filter(a => a.status === 'approved'))
     } else if (t === 'support') {
-      const r = await fetch('/api/admin/support', { headers: authHeaders() })
+      // Locked until the tab's own sign-in has happened
+      if (!readSupportToken()) { setConversations([]); if (!silent) setLoading(false); return }
+      const r = await fetch('/api/admin/support', { headers: supportHeaders() })
+      if (r.status === 403) {
+        // Token expired or rejected — drop it so the lock screen comes back
+        try { sessionStorage.removeItem(SUPPORT_TOKEN_KEY) } catch {}
+        setSupportToken(null); setConversations([])
+        if (!silent) setLoading(false)
+        return
+      }
       const d = await r.json(); setConversations(Array.isArray(d) ? d : [])
     } else if (t === 'coupons') {
       const r = await fetch('/api/admin/coupons', { headers: authHeaders() })
@@ -534,7 +566,7 @@ function AdminContent() {
       setAnalytics(an)
     }
     if (!silent) setLoading(false)
-  }, [authHeaders])
+  }, [authHeaders, supportHeaders])
 
   useEffect(() => { load(tab) }, [tab, load])
 
@@ -756,11 +788,56 @@ function AdminContent() {
     flash(`✓ Agent ${status}`); load('agents', true)
   }
 
+  // ── Support tab lock ────────────────────────────────────────
+  // Restore an unlock from earlier in this browser session, and find out
+  // whether the credentials are configured at all so the tab can say so
+  // instead of silently rejecting every password.
+  useEffect(() => {
+    if (tab !== 'support' || !session) return
+    setSupportToken(readSupportToken())
+    fetch('/api/admin/support/unlock', { headers: authHeaders() })
+      .then(r => r.json())
+      .then(d => setSupportConfigured(d.configured !== false))
+      .catch(() => {})
+  }, [tab, session, authHeaders])
+
+  async function unlockSupport(e: React.FormEvent) {
+    e.preventDefault()
+    if (gateBusy) return
+    setGateBusy(true)
+    setGateError('')
+    try {
+      const r = await fetch('/api/admin/support/unlock', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ email: gateEmail, password: gatePassword }),
+      })
+      const d = await r.json()
+      if (!r.ok) {
+        setGateError(d.error ?? 'Could not unlock.')
+      } else {
+        try { sessionStorage.setItem(SUPPORT_TOKEN_KEY, d.token) } catch {}
+        setSupportToken(d.token)
+        setGateEmail(''); setGatePassword('')
+        load('support', true)
+      }
+    } catch {
+      setGateError('Could not reach the server.')
+    }
+    setGateBusy(false)
+  }
+
+  function lockSupport() {
+    try { sessionStorage.removeItem(SUPPORT_TOKEN_KEY) } catch {}
+    setSupportToken(null)
+    setConversations([]); setActiveChat(null); setChatMessages([])
+  }
+
   // ── Support chat ────────────────────────────────────────────
   const openChat = useCallback(async (c: SupportConversationRow) => {
     setActiveChat(c)
     setReplyDraft('')
-    const r = await fetch(`/api/admin/support?conversation_id=${encodeURIComponent(c.id)}`, { headers: authHeaders() })
+    const r = await fetch(`/api/admin/support?conversation_id=${encodeURIComponent(c.id)}`, { headers: supportHeaders() })
     const d = await r.json()
     setChatMessages(Array.isArray(d.messages) ? d.messages : [])
     // Opening the thread clears its unread badge server-side; mirror that here
@@ -775,7 +852,7 @@ function AdminContent() {
     setSendingReply(true)
     const r = await fetch('/api/admin/support', {
       method: 'POST',
-      headers: authHeaders(),
+      headers: supportHeaders(),
       body: JSON.stringify({ conversation_id: activeChat.id, body }),
     })
     const d = await r.json()
@@ -790,20 +867,21 @@ function AdminContent() {
   }
 
   async function setChatStatus(id: string, status: 'open' | 'closed') {
-    await fetch('/api/admin/support', { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ conversation_id: id, status }) })
+    await fetch('/api/admin/support', { method: 'PATCH', headers: supportHeaders(), body: JSON.stringify({ conversation_id: id, status }) })
     setActiveChat(prev => (prev && prev.id === id ? { ...prev, status } : prev))
     flash(`✓ Chat ${status}`); load('support', true)
   }
 
   // Poll the open thread and the list so replies arrive without a refresh
   useEffect(() => {
-    if (tab !== 'support') return
+    if (tab !== 'support' || !supportToken) return
     const id = setInterval(async () => {
-      const r = await fetch('/api/admin/support', { headers: authHeaders() })
+      const r = await fetch('/api/admin/support', { headers: supportHeaders() })
+      if (!r.ok) return
       const d = await r.json()
       if (Array.isArray(d)) setConversations(d)
       if (activeChat) {
-        const mr = await fetch(`/api/admin/support?conversation_id=${encodeURIComponent(activeChat.id)}`, { headers: authHeaders() })
+        const mr = await fetch(`/api/admin/support?conversation_id=${encodeURIComponent(activeChat.id)}`, { headers: supportHeaders() })
         const md = await mr.json()
         if (Array.isArray(md.messages)) {
           setChatMessages(prev => (md.messages.length === prev.length ? prev : md.messages))
@@ -1113,16 +1191,64 @@ function AdminContent() {
               )}
 
               {/* ── SUPPORT CHAT ─────────────────────────── */}
-              {tab === 'support' && (
-                <div>
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)', marginBottom: 20 }}>
-                    Support Chat ({conversations.length})
-                    {conversations.reduce((s, c) => s + c.admin_unread, 0) > 0 && (
-                      <span style={{ fontSize: 14, fontWeight: 700, background: '#fee2e2', color: '#991b1b', padding: '4px 12px', borderRadius: 20, marginLeft: 12 }}>
-                        {conversations.reduce((s, c) => s + c.admin_unread, 0)} unread
-                      </span>
+              {tab === 'support' && !supportToken && (
+                /* Locked — customer conversations need a second sign-in */
+                <div style={{ maxWidth: 420, margin: '40px auto' }}>
+                  <div style={{ background: 'var(--white)', borderRadius: 16, padding: 32, boxShadow: '0 2px 12px rgba(9,52,89,0.06)', textAlign: 'center' }}>
+                    <div style={{ width: 56, height: 56, borderRadius: 16, background: 'linear-gradient(135deg, var(--navy), #0e4a80)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
+                      <i className="fa-solid fa-lock" style={{ color: 'white', fontSize: 21 }} />
+                    </div>
+                    <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 23, fontWeight: 900, color: 'var(--heading)', marginBottom: 8 }}>
+                      Support Chat is locked
+                    </h2>
+                    <p style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.6, marginBottom: 24 }}>
+                      Customer conversations need a separate sign-in.
+                    </p>
+
+                    {!supportConfigured ? (
+                      <p style={{ fontSize: 13, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '12px 14px', textAlign: 'left', lineHeight: 1.6 }}>
+                        <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 7 }} />
+                        Not configured yet. Set <strong>SUPPORT_TAB_EMAIL</strong> and <strong>SUPPORT_TAB_PASSWORD</strong> in your Vercel environment variables, then redeploy.
+                      </p>
+                    ) : (
+                      <form onSubmit={unlockSupport} style={{ display: 'flex', flexDirection: 'column', gap: 12, textAlign: 'left' }}>
+                        <input type="email" value={gateEmail} onChange={e => setGateEmail(e.target.value)}
+                          placeholder="Email" autoComplete="off" required
+                          style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '12px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', background: 'var(--white)', color: 'var(--text-dark)' }} />
+                        <input type="password" value={gatePassword} onChange={e => setGatePassword(e.target.value)}
+                          placeholder="Password" autoComplete="off" required
+                          style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '12px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', background: 'var(--white)', color: 'var(--text-dark)' }} />
+                        {gateError && (
+                          <p style={{ fontSize: 12.5, color: '#b91c1c', fontWeight: 600, margin: 0 }}>
+                            <i className="fa-solid fa-circle-exclamation" style={{ marginRight: 6 }} />{gateError}
+                          </p>
+                        )}
+                        <button type="submit" disabled={gateBusy}
+                          style={{ background: 'var(--navy)', color: 'white', border: 'none', borderRadius: 10, padding: '13px', fontSize: 14, fontWeight: 800, cursor: gateBusy ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: gateBusy ? 0.65 : 1 }}>
+                          {gateBusy ? 'Checking…' : 'Unlock Support Chat'}
+                        </button>
+                      </form>
                     )}
-                  </h2>
+                  </div>
+                </div>
+              )}
+
+              {tab === 'support' && supportToken && (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)', margin: 0 }}>
+                      Support Chat ({conversations.length})
+                      {conversations.reduce((s, c) => s + c.admin_unread, 0) > 0 && (
+                        <span style={{ fontSize: 14, fontWeight: 700, background: '#fee2e2', color: '#991b1b', padding: '4px 12px', borderRadius: 20, marginLeft: 12 }}>
+                          {conversations.reduce((s, c) => s + c.admin_unread, 0)} unread
+                        </span>
+                      )}
+                    </h2>
+                    <button onClick={lockSupport}
+                      style={{ background: 'var(--gray)', color: 'var(--text-mid)', border: 'none', padding: '9px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <i className="fa-solid fa-lock" /> Lock
+                    </button>
+                  </div>
 
                   {conversations.length === 0 ? (
                     <div style={{ background: 'var(--white)', borderRadius: 16, padding: '60px 24px', textAlign: 'center', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
