@@ -12,6 +12,7 @@ import { SiteConfig, DEFAULT_CONFIG } from '@/lib/site-config'
 import { SiteWireConfig, DEFAULT_WIRE_CONFIG, normalizeWireConfig } from '@/lib/wire-config'
 import { SitePayLinkConfig, DEFAULT_PAY_LINK_CONFIG, normalizePayLinkConfig, isSafePayLinkUrl } from '@/lib/pay-link'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
+import { SupportConversationRow, SupportMessage } from '@/lib/support'
 
 const AdminCharts   = dynamic(() => import('@/components/AdminCharts'),  { ssr: false })
 const LandingEditor = dynamic(() => import('@/components/LandingEditor'), { ssr: false })
@@ -25,7 +26,7 @@ export default function AdminPage() {
   )
 } 
 
-type Tab = 'overview' | 'products' | 'orders' | 'customers' | 'agents' | 'sales' | 'agent-performance' | 'landing' | 'leads' | 'coupons' | 'settings' | 'rfs'
+type Tab = 'overview' | 'products' | 'orders' | 'customers' | 'agents' | 'sales' | 'agent-performance' | 'landing' | 'leads' | 'coupons' | 'settings' | 'rfs' | 'support'
 
 const TIER_STYLE: Record<string, { bg: string; text: string }> = {
   bronze:   { bg: '#fef3c7', text: '#92400e' },
@@ -395,6 +396,13 @@ function AdminContent() {
   const [savingPayLink, setSavingPayLink] = useState(false)
   const [payLinkProducts, setPayLinkProducts] = useState<{ id: string; name: string; price: number }[]>([])
 
+  // Support chat
+  const [conversations, setConversations]       = useState<SupportConversationRow[]>([])
+  const [activeChat, setActiveChat]             = useState<SupportConversationRow | null>(null)
+  const [chatMessages, setChatMessages]         = useState<SupportMessage[]>([])
+  const [replyDraft, setReplyDraft]             = useState('')
+  const [sendingReply, setSendingReply]         = useState(false)
+
   // New lead form
   const [showNewLead, setShowNewLead]       = useState(false)
   const [newLeadName, setNewLeadName]       = useState('')
@@ -481,6 +489,9 @@ function AdminContent() {
       ])
       setLeads(Array.isArray(lr) ? lr : [])
       setApprovedAgents((Array.isArray(ar) ? ar as AgentProfile[] : []).filter(a => a.status === 'approved'))
+    } else if (t === 'support') {
+      const r = await fetch('/api/admin/support', { headers: authHeaders() })
+      const d = await r.json(); setConversations(Array.isArray(d) ? d : [])
     } else if (t === 'coupons') {
       const r = await fetch('/api/admin/coupons', { headers: authHeaders() })
       const d = await r.json(); setCoupons(Array.isArray(d) ? d : [])
@@ -745,12 +756,71 @@ function AdminContent() {
     flash(`✓ Agent ${status}`); load('agents', true)
   }
 
+  // ── Support chat ────────────────────────────────────────────
+  const openChat = useCallback(async (c: SupportConversationRow) => {
+    setActiveChat(c)
+    setReplyDraft('')
+    const r = await fetch(`/api/admin/support?conversation_id=${encodeURIComponent(c.id)}`, { headers: authHeaders() })
+    const d = await r.json()
+    setChatMessages(Array.isArray(d.messages) ? d.messages : [])
+    // Opening the thread clears its unread badge server-side; mirror that here
+    // so the list doesn't keep showing a count that no longer exists.
+    setConversations(prev => prev.map(x => (x.id === c.id ? { ...x, admin_unread: 0 } : x)))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function sendReply() {
+    const body = replyDraft.trim()
+    if (!body || !activeChat || sendingReply) return
+    setSendingReply(true)
+    const r = await fetch('/api/admin/support', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ conversation_id: activeChat.id, body }),
+    })
+    const d = await r.json()
+    if (r.ok && d.message) {
+      setChatMessages(prev => [...prev, d.message])
+      setReplyDraft('')
+      load('support', true)
+    } else {
+      flash(d.error ?? 'Failed to send')
+    }
+    setSendingReply(false)
+  }
+
+  async function setChatStatus(id: string, status: 'open' | 'closed') {
+    await fetch('/api/admin/support', { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ conversation_id: id, status }) })
+    setActiveChat(prev => (prev && prev.id === id ? { ...prev, status } : prev))
+    flash(`✓ Chat ${status}`); load('support', true)
+  }
+
+  // Poll the open thread and the list so replies arrive without a refresh
+  useEffect(() => {
+    if (tab !== 'support') return
+    const id = setInterval(async () => {
+      const r = await fetch('/api/admin/support', { headers: authHeaders() })
+      const d = await r.json()
+      if (Array.isArray(d)) setConversations(d)
+      if (activeChat) {
+        const mr = await fetch(`/api/admin/support?conversation_id=${encodeURIComponent(activeChat.id)}`, { headers: authHeaders() })
+        const md = await mr.json()
+        if (Array.isArray(md.messages)) {
+          setChatMessages(prev => (md.messages.length === prev.length ? prev : md.messages))
+        }
+      }
+    }, 8000)
+    return () => clearInterval(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, activeChat])
+
   const TABS: { id: Tab; icon: string; label: string }[] = [
     { id: 'overview',          icon: 'fa-chart-line',   label: 'Overview' },
     { id: 'products',          icon: 'fa-box',          label: 'Products' },
     { id: 'orders',            icon: 'fa-receipt',      label: 'Orders' },
     { id: 'customers',         icon: 'fa-users',        label: 'Customers' },
     { id: 'agents',            icon: 'fa-headset',      label: 'Agents' },
+    { id: 'support',           icon: 'fa-comments',     label: 'Support Chat' },
     { id: 'sales',             icon: 'fa-chart-pie',    label: 'Sales' },
     { id: 'agent-performance', icon: 'fa-ranking-star', label: 'Agent Performance' },
     { id: 'leads',             icon: 'fa-phone',        label: 'Leads' },
@@ -1039,6 +1109,137 @@ function AdminContent() {
                       </tbody>
                     </table>
                   </div>
+                </div>
+              )}
+
+              {/* ── SUPPORT CHAT ─────────────────────────── */}
+              {tab === 'support' && (
+                <div>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 900, color: 'var(--heading)', marginBottom: 20 }}>
+                    Support Chat ({conversations.length})
+                    {conversations.reduce((s, c) => s + c.admin_unread, 0) > 0 && (
+                      <span style={{ fontSize: 14, fontWeight: 700, background: '#fee2e2', color: '#991b1b', padding: '4px 12px', borderRadius: 20, marginLeft: 12 }}>
+                        {conversations.reduce((s, c) => s + c.admin_unread, 0)} unread
+                      </span>
+                    )}
+                  </h2>
+
+                  {conversations.length === 0 ? (
+                    <div style={{ background: 'var(--white)', borderRadius: 16, padding: '60px 24px', textAlign: 'center', boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
+                      <i className="fa-regular fa-comments" style={{ fontSize: 40, color: 'var(--text-light)', opacity: 0.5, marginBottom: 14, display: 'block' }} />
+                      <p style={{ fontSize: 14, color: 'var(--text-mid)', margin: 0 }}>
+                        No conversations yet. They appear here as soon as a customer starts a chat.
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 320px) 1fr', gap: 16, alignItems: 'start' }}>
+                      {/* Conversation list */}
+                      <div style={{ background: 'var(--white)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(9,52,89,0.06)', maxHeight: '68vh', overflowY: 'auto' }}>
+                        {conversations.map(c => {
+                          const active = activeChat?.id === c.id
+                          return (
+                            <button key={c.id} onClick={() => openChat(c)}
+                              style={{
+                                display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer',
+                                background: active ? 'rgba(88,148,143,0.10)' : 'transparent',
+                                border: 'none', borderLeft: `3px solid ${active ? 'var(--teal)' : 'transparent'}`,
+                                borderBottom: '1px solid var(--gray)', padding: '13px 16px', fontFamily: 'inherit',
+                              }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                                <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {c.email}
+                                </span>
+                                {c.admin_unread > 0 && (
+                                  <span style={{ background: '#dc2626', color: 'white', fontSize: 10, fontWeight: 800, borderRadius: 20, padding: '2px 7px', flexShrink: 0 }}>
+                                    {c.admin_unread}
+                                  </span>
+                                )}
+                              </div>
+                              <p style={{ fontSize: 11.5, color: 'var(--text-light)', margin: '4px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {c.last_sender === 'admin' && <span style={{ color: 'var(--teal)', fontWeight: 700 }}>You: </span>}
+                                {c.last_message ?? 'No messages yet'}
+                              </p>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5 }}>
+                                <span style={{ fontSize: 10, color: 'var(--text-light)' }}>
+                                  {new Date(c.last_message_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                </span>
+                                {c.status === 'closed' && (
+                                  <span style={{ fontSize: 9.5, fontWeight: 800, background: 'var(--gray)', color: 'var(--text-mid)', padding: '1px 6px', borderRadius: 20, textTransform: 'uppercase' }}>
+                                    Closed
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+
+                      {/* Thread */}
+                      <div style={{ background: 'var(--white)', borderRadius: 16, boxShadow: '0 2px 12px rgba(9,52,89,0.06)', display: 'flex', flexDirection: 'column', minHeight: 420, maxHeight: '68vh' }}>
+                        {!activeChat ? (
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-light)', fontSize: 14, padding: 40, textAlign: 'center' }}>
+                            Pick a conversation to read and reply.
+                          </div>
+                        ) : (
+                          <>
+                            <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--gray)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                              <div style={{ minWidth: 0 }}>
+                                <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-dark)', margin: 0 }}>{activeChat.email}</p>
+                                <p style={{ fontSize: 11.5, color: 'var(--text-light)', margin: '2px 0 0' }}>
+                                  {chatMessages.length} message{chatMessages.length === 1 ? '' : 's'} · started {new Date(activeChat.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <button onClick={() => setChatStatus(activeChat.id, activeChat.status === 'closed' ? 'open' : 'closed')}
+                                style={{ background: activeChat.status === 'closed' ? 'var(--teal)' : 'var(--gray)', color: activeChat.status === 'closed' ? 'white' : 'var(--text-mid)', border: 'none', padding: '7px 14px', borderRadius: 20, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+                                {activeChat.status === 'closed' ? 'Reopen' : 'Mark resolved'}
+                              </button>
+                            </div>
+
+                            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                              {chatMessages.map(m => {
+                                const mine = m.sender === 'admin'
+                                return (
+                                  <div key={m.id} style={{ display: 'flex', justifyContent: mine ? 'flex-end' : 'flex-start' }}>
+                                    <div style={{
+                                      maxWidth: '76%',
+                                      background: mine ? 'linear-gradient(135deg, var(--navy), #0e4a80)' : 'var(--off-white)',
+                                      color: mine ? 'white' : 'var(--text-dark)',
+                                      border: mine ? 'none' : '1px solid var(--gray)',
+                                      borderRadius: mine ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                                      padding: '10px 14px', fontSize: 13.5, lineHeight: 1.6,
+                                      whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                                    }}>
+                                      {m.body}
+                                      <span style={{ display: 'block', fontSize: 10, opacity: 0.6, marginTop: 5, textAlign: 'right' }}>
+                                        {new Date(m.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+
+                            <div style={{ padding: '12px 18px', borderTop: '1px solid var(--gray)', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+                              <textarea
+                                value={replyDraft}
+                                onChange={e => setReplyDraft(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply() } }}
+                                placeholder="Write a reply…"
+                                rows={1}
+                                maxLength={2000}
+                                style={{ flex: 1, border: '2px solid var(--gray)', borderRadius: 10, padding: '11px 14px', fontSize: 13.5, fontFamily: 'inherit', outline: 'none', resize: 'none', maxHeight: 120, boxSizing: 'border-box', background: 'var(--white)', color: 'var(--text-dark)' }}
+                              />
+                              <button onClick={sendReply} disabled={!replyDraft.trim() || sendingReply}
+                                style={{ background: replyDraft.trim() ? 'var(--navy)' : 'var(--gray)', color: replyDraft.trim() ? 'white' : 'var(--text-light)', border: 'none', borderRadius: 10, width: 44, height: 44, cursor: replyDraft.trim() && !sendingReply ? 'pointer' : 'not-allowed', fontSize: 14, flexShrink: 0 }}
+                                aria-label="Send reply">
+                                <i className={sendingReply ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-paper-plane'} />
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

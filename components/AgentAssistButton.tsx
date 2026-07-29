@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
+import SupportChat from './SupportChat'
 
 const PRODUCTS = [
   'Medallions & Gold Bars',
@@ -18,7 +19,8 @@ const PRODUCTS = [
 export default function AgentAssistButton() {
   const { user, profile, isAdmin, isApprovedAgent } = useAuth()
   const [open, setOpen] = useState(false)
-  const [step, setStep] = useState<'form' | 'success'>('form')
+  // 'choose' is the hub: chat with support now, or leave details for a callback
+  const [step, setStep] = useState<'choose' | 'chat' | 'form' | 'success'>('choose')
 
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -37,7 +39,7 @@ export default function AgentAssistButton() {
   function handleClose() {
     setOpen(false)
     setTimeout(() => {
-      setStep('form')
+      setStep('choose')
       setError('')
       if (!profile?.full_name) setName('')
       if (!profile?.phone) setPhone('')
@@ -149,15 +151,89 @@ export default function AgentAssistButton() {
             </div>
 
             <div style={{ maxWidth: 520, margin: '0 auto', padding: '8px 28px 40px' }}>
-              {step === 'form' ? (
+              {step === 'choose' ? (
+                /* Hub — pick live chat or a callback request */
                 <>
-                  {/* Header */}
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                         <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, var(--navy), #0e4a80)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <i className="fa-solid fa-headset" style={{ color: 'white', fontSize: 16 }} />
                         </div>
+                        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 900, color: 'var(--heading)', margin: 0 }}>
+                          How can we help?
+                        </h2>
+                      </div>
+                      <p style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.6, margin: 0 }}>
+                        Chat with us now, or leave your details and an agent will call you.
+                      </p>
+                    </div>
+                    <button onClick={handleClose}
+                      style={{ background: 'var(--gray)', border: 'none', width: 32, height: 32, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-mid)', flexShrink: 0, marginLeft: 12 }}>
+                      <i className="fa-solid fa-xmark" />
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {[
+                      { id: 'chat' as const, icon: 'fa-comments', title: 'Chat with support', sub: 'Message us now — replies land right here', accent: 'var(--teal)' },
+                      { id: 'form' as const, icon: 'fa-phone',    title: 'Request a callback', sub: 'Leave your number and an agent will reach out', accent: 'var(--navy)' },
+                    ].map(opt => (
+                      <motion.button
+                        key={opt.id}
+                        onClick={() => setStep(opt.id)}
+                        whileHover={{ scale: 1.015 }}
+                        whileTap={{ scale: 0.985 }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
+                          background: 'var(--white)', border: '2px solid var(--gray)',
+                          borderRadius: 16, padding: '18px 20px', cursor: 'pointer',
+                          fontFamily: 'inherit', width: '100%',
+                        }}
+                      >
+                        <div style={{ width: 44, height: 44, borderRadius: 12, background: opt.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <i className={`fa-solid ${opt.icon}`} style={{ color: 'white', fontSize: 17 }} />
+                        </div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <p style={{ fontSize: 15, fontWeight: 800, color: 'var(--heading)', margin: '0 0 3px' }}>{opt.title}</p>
+                          <p style={{ fontSize: 12.5, color: 'var(--text-mid)', margin: 0, lineHeight: 1.5 }}>{opt.sub}</p>
+                        </div>
+                        <i className="fa-solid fa-chevron-right" style={{ color: 'var(--text-light)', fontSize: 13, flexShrink: 0 }} />
+                      </motion.button>
+                    ))}
+                  </div>
+                </>
+              ) : step === 'chat' ? (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <button onClick={() => setStep('choose')}
+                        style={{ background: 'var(--gray)', border: 'none', width: 32, height: 32, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--text-mid)' }}
+                        aria-label="Back">
+                        <i className="fa-solid fa-chevron-left" />
+                      </button>
+                      <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 21, fontWeight: 900, color: 'var(--heading)', margin: 0 }}>
+                        Chat with support
+                      </h2>
+                    </div>
+                    <button onClick={handleClose}
+                      style={{ background: 'var(--gray)', border: 'none', width: 32, height: 32, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-mid)', flexShrink: 0, marginLeft: 12 }}>
+                      <i className="fa-solid fa-xmark" />
+                    </button>
+                  </div>
+                  <SupportChat />
+                </>
+              ) : step === 'form' ? (
+                <>
+                  {/* Header */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                        <button onClick={() => setStep('choose')} type="button"
+                          style={{ background: 'var(--gray)', border: 'none', width: 32, height: 32, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--text-mid)', flexShrink: 0 }}
+                          aria-label="Back">
+                          <i className="fa-solid fa-chevron-left" />
+                        </button>
                         <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 900, color: 'var(--heading)', margin: 0 }}>
                           Talk to an Agent
                         </h2>
