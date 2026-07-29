@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAdminSupabase } from '@/lib/supabase-admin'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
+import { resolveAgentCode } from '@/lib/agent-attribution'
 import { CartItem } from '@/lib/types'
 import { sendOrderConfirmation } from '@/lib/email'
 import { applyPostPaymentRewards } from '@/lib/order-fulfillment'
@@ -34,9 +35,6 @@ export async function POST(request: Request) {
       shipping_address?: Record<string, string>
       agent_code?: string
     }
-
-    // Only accept a clean 4–6 digit agent ID (from an agent's generated link)
-    const attributedAgent = typeof agent_code === 'string' && /^\d{4,6}$/.test(agent_code) ? agent_code : null
 
     if (!orderID)
       return NextResponse.json({ error: 'Missing PayPal order ID' }, { status: 400 })
@@ -72,6 +70,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Could not read captured amount' }, { status: 500 })
 
     const admin = getAdminSupabase()
+
+    // Credit the referring agent only if the code maps to a live, approved
+    // agent — a suspended agent's old links must not keep earning
+    const attributedAgent = await resolveAgentCode(admin, agent_code)
 
     // Check for discount/gift card by querying real product names from DB
     const { data: dbProducts } = await admin

@@ -3,6 +3,7 @@ import { getAdminSupabase } from '@/lib/supabase-admin'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { normalizeWireConfig } from '@/lib/wire-config'
 import { normalizePayLinkConfig, findPayLink } from '@/lib/pay-link'
+import { resolveAgentCode } from '@/lib/agent-attribution'
 import { getSiteConfig } from '@/lib/site-config'
 import { sendWireInstructions } from '@/lib/email'
 
@@ -41,8 +42,6 @@ export async function POST(request: Request) {
     if (!email?.trim())
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })
 
-    const attributedAgent = typeof agent_code === 'string' && /^\d{4,6}$/.test(agent_code) ? agent_code : null
-
     const authToken = request.headers.get('authorization')?.replace('Bearer ', '').trim()
     let userId: string | null = null
     if (authToken) {
@@ -51,6 +50,11 @@ export async function POST(request: Request) {
     }
 
     const admin = getAdminSupabase()
+
+    // Credit the referring agent only if the code maps to a live, approved
+    // agent — a suspended agent's old links must not keep earning
+    const attributedAgent = await resolveAgentCode(admin, agent_code)
+
     const { data: dbProducts } = await admin
       .from('products')
       .select('id, name, price, quantity_options')

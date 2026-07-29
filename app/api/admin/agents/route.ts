@@ -41,6 +41,38 @@ export async function GET(request: Request) {
   return NextResponse.json(enriched)
 }
 
+// Leads a suspended/rejected agent was working stay pinned to them otherwise:
+// the pool queue only shows rows with claimed_by AND agent_id null, so nobody
+// else can ever pick them up and those customers stop being called. Hand them
+// back to the pool, keeping any disposition already earned — only 'assigned'
+// has to reset to 'new', since it isn't a queue-visible status.
+//
+// Terminal outcomes ('converted', 'not_interested', 'do_not_contact') are left
+// alone: they're finished, and requeuing them would put dead leads back in
+// front of agents and detach converted sales from the agent who closed them.
+const RELEASABLE_STATUSES = ['attempted', 'interested', 'follow_up']
+
+async function releaseLeads(admin: ReturnType<typeof getAdminSupabase>, userId: string) {
+  const cleared = {
+    claimed_by: null,
+    claimed_at: null,
+    agent_id: null,
+    assigned_agent_name: null,
+  }
+
+  await admin
+    .from('leads')
+    .update({ ...cleared, status: 'new' })
+    .eq('agent_id', userId)
+    .eq('status', 'assigned')
+
+  await admin
+    .from('leads')
+    .update(cleared)
+    .eq('agent_id', userId)
+    .in('status', RELEASABLE_STATUSES)
+}
+
 export async function PATCH(request: Request) {
   const auth = await requireAdmin(request)
   if (isNextResponse(auth)) return auth
@@ -75,6 +107,7 @@ export async function PATCH(request: Request) {
     await admin.from('profiles').update({ role: 'agent' }).eq('id', user_id)
   } else if (status === 'rejected' || status === 'suspended') {
     await admin.from('profiles').update({ role: 'customer' }).eq('id', user_id)
+    await releaseLeads(admin, user_id)
   }
 
   return NextResponse.json(data)
