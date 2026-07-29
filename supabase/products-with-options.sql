@@ -84,11 +84,13 @@ VALUES
   'https://d2j6dbq0eux0bg.cloudfront.net/images/136003751/products/835331761/5762178792.webp',
   'Collectibles', TRUE,
   'Sale Of This Item Is Only Open For The First 1000 Patriots. Christmas demand for the Bitcoin Crypto Passport is skyrocketing — secure yours before this limited Christmas pricing ends.',
+  -- Three bundles only — each one is paid through its own fixed-amount pay
+  -- link, so every price here must match a link in site_config.pay_link.
+  -- See crypto-passport-pricing.sql.
   '[
-    {"label": "1X Bitcoin Crypto Passport", "qty": 1, "bundle_total": 399},
-    {"label": "3 (+$200.00)", "qty": 3, "bundle_total": 599},
-    {"label": "5 (+$700.00)", "qty": 5, "bundle_total": 1099},
-    {"label": "10 (+$1000.00)", "qty": 10, "bundle_total": 1399}
+    {"label": "1PCS - Bitcoin Crypto Passport", "qty": 1, "bundle_total": 399},
+    {"label": "3PCS - Bitcoin Crypto Passport (+$200.00)", "qty": 3, "bundle_total": 599},
+    {"label": "10PCS - Bitcoin Crypto Passport (+$900.00)", "qty": 10, "bundle_total": 1299}
   ]'::jsonb
 ),
 
