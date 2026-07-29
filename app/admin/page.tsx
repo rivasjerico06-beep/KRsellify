@@ -369,7 +369,7 @@ function ImportModal({
 }
 
 function AdminContent() {
-  const { profile, session, signOut } = useAuth()
+  const { user, profile, session, signOut } = useAuth()
   const { isDark } = useTheme()
   const D = {
     drawerBg: isDark ? '#0f1e2e' : '#f1f5f9',
@@ -411,6 +411,13 @@ function AdminContent() {
   const [gatePassword, setGatePassword]         = useState('')
   const [gateBusy, setGateBusy]                 = useState(false)
   const [testingNotify, setTestingNotify]       = useState(false)
+
+  // Change password
+  const [curPw, setCurPw]         = useState('')
+  const [newPw, setNewPw]         = useState('')
+  const [confirmPw, setConfirmPw] = useState('')
+  const [pwBusy, setPwBusy]       = useState(false)
+  const [pwMsg, setPwMsg]         = useState<{ ok: boolean; text: string } | null>(null)
   const [gateError, setGateError]               = useState('')
   const [conversations, setConversations]       = useState<SupportConversationRow[]>([])
   const [activeChat, setActiveChat]             = useState<SupportConversationRow | null>(null)
@@ -826,6 +833,41 @@ function AdminContent() {
       setGateError('Could not reach the server.')
     }
     setGateBusy(false)
+  }
+
+  async function changePassword(e: React.FormEvent) {
+    e.preventDefault()
+    if (pwBusy) return
+    setPwMsg(null)
+
+    if (newPw.length < 8)   { setPwMsg({ ok: false, text: 'New password must be at least 8 characters.' }); return }
+    if (newPw !== confirmPw){ setPwMsg({ ok: false, text: 'New passwords don’t match.' }); return }
+    if (newPw === curPw)    { setPwMsg({ ok: false, text: 'New password must be different from the current one.' }); return }
+
+    const email = user?.email
+    if (!email) { setPwMsg({ ok: false, text: 'Could not read your account email. Try signing out and back in.' }); return }
+
+    setPwBusy(true)
+    const supabase = getBrowserSupabase()
+
+    // Supabase lets any open session set a new password without proving the
+    // old one, so check it explicitly first — otherwise an unattended
+    // dashboard is enough for someone to lock the real owner out.
+    const { error: reauthError } = await supabase.auth.signInWithPassword({ email, password: curPw })
+    if (reauthError) {
+      setPwMsg({ ok: false, text: 'Current password is incorrect.' })
+      setPwBusy(false)
+      return
+    }
+
+    const { error } = await supabase.auth.updateUser({ password: newPw })
+    if (error) {
+      setPwMsg({ ok: false, text: error.message })
+    } else {
+      setPwMsg({ ok: true, text: 'Password updated. Use it next time you sign in.' })
+      setCurPw(''); setNewPw(''); setConfirmPw('')
+    }
+    setPwBusy(false)
   }
 
   async function testNotify() {
@@ -2141,6 +2183,41 @@ function AdminContent() {
               {tab === 'settings' && (
                 <div style={{ maxWidth: 560 }}>
                   <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--heading)', marginBottom: 24 }}>Settings</h2>
+
+                  {/* Change password */}
+                  <div style={{ background: 'var(--white)', borderRadius: 14, border: '1px solid var(--gray)', padding: '28px 32px', marginBottom: 20 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                      <i className="fa-solid fa-key" style={{ color: 'var(--teal)', fontSize: 17 }} />
+                      <h3 style={{ fontSize: 17, fontWeight: 800, color: 'var(--heading)', margin: 0 }}>Change Password</h3>
+                    </div>
+                    <p style={{ fontSize: 14, color: 'var(--text-light)', marginBottom: 20, lineHeight: 1.6 }}>
+                      Updates the password for <strong style={{ color: 'var(--text-dark)' }}>{user?.email ?? 'your account'}</strong>. You&rsquo;ll stay signed in here; other devices keep their session until it expires.
+                    </p>
+
+                    <form onSubmit={changePassword} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <input type="password" value={curPw} onChange={e => setCurPw(e.target.value)}
+                        placeholder="Current password" autoComplete="current-password" required
+                        style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '12px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', background: 'var(--white)', color: 'var(--text-dark)' }} />
+                      <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)}
+                        placeholder="New password (at least 8 characters)" autoComplete="new-password" required
+                        style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '12px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', background: 'var(--white)', color: 'var(--text-dark)' }} />
+                      <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)}
+                        placeholder="Confirm new password" autoComplete="new-password" required
+                        style={{ width: '100%', border: '2px solid var(--gray)', borderRadius: 10, padding: '12px 14px', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', background: 'var(--white)', color: 'var(--text-dark)' }} />
+
+                      {pwMsg && (
+                        <p style={{ fontSize: 13, fontWeight: 600, margin: 0, color: pwMsg.ok ? '#15803d' : '#b91c1c' }}>
+                          <i className={`fa-solid ${pwMsg.ok ? 'fa-circle-check' : 'fa-circle-exclamation'}`} style={{ marginRight: 6 }} />
+                          {pwMsg.text}
+                        </p>
+                      )}
+
+                      <button type="submit" disabled={pwBusy}
+                        style={{ background: 'var(--navy)', color: 'white', border: 'none', borderRadius: 10, padding: '12px 22px', fontSize: 14, fontWeight: 700, cursor: pwBusy ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: pwBusy ? 0.65 : 1, alignSelf: 'flex-start' }}>
+                        {pwBusy ? 'Updating…' : 'Update Password'}
+                      </button>
+                    </form>
+                  </div>
 
                   {/* VIP Price */}
                   <div style={{ background: 'var(--white)', borderRadius: 14, border: '1px solid var(--gray)', padding: '28px 32px', marginBottom: 20 }}>
