@@ -3,35 +3,15 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useSiteConfig } from '@/context/SiteConfigContext'
 
-const SHOP = [
-  { label: 'All Products',    href: '/shop' },
-  { label: 'Medallions',      href: '/shop?cat=medallions' },
-  { label: 'Collectibles',    href: '/shop?cat=collectibles' },
-  { label: 'Crypto Items',    href: '/shop?cat=crypto' },
-  { label: 'Apparel',         href: '/shop?cat=apparel' },
-  { label: 'Accessories',     href: '/shop?cat=accessories' },
-]
-const SUPPORT = [
-  { label: 'Track Your Order',    href: '/track-order' },
-  { label: 'FAQ',                 href: '/faq' },
-  { label: 'Shipping Info',       href: '/shipping' },
-  { label: 'Returns & Exchanges', href: '/returns' },
-  { label: 'Contact Us',          href: '/contact' },
-]
-const COMPANY = [
-  { label: 'About Maga Offers', href: '/about' },
-  { label: 'Privacy Policy',  href: '/privacy' },
-  { label: 'Terms of Service',href: '/terms' },
-]
-const SOCIALS = [
-  { icon: 'fa-facebook-f', href: 'https://facebook.com/themagaoffers' },
-  { icon: 'fa-x-twitter',  href: 'https://x.com/themagaoffers' },
-  { icon: 'fa-instagram',  href: 'https://instagram.com/themagaoffers' },
-  { icon: 'fa-youtube',    href: 'https://youtube.com/@themagaoffers' },
-]
 
 export default function Footer() {
+  const {
+    blurb, shop: SHOP, support: SUPPORT, company: COMPANY,
+    socials: SOCIALS, paymentBadges, copyright,
+  } = useSiteConfig().footer_config
+
   return (
     <footer style={{ background: 'var(--navy-dark)', color: 'rgba(255,255,255,0.85)', padding: '64px 28px 0' }}>
       <div className="mo-footer-grid" style={{ maxWidth: 1340, margin: '0 auto' }}>
@@ -41,7 +21,7 @@ export default function Footer() {
             <Image src="/logo.png" alt="Maga Offers" width={72} height={72} style={{ objectFit: 'contain', borderRadius: 6 }} />
           </Link>
           <p style={{ fontSize: 15, lineHeight: 1.75, maxWidth: 280, marginBottom: 24 }}>
-            Premium collectibles, rare finds, and exclusive memorabilia — authenticated and shipped to your door.
+            {blurb}
           </p>
           <div style={{ display: 'flex', gap: 10 }}>
             {SOCIALS.map(s => (
@@ -99,7 +79,7 @@ export default function Footer() {
 
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.10)', padding: '22px 0', maxWidth: 1340, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
         <p style={{ fontSize: 14, display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.75)' }}>
-          © 2026 Maga Offers. All rights reserved. Made with{' '}
+          {copyright}{' '}
           <i className="fa-solid fa-heart" style={{ color: 'var(--teal-light)' }} />
         </p>
         {/* wraps so the links and card badges don't push the page wider than
@@ -112,7 +92,7 @@ export default function Footer() {
             onMouseEnter={e => (e.currentTarget.style.color = 'var(--teal-light)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.70)')}>Terms</Link>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {['VISA', 'MC', 'AMEX', 'PayPal'].map(p => (
+            {paymentBadges.map(p => (
               <span key={p} style={{ background: 'rgba(255,255,255,0.12)', padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 800, color: 'rgba(255,255,255,0.80)', letterSpacing: '0.05em' }}>{p}</span>
             ))}
           </div>

@@ -24,6 +24,7 @@ function readSupportToken(): string | null {
 const AdminCharts   = dynamic(() => import('@/components/AdminCharts'),  { ssr: false })
 const LandingEditor = dynamic(() => import('@/components/LandingEditor'), { ssr: false })
 const RFSTab        = dynamic(() => import('./rfs-tab'),                  { ssr: false })
+const OwnerConsole  = dynamic(() => import('./owner-console'),            { ssr: false })
 
 export default function AdminPage() {
   return (
@@ -33,7 +34,7 @@ export default function AdminPage() {
   )
 } 
 
-type Tab = 'overview' | 'products' | 'orders' | 'customers' | 'agents' | 'sales' | 'agent-performance' | 'landing' | 'leads' | 'coupons' | 'settings' | 'rfs' | 'support'
+type Tab = 'overview' | 'products' | 'orders' | 'customers' | 'agents' | 'sales' | 'agent-performance' | 'landing' | 'leads' | 'coupons' | 'settings' | 'rfs' | 'support' | 'owner'
 
 const TIER_STYLE: Record<string, { bg: string; text: string }> = {
   bronze:   { bg: '#fef3c7', text: '#92400e' },
@@ -967,7 +968,14 @@ function AdminContent() {
     { id: 'landing',           icon: 'fa-paintbrush',   label: 'Landing Page' },
     { id: 'settings',          icon: 'fa-gear',         label: 'Settings' },
     { id: 'rfs',              icon: 'fa-star',         label: 'RFS Portal' },
+    // Owner Console is appended below, for the owner only
   ]
+
+  // Kept out of the array above so the tab isn't rendered at all for other
+  // admins. The writes it performs are owner-gated server-side regardless.
+  if (isRfsOwner(user?.email)) {
+    TABS.push({ id: 'owner', icon: 'fa-crown', label: 'Owner Console' })
+  }
 
   const pendingAgents      = agents.filter(a => a.status === 'pending').length
   const revenue            = orders.filter(o => o.status === 'delivered').reduce((s, o) => s + Number(o.total), 0)
@@ -2529,6 +2537,11 @@ function AdminContent() {
               {/* ── RFS PORTAL ─────────────────────────────────── */}
               {tab === 'rfs' && (
                 <RFSTab authHeaders={authHeaders} />
+              )}
+
+              {/* ── OWNER CONSOLE ──────────────────────────────── */}
+              {tab === 'owner' && isRfsOwner(user?.email) && (
+                <OwnerConsole authHeaders={authHeaders} />
               )}
 
             </motion.div>

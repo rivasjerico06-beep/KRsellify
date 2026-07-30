@@ -1,7 +1,17 @@
+import { cache } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { SiteWireConfig, DEFAULT_WIRE_CONFIG } from './wire-config'
 import { SitePayLinkConfig, DEFAULT_PAY_LINK_CONFIG } from './pay-link'
 import { SiteRfsConfig, DEFAULT_RFS_CONFIG } from './rfs-config'
+import {
+  SiteNavConfig, DEFAULT_NAV_CONFIG,
+  SiteFooterConfig, DEFAULT_FOOTER_CONFIG,
+  SiteCategoriesConfig, DEFAULT_CATEGORIES_CONFIG,
+  SiteIdentityConfig, DEFAULT_IDENTITY_CONFIG,
+  SitePaymentsConfig, DEFAULT_PAYMENTS_CONFIG,
+  normalizeNavConfig, normalizeFooterConfig, normalizeCategoriesConfig,
+  normalizeIdentityConfig, normalizePaymentsConfig,
+} from './owner-config'
 
 export interface SiteAnnounceBar {
   visible: boolean
@@ -49,6 +59,11 @@ export interface SiteConfig {
   wire_config: SiteWireConfig
   pay_link: SitePayLinkConfig
   rfs_config: SiteRfsConfig
+  nav_config: SiteNavConfig
+  footer_config: SiteFooterConfig
+  categories_config: SiteCategoriesConfig
+  site_identity: SiteIdentityConfig
+  payments_config: SitePaymentsConfig
 }
 
 export const DEFAULT_CONFIG: SiteConfig = {
@@ -114,9 +129,35 @@ export const DEFAULT_CONFIG: SiteConfig = {
   wire_config: DEFAULT_WIRE_CONFIG,
   pay_link: DEFAULT_PAY_LINK_CONFIG,
   rfs_config: DEFAULT_RFS_CONFIG,
+  nav_config: DEFAULT_NAV_CONFIG,
+  footer_config: DEFAULT_FOOTER_CONFIG,
+  categories_config: DEFAULT_CATEGORIES_CONFIG,
+  site_identity: DEFAULT_IDENTITY_CONFIG,
+  payments_config: DEFAULT_PAYMENTS_CONFIG,
 }
 
-export async function getSiteConfig(): Promise<SiteConfig> {
+/**
+ * Owner-editable content is normalized here rather than at each call site,
+ * because these values now reach client components through a context and there
+ * is no single consumer left to do it. A half-written row must not be able to
+ * blank out the header or the footer.
+ */
+function normalizeOwnerKeys(cfg: SiteConfig): SiteConfig {
+  return {
+    ...cfg,
+    nav_config:        normalizeNavConfig(cfg.nav_config),
+    footer_config:     normalizeFooterConfig(cfg.footer_config),
+    categories_config: normalizeCategoriesConfig(cfg.categories_config),
+    site_identity:     normalizeIdentityConfig(cfg.site_identity),
+    payments_config:   normalizePaymentsConfig(cfg.payments_config),
+  }
+}
+
+/**
+ * Wrapped in React's cache() so a request that needs the config in both the
+ * root layout and the page itself makes one query, not two.
+ */
+export const getSiteConfig = cache(async (): Promise<SiteConfig> => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!url || !key || url.includes('your-project-id')) return DEFAULT_CONFIG
@@ -132,8 +173,8 @@ export async function getSiteConfig(): Promise<SiteConfig> {
         (merged as unknown as Record<string, unknown>)[row.key] = row.value
       }
     }
-    return merged
+    return normalizeOwnerKeys(merged)
   } catch {
     return DEFAULT_CONFIG
   }
-}
+})

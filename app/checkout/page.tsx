@@ -8,7 +8,7 @@ import { motion } from 'framer-motion'
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
-import { PAYMENTS_UNDER_MAINTENANCE } from '@/lib/payments-maintenance'
+import { useSiteConfig } from '@/context/SiteConfigContext'
 import PaymentMaintenanceNotice from '@/components/PaymentMaintenanceNotice'
 import { SiteWireConfig, normalizeWireConfig, wireFieldList } from '@/lib/wire-config'
 import { SitePayLinkConfig, normalizePayLinkConfig, findPayLink } from '@/lib/pay-link'
@@ -38,6 +38,7 @@ function readAgentRef(): string | undefined {
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart, updateQty, removeFromCart, changeBundleTier, showToast } = useCart()
   const { user, session } = useAuth()
+  const paymentsMaintenance = useSiteConfig().payments_config.maintenance
   const router = useRouter()
 
   const [email, setEmail] = useState('')
@@ -765,7 +766,7 @@ export default function CheckoutPage() {
                 </p>
               </div>
             )
-          ) : PAYMENTS_UNDER_MAINTENANCE ? (
+          ) : paymentsMaintenance ? (
             <PaymentMaintenanceNotice />
           ) : emailMissing ? (
             <div style={{ textAlign: 'center', padding: '18px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)', marginBottom: 4 }}>

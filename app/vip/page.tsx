@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
-import { PAYMENTS_UNDER_MAINTENANCE } from '@/lib/payments-maintenance'
+import { useSiteConfig } from '@/context/SiteConfigContext'
 import PaymentMaintenanceNotice from '@/components/PaymentMaintenanceNotice'
 
 const BENEFITS = [
@@ -16,6 +16,7 @@ const BENEFITS = [
 
 export default function VipPage() {
   const { user } = useAuth()
+  const paymentsMaintenance = useSiteConfig().payments_config.maintenance
   const [email, setEmail] = useState(user?.email ?? '')
   const [emailReady, setEmailReady] = useState(false)
   const [isVip, setIsVip] = useState(false)
@@ -171,7 +172,7 @@ export default function VipPage() {
                 </div>
               )}
 
-              {PAYMENTS_UNDER_MAINTENANCE ? (
+              {paymentsMaintenance ? (
                 <PaymentMaintenanceNotice />
               ) : (
                 <button

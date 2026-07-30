@@ -2,9 +2,13 @@
 
 import { motion } from 'framer-motion'
 import { SiteTrustItem } from '@/lib/site-config'
+import { DEFAULT_IDENTITY_CONFIG } from '@/lib/owner-config'
 
+// The threshold comes from site_identity so it can't drift from the product
+// page and the announce bar — this fallback used to say "$75" while the
+// configured trust bar said "$399+", and both were on screen together.
 const DEFAULT: SiteTrustItem[] = [
-  { icon: 'fa-truck-fast',  title: 'Free Shipping',  sub: 'On orders over $75' },
+  { icon: 'fa-truck-fast',  title: 'Free Shipping',  sub: `On orders ${DEFAULT_IDENTITY_CONFIG.freeShippingText}+` },
   { icon: 'fa-lock',        title: 'Secure Payment', sub: '256-bit SSL encryption' },
   { icon: 'fa-rotate-left', title: 'Easy Returns',   sub: '30-day return policy' },
   { icon: 'fa-star',        title: '4.9/5 Rated',    sub: '2,400+ happy customers' },

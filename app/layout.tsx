@@ -4,6 +4,7 @@ import Providers from '@/components/Providers'
 import ScrollProgress from '@/components/ScrollProgress'
 import AgentAssistButton from '@/components/AgentAssistButton'
 import VipBanner from '@/components/VipBanner'
+import { getSiteConfig } from '@/lib/site-config'
 import './globals.css'
 
 const playfair = Playfair_Display({
@@ -25,12 +26,21 @@ const dmSans = DM_Sans({
   variable: '--font-dm-sans',
 })
 
-export const metadata: Metadata = {
-  title: 'Maga Offers — Premium Collectibles & Patriot Merchandise',
-  description: 'Authentic limited-edition patriot collectibles. Verified, premium quality, and ready to own.',
+// Title and description are owner-editable, so they're read at request time
+// rather than frozen into the build.
+export async function generateMetadata(): Promise<Metadata> {
+  const { site_identity } = await getSiteConfig()
+  return {
+    title: site_identity.title,
+    description: site_identity.description,
+  }
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Read once here and published through Providers, so the header, footer and
+  // category cards get it without every page having to pass it down.
+  const siteConfig = await getSiteConfig()
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -51,7 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
         <VipBanner />
         <ScrollProgress />
-        <Providers>
+        <Providers siteConfig={siteConfig}>
           {children}
           <AgentAssistButton />
         </Providers>

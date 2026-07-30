@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
+import { useSiteConfig } from '@/context/SiteConfigContext'
 import { useFlyToCart } from '@/components/FlyToCart'
 import { usePayLinkConfig } from '@/lib/use-pay-link'
 import { Product } from '@/lib/types'
@@ -39,6 +40,7 @@ function Stars({ rating, large }: { rating: number; large?: boolean }) {
 export default function ProductDetailClient({ product, related }: { product: Product; related: Product[] }) {
   const { cart, addToCart, addBundle, clearCart, heartToggle, showToast, setCartOpen } = useCart()
   const { user, isApprovedAgent, agentProfile } = useAuth()
+  const { freeShippingText } = useSiteConfig().site_identity
   const { flyToCart } = useFlyToCart()
   const router = useRouter()
   // One-product-at-a-time mode: each pay link is priced for a single product,
@@ -375,7 +377,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           {/* Trust mini-bar */}
           <div className="mo-detail-trust">
             {[
-              { icon: 'fa-truck-fast', label: 'Free Shipping', sub: 'Orders over $75' },
+              { icon: 'fa-truck-fast', label: 'Free Shipping', sub: `Orders ${freeShippingText}+` },
               { icon: 'fa-rotate-left', label: 'Easy Returns', sub: '30-day policy' },
               { icon: 'fa-lock', label: 'Secure Payment', sub: '256-bit SSL' },
             ].map(t => (

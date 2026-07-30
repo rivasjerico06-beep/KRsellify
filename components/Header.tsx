@@ -5,20 +5,13 @@ import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
+import { useSiteConfig } from '@/context/SiteConfigContext'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import { usePayLinkConfig } from '@/lib/use-pay-link'
 
-const NAV_LINKS = [
-  { label: 'Best Sellers', cat: 'all' },
-  { label: 'Medallions', cat: 'medallions' },
-  { label: 'Collectibles', cat: 'collectibles' },
-  { label: 'Apparel', cat: 'apparel' },
-  { label: 'Accessories', cat: 'accessories' },
-  { label: 'Crypto', cat: 'crypto' },
-]
-
 export default function Header() {
+  const NAV_LINKS = useSiteConfig().nav_config.links
   const { cartCount, cartTotal, setCartOpen } = useCart()
   // One-product-at-a-time mode has no browsable cart, and promo mode hides
   // every coupon/VIP entry point. Null while loading, so nothing flashes in.

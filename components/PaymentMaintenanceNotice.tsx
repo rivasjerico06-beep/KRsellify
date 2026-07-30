@@ -2,7 +2,7 @@
 
 /**
  * Shown in place of a payment button while payments are temporarily disabled.
- * See lib/payments-maintenance.ts for the toggle.
+ * Toggled from admin → Owner Console (site_config key "payments_config").
  */
 export default function PaymentMaintenanceNotice() {
   return (

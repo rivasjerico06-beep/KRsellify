@@ -5,22 +5,8 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useMotionValue, useTransform } from 'framer-motion'
 import { Product } from '@/lib/types'
-
-const CATS = [
-  { icon: 'fa-medal',        name: 'Medallions',   cat: 'medallions',  brand: false },
-  { icon: 'fa-gem',          name: 'Collectibles', cat: 'collectibles', brand: false },
-  { icon: 'fa-bitcoin',      name: 'Crypto',       cat: 'crypto',       brand: true  },
-  { icon: 'fa-bag-shopping', name: 'All Items',    cat: 'all',          brand: false },
-]
-
-const CAT_GRADIENTS: Record<string, string> = {
-  medallions:   'linear-gradient(135deg, #CA8A04, #d97706)',
-  collectibles: 'linear-gradient(135deg, #0e4a80, #2563eb)',
-  crypto:       'linear-gradient(135deg, #d97706, #ef4444)',
-  apparel:      'linear-gradient(135deg, #58948F, #0d5c4f)',
-  accessories:  'linear-gradient(135deg, #6d28d9, #9333ea)',
-  all:          'linear-gradient(135deg, #0a1e33, #093459)',
-}
+import { useSiteConfig } from '@/context/SiteConfigContext'
+import { SiteCategory } from '@/lib/owner-config'
 
 const containerVariants = {
   hidden: {},
@@ -31,7 +17,7 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
 }
 
-type Cat = typeof CATS[number] & { count: number }
+type Cat = SiteCategory & { count: number }
 
 function CategoryCard({ c }: { c: Cat }) {
   const router = useRouter()
@@ -71,7 +57,7 @@ function CategoryCard({ c }: { c: Cat }) {
           animate={{ y: hovered ? -4 : 0 }}
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 18, background: CAT_GRADIENTS[c.cat] || 'var(--teal)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: hovered ? '0 8px 24px rgba(0,0,0,0.22)' : '0 4px 14px rgba(0,0,0,0.12)', transition: 'box-shadow 0.3s' }}>
+          <div style={{ width: 64, height: 64, borderRadius: 18, background: c.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: hovered ? '0 8px 24px rgba(0,0,0,0.22)' : '0 4px 14px rgba(0,0,0,0.12)', transition: 'box-shadow 0.3s' }}>
             <i className={`${c.brand ? 'fa-brands' : 'fa-solid'} ${c.icon}`} style={{ color: 'white', fontSize: 26 }} />
           </div>
         </motion.div>
@@ -84,6 +70,7 @@ function CategoryCard({ c }: { c: Cat }) {
 }
 
 export default function Categories({ products }: { products: Product[] }) {
+  const CATS = useSiteConfig().categories_config.items
   const catsWithCounts: Cat[] = CATS.map(c => ({
     ...c,
     count: c.cat === 'all' ? products.length : products.filter(p => p.category === c.cat).length,
