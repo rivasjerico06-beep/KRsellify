@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   const { gmail, display_name, benefit_title, benefit_amount, activation_pct,
           deduction_pct, minimized_deduction_pct, required_product_ids,
           required_product_quantities, completed_product_ids,
-          status, deadline, custom_message, admin_notes } = body
+          status, deadline, custom_message, admin_notes, priority_list } = body
 
   if (!gmail) return NextResponse.json({ error: 'gmail is required' }, { status: 400 })
 
@@ -46,6 +46,10 @@ export async function POST(request: Request) {
       deadline: deadline || null,
       custom_message: custom_message || null,
       admin_notes: admin_notes || null,
+      // Listed explicitly: this route destructures known fields rather than
+      // spreading, so a new profile created with the badge switched on would
+      // otherwise save without it.
+      priority_list: priority_list === true,
     })
     .select()
     .single()

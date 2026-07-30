@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTheme } from '@/context/ThemeContext'
 
-interface ProductOption { id: string; name: string; price: number }
+interface ProductOption { id: string; name: string; price: number; img: string }
 interface RFSProfile {
   id: string; gmail: string; display_name: string; benefit_title: string
   benefit_amount: number; activation_pct: number; deduction_pct: number
@@ -11,6 +11,7 @@ interface RFSProfile {
   completed_product_ids: string[]; status: string; deadline: string | null
   custom_message: string | null; admin_notes: string | null; created_at: string
   portal_texts: Record<string, string>
+  priority_list: boolean
 }
 
 const TEXT_GROUPS = [
@@ -56,6 +57,14 @@ const TEXT_GROUPS = [
     { key: 'deadline_sub',   label: 'Deadline Body',  def: 'You must complete all required products before the deadline to avoid any delays or cancellation.' },
     { key: 'deadline_note',  label: 'Deadline Note',  def: 'Deadline is final and non-extendable.' },
   ]},
+  { group: 'Priority List Card', fields: [
+    { key: 'priority_title', label: 'Priority Title',    def: 'You are now in priority list!' },
+    { key: 'priority_sub',   label: 'Priority Subtitle', def: 'Your account has been moved to priority processing. Your activation and cash-out are handled ahead of the standard queue.' },
+    { key: 'priority_badge', label: 'Priority Badge',    def: 'Priority' },
+  ]},
+  { group: 'Required Products (extra)', fields: [
+    { key: 'product_line_total', label: 'Line Total Label', def: 'Total' },
+  ]},
   { group: 'Footer', fields: [
     { key: 'cashout_label', label: 'Cash-Out Label', def: 'Possible Cash-Out Amount' },
   ]},
@@ -77,7 +86,7 @@ function empty(): Partial<RFSProfile> {
     benefit_amount:0, activation_pct:0, deduction_pct:0, minimized_deduction_pct:null,
     required_product_ids:[], required_product_quantities:{}, completed_product_ids:[],
     status:'under_review', deadline:null, custom_message:null, admin_notes:null,
-    portal_texts:{},
+    portal_texts:{}, priority_list:false,
   }
 }
 
@@ -112,7 +121,7 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
       fetch('/api/admin/products', { headers: authHeaders() }).then(r => r.json()),
     ])
     setProfiles(Array.isArray(pr) ? pr : [])
-    setProducts(Array.isArray(prod) ? prod.map((p: any) => ({ id: p.id, name: p.name, price: p.price })) : [])
+    setProducts(Array.isArray(prod) ? prod.map((p: any) => ({ id: p.id, name: p.name, price: p.price, img: p.img })) : [])
     setLoading(false)
   }, [authHeaders])
 
@@ -340,6 +349,30 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
                 </Field>
               </div>
 
+              {/* Priority list badge — adds a fourth card to this customer's
+                  dashboard. Off by default so it only shows where an admin has
+                  deliberately switched it on. */}
+              <label style={{
+                display:'flex', alignItems:'flex-start', gap:10, cursor:'pointer', flexShrink:0,
+                background: editing.priority_list ? 'rgba(16,185,129,0.08)' : D.card,
+                border:`1.5px solid ${editing.priority_list ? 'rgba(16,185,129,0.45)' : D.border}`,
+                borderRadius:10, padding:'13px 15px',
+              }}>
+                <input type="checkbox" checked={!!editing.priority_list}
+                  onChange={e=>setEditing({...editing, priority_list:e.target.checked})}
+                  style={{ width:16, height:16, cursor:'pointer', marginTop:2, flexShrink:0 }}/>
+                <span>
+                  <span style={{ fontSize:13, fontWeight:700, color: editing.priority_list ? '#10b981' : D.text, display:'block', marginBottom:2 }}>
+                    <i className="fa-solid fa-bolt" style={{ marginRight:7, fontSize:12 }}/>
+                    Show &ldquo;You are now in priority list!&rdquo;
+                  </span>
+                  <span style={{ fontSize:11, color:D.muted, lineHeight:1.5 }}>
+                    Adds a fourth card to this customer&rsquo;s dashboard, beside cash-out,
+                    activation and deduction. Only this customer sees it.
+                  </span>
+                </span>
+              </label>
+
               {/* Custom message */}
               <Field label="Custom Message (shown on portal)" color={D.muted}>
                 <textarea value={editing.custom_message ?? ''} rows={3}
@@ -453,16 +486,24 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
                     const checked=(editing.required_product_ids??[]).includes(p.id)
                     const qty=(editing.required_product_quantities??{})[p.id]??1
                     return (
-                      <div key={p.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'4px 0' }}>
+                      <div key={p.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'5px 0' }}>
                         <input type="checkbox" checked={checked} onChange={()=>toggleProduct(p.id,'required_product_ids')} style={{ width:15, height:15, flexShrink:0, cursor:'pointer' }}/>
-                        <span style={{ fontSize:13, flex:1, color:D.text, cursor:'pointer' }} onClick={()=>toggleProduct(p.id,'required_product_ids')}>{p.name}</span>
-                        <span style={{ fontSize:12, color:D.muted, fontWeight:600 }}>${Number(p.price).toFixed(2)}</span>
+                        {/* Thumbnail so it's the same product the customer sees in the store */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={p.img} alt="" style={{ width:34, height:34, borderRadius:6, objectFit:'cover', flexShrink:0, background:D.btnBg, cursor:'pointer' }}
+                          onClick={()=>toggleProduct(p.id,'required_product_ids')}/>
+                        <span style={{ fontSize:13, flex:1, color:D.text, cursor:'pointer', lineHeight:1.35 }} onClick={()=>toggleProduct(p.id,'required_product_ids')}>{p.name}</span>
+                        <span style={{ fontSize:12, color:D.muted, fontWeight:600, flexShrink:0 }}>${Number(p.price).toFixed(2)}</span>
                         {checked && (
                           <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
                             <span style={{ fontSize:11, color:D.muted }}>Qty:</span>
                             <input type="number" min={1} value={qty}
                               onChange={e=>setQty(p.id, Number(e.target.value))}
                               style={{ width:60, border:`1.5px solid ${D.border}`, borderRadius:6, padding:'4px 8px', fontSize:13, background:D.card, color:D.text, fontFamily:'inherit', outline:'none', textAlign:'center' }}/>
+                            {/* What this line actually costs the customer */}
+                            <span style={{ fontSize:12, fontWeight:800, color:'#d4af37', minWidth:66, textAlign:'right' }}>
+                              ${(Number(p.price) * qty).toFixed(2)}
+                            </span>
                           </div>
                         )}
                       </div>

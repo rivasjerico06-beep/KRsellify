@@ -6,6 +6,7 @@ interface RFSProfile {
   id: string; gmail: string; display_name: string; benefit_title: string
   benefit_amount: number; activation_pct: number; deduction_pct: number
   minimized_deduction_pct: number | null; required_products: ProductInfo[]
+  priority_list?: boolean
   completed_product_ids: string[]; status: string; deadline: string | null
   custom_message: string | null; portal_texts?: Record<string, string>
 }
@@ -638,6 +639,39 @@ export function RFSPortal() {
                   )}
                 </div>
               )}
+
+              {/* Priority list — fourth card, shown only when an admin has
+                  switched it on for this customer. The row is auto-fit, so it
+                  simply flows in beside the other three. */}
+              {profile.priority_list && (
+                <div className="card" style={{ position: 'relative', borderRadius: 19, overflow: 'hidden', padding: 1.5 }}>
+                  <div style={{ position: 'absolute', inset: -80, background: 'conic-gradient(from 0deg, transparent 55%, rgba(16,185,129,0.55) 72%, rgba(52,211,153,0.25) 82%, transparent 96%)', animation: 'rotateBorder 4s linear infinite', pointerEvents: 'none', zIndex: 0 }} />
+                  <div style={{ position: 'relative', zIndex: 1, background: 'rgba(5,9,18,0.97)', borderRadius: 17, padding: '26px 24px', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 14 }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: 'linear-gradient(90deg,transparent,#10b981,#34d399,#10b981,transparent)', boxShadow: '0 0 14px #10b981', animation: 'scanH 2.5s linear infinite', pointerEvents: 'none' }}/>
+                    <div style={{ position: 'absolute', top: 0, right: 0, width: 130, height: 130, background: 'radial-gradient(circle,rgba(16,185,129,0.12) 0%,transparent 70%)', pointerEvents: 'none' }} />
+
+                    <div style={{ position: 'relative', width: 62, height: 62, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '1.5px solid rgba(16,185,129,0.55)', animation: 'pulseRing 2s ease-out infinite' }} />
+                      <div style={{ width: 62, height: 62, borderRadius: '50%', background: 'linear-gradient(135deg,#10b981,#34d399)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 26px rgba(16,185,129,0.45)' }}>
+                        <i className="fa-solid fa-bolt" style={{ fontSize: 25, color: '#052e20' }} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ fontSize: 17, fontWeight: 900, color: '#10b981', lineHeight: 1.35, letterSpacing: 0.2 }}>
+                        {t('priority_title', 'You are now in priority list!')}
+                      </div>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.42)', lineHeight: 1.65, marginTop: 8 }}>
+                        {t('priority_sub', 'Your account has been moved to priority processing. Your activation and cash-out are handled ahead of the standard queue.')}
+                      </div>
+                    </div>
+
+                    <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 999, padding: '6px 16px', fontSize: 10, fontWeight: 800, letterSpacing: 1.4, color: '#10b981', textTransform: 'uppercase' }}>
+                      {t('priority_badge', 'Priority')}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Required Products */}
@@ -670,12 +704,23 @@ export function RFSPortal() {
                             <div style={{ fontSize: 12, fontWeight: 700, color: 'white', lineHeight: 1.35, marginBottom: 4 }}>{p.name}</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                               <div style={{ fontSize: 17, fontWeight: 900, color: done ? '#10b981' : '#d4af37', fontFamily: 'monospace' }}>${Number(p.price).toFixed(2)}</div>
-                              {(p.quantity ?? 1) > 1 && (
-                                <div style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 800, color: '#d4af37', letterSpacing: 0.5 }}>
-                                  ×{p.quantity} pcs
-                                </div>
-                              )}
+                              {/* Always shown, including a quantity of one — the
+                                  customer has to know exactly how many to buy,
+                                  and a missing badge read as "unspecified". */}
+                              <div style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 800, color: '#d4af37', letterSpacing: 0.5 }}>
+                                ×{p.quantity ?? 1} pc{(p.quantity ?? 1) > 1 ? 's' : ''}
+                              </div>
                             </div>
+                            {/* What this line costs in total, so the required
+                                spend isn't left as mental arithmetic */}
+                            {(p.quantity ?? 1) > 1 && (
+                              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 5 }}>
+                                {t('product_line_total', 'Total')}:{' '}
+                                <span style={{ color: done ? '#10b981' : '#d4af37', fontWeight: 800, fontFamily: 'monospace' }}>
+                                  ${(Number(p.price) * (p.quantity ?? 1)).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
                         {done ? (
