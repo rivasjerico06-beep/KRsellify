@@ -44,12 +44,35 @@ export async function POST(request: Request) {
   if (profile.required_product_ids?.length > 0) {
     const { data: products } = await admin
       .from('products')
-      .select('id, name, price, img')
+      .select('id, name, price, img, quantity_options')
       .in('id', profile.required_product_ids)
     const qtys: Record<string, number> = profile.required_product_quantities ?? {}
-    required_products = (products ?? []).map((p: { id: string; name: string; price: number; img: string }) => ({
-      ...p, quantity: qtys[p.id] ?? 1,
-    }))
+    const bundles: Record<string, string> = profile.required_product_bundles ?? {}
+
+    type Tier = { label: string; qty: number; bundle_total: number }
+    type Row = { id: string; name: string; price: number; img: string; quantity_options: Tier[] | null }
+
+    required_products = (products ?? []).map((p: Row) => {
+      const tiers = Array.isArray(p.quantity_options) ? p.quantity_options : []
+
+      // Resolve by label first. Quantity alone is ambiguous — XRP Nesara has
+      // two different bundles that are both quantity 2 — so the label is what
+      // identifies the bundle. Quantity matching stays as a fallback for
+      // profiles saved before labels were recorded.
+      const byLabel = bundles[p.id] ? tiers.find(o => o.label === bundles[p.id]) : undefined
+      const stored  = qtys[p.id] ?? 1
+      const tier    = byLabel ?? tiers.find(o => Number(o.qty) === Number(stored))
+
+      const quantity = tier ? Number(tier.qty) : stored
+      return {
+        id: p.id, name: p.name, price: p.price, img: p.img,
+        quantity,
+        bundle_label: tier?.label ?? null,
+        // A bundle's own price, never unit × quantity. Products sold without
+        // bundles fall back to the multiplication, which is correct for them.
+        bundle_total: tier ? Number(tier.bundle_total) : Number(p.price) * quantity,
+      }
+    })
   }
 
   return NextResponse.json({ profile: { ...profile, required_products }, email: normalised })

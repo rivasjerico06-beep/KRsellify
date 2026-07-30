@@ -2,12 +2,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTheme } from '@/context/ThemeContext'
 
-interface ProductOption { id: string; name: string; price: number; img: string }
+interface QuantityTier { label: string; qty: number; bundle_total: number }
+interface ProductOption { id: string; name: string; price: number; img: string; quantity_options: QuantityTier[] | null }
 interface RFSProfile {
   id: string; gmail: string; display_name: string; benefit_title: string
   benefit_amount: number; activation_pct: number; deduction_pct: number
   minimized_deduction_pct: number | null; required_product_ids: string[]
   required_product_quantities: Record<string, number>
+  required_product_bundles: Record<string, string>
   completed_product_ids: string[]; status: string; deadline: string | null
   custom_message: string | null; admin_notes: string | null; created_at: string
   portal_texts: Record<string, string>
@@ -84,7 +86,7 @@ function empty(): Partial<RFSProfile> {
   return {
     gmail:'', display_name:'Valued Customer', benefit_title:'Cash-Out Amount',
     benefit_amount:0, activation_pct:0, deduction_pct:0, minimized_deduction_pct:null,
-    required_product_ids:[], required_product_quantities:{}, completed_product_ids:[],
+    required_product_ids:[], required_product_quantities:{}, required_product_bundles:{}, completed_product_ids:[],
     status:'under_review', deadline:null, custom_message:null, admin_notes:null,
     portal_texts:{}, priority_list:false,
   }
@@ -121,7 +123,7 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
       fetch('/api/admin/products', { headers: authHeaders() }).then(r => r.json()),
     ])
     setProfiles(Array.isArray(pr) ? pr : [])
-    setProducts(Array.isArray(prod) ? prod.map((p: any) => ({ id: p.id, name: p.name, price: p.price, img: p.img })) : [])
+    setProducts(Array.isArray(prod) ? prod.map((p: any) => ({ id: p.id, name: p.name, price: p.price, img: p.img, quantity_options: Array.isArray(p.quantity_options) ? p.quantity_options : null })) : [])
     setLoading(false)
   }, [authHeaders])
 
@@ -160,11 +162,38 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
     if (field === 'required_product_ids') {
       const qtys = { ...(editing.required_product_quantities ?? {}) }
       if (cur.includes(pid)) delete qtys[pid]
-      else qtys[pid] = qtys[pid] ?? 1
-      setEditing({ ...editing, required_product_ids: next, required_product_quantities: qtys })
+      else {
+        // Start on the product's first bundle, so a bundled product is never
+        // left on a quantity that matches no bundle and gets priced by
+        // multiplying the unit price instead.
+        const tiers = products.find(x => x.id === pid)?.quantity_options
+        qtys[pid] = qtys[pid] ?? (tiers?.length ? tiers[0].qty : 1)
+      }
+      const bundles = { ...(editing.required_product_bundles ?? {}) }
+      if (cur.includes(pid)) delete bundles[pid]
+      else if (!bundles[pid]) {
+        const tiers = products.find(x => x.id === pid)?.quantity_options
+        if (tiers?.length) bundles[pid] = tiers[0].label
+      }
+      setEditing({ ...editing, required_product_ids: next, required_product_quantities: qtys, required_product_bundles: bundles })
     } else {
       setEditing({ ...editing, [field]: next })
     }
+  }
+
+  /** Record the chosen bundle by label — two bundles of the same product can
+   *  share a quantity, so the label is what identifies it. The quantity is
+   *  stored alongside for display and for older profiles. */
+  function setBundle(pid: string, label: string) {
+    if (!editing) return
+    const tiers = products.find(x => x.id === pid)?.quantity_options ?? []
+    const tier = tiers.find(t => t.label === label)
+    if (!tier) return
+    setEditing({
+      ...editing,
+      required_product_bundles: { ...(editing.required_product_bundles ?? {}), [pid]: label },
+      required_product_quantities: { ...(editing.required_product_quantities ?? {}), [pid]: tier.qty },
+    })
   }
 
   function setQty(pid: string, qty: number) {
@@ -484,7 +513,14 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
                 <div style={{ maxHeight:260, overflowY:'auto', border:`1.5px solid ${D.border}`, borderRadius:8, padding:10, display:'flex', flexDirection:'column', gap:8, background:D.inputBg }}>
                   {products.map(p=>{
                     const checked=(editing.required_product_ids??[]).includes(p.id)
-                    const qty=(editing.required_product_quantities??{})[p.id]??1
+                    const tiers = p.quantity_options?.length ? p.quantity_options : null
+                    const storedLabel = (editing.required_product_bundles??{})[p.id]
+                    const qty=(editing.required_product_quantities??{})[p.id] ?? (tiers ? tiers[0].qty : 1)
+                    // Label identifies the bundle; quantity is only a fallback for
+                    // profiles saved before labels were recorded.
+                    const tier = tiers?.find(t => t.label === storedLabel)
+                             ?? tiers?.find(t => Number(t.qty) === Number(qty))
+                    const lineTotal = tier ? Number(tier.bundle_total) : Number(p.price) * qty
                     return (
                       <div key={p.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'5px 0' }}>
                         <input type="checkbox" checked={checked} onChange={()=>toggleProduct(p.id,'required_product_ids')} style={{ width:15, height:15, flexShrink:0, cursor:'pointer' }}/>
@@ -495,14 +531,31 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
                         <span style={{ fontSize:13, flex:1, color:D.text, cursor:'pointer', lineHeight:1.35 }} onClick={()=>toggleProduct(p.id,'required_product_ids')}>{p.name}</span>
                         <span style={{ fontSize:12, color:D.muted, fontWeight:600, flexShrink:0 }}>${Number(p.price).toFixed(2)}</span>
                         {checked && (
-                          <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
-                            <span style={{ fontSize:11, color:D.muted }}>Qty:</span>
-                            <input type="number" min={1} value={qty}
-                              onChange={e=>setQty(p.id, Number(e.target.value))}
-                              style={{ width:60, border:`1.5px solid ${D.border}`, borderRadius:6, padding:'4px 8px', fontSize:13, background:D.card, color:D.text, fontFamily:'inherit', outline:'none', textAlign:'center' }}/>
+                          <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
+                            {tiers ? (
+                              /* Sold in bundles, so pick a bundle rather than type a
+                                 count — a bundle's price is not its unit price times
+                                 the quantity. Only the qty is stored; the customer
+                                 portal resolves it back to this bundle. */
+                              <select value={tier?.label ?? ''} onChange={e=>setBundle(p.id, e.target.value)}
+                                style={{ ...inp(), width:'auto', minWidth:230, padding:'5px 8px', fontSize:12.5 }}>
+                                {tiers.map(t => (
+                                  <option key={t.label} value={t.label}>
+                                    {t.label} — ${Number(t.bundle_total).toFixed(2)}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <>
+                                <span style={{ fontSize:11, color:D.muted }}>Qty:</span>
+                                <input type="number" min={1} value={qty}
+                                  onChange={e=>setQty(p.id, Number(e.target.value))}
+                                  style={{ width:60, border:`1.5px solid ${D.border}`, borderRadius:6, padding:'4px 8px', fontSize:13, background:D.card, color:D.text, fontFamily:'inherit', outline:'none', textAlign:'center' }}/>
+                              </>
+                            )}
                             {/* What this line actually costs the customer */}
                             <span style={{ fontSize:12, fontWeight:800, color:'#d4af37', minWidth:66, textAlign:'right' }}>
-                              ${(Number(p.price) * qty).toFixed(2)}
+                              ${lineTotal.toFixed(2)}
                             </span>
                           </div>
                         )}

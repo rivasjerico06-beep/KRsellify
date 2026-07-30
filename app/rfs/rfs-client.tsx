@@ -1,7 +1,13 @@
 'use client'
 import { useState, useEffect, FormEvent } from 'react'
 
-interface ProductInfo { id: string; name: string; price: number; img: string; quantity: number }
+interface ProductInfo {
+  id: string; name: string; price: number; img: string; quantity: number
+  /** The store bundle this requirement refers to, e.g. "3PCS WLFI TOKEN (+$200.00)" */
+  bundle_label?: string | null
+  /** What that bundle actually costs — not price × quantity */
+  bundle_total?: number
+}
 interface RFSProfile {
   id: string; gmail: string; display_name: string; benefit_title: string
   benefit_amount: number; activation_pct: number; deduction_pct: number
@@ -702,23 +708,27 @@ export function RFSPortal() {
                           </div>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: 'white', lineHeight: 1.35, marginBottom: 4 }}>{p.name}</div>
+                            {/* The price shown is the bundle's own price. A
+                                bundle is not the unit price times the count —
+                                three WLFI is $499, not 3 × $299 — so quoting
+                                the multiplication would overstate what the
+                                customer has to spend. */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                              <div style={{ fontSize: 17, fontWeight: 900, color: done ? '#10b981' : '#d4af37', fontFamily: 'monospace' }}>${Number(p.price).toFixed(2)}</div>
+                              <div style={{ fontSize: 17, fontWeight: 900, color: done ? '#10b981' : '#d4af37', fontFamily: 'monospace' }}>
+                                ${Number(p.bundle_total ?? p.price).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              </div>
                               {/* Always shown, including a quantity of one — the
-                                  customer has to know exactly how many to buy,
-                                  and a missing badge read as "unspecified". */}
+                                  customer has to know exactly what to buy, and a
+                                  missing badge read as "unspecified". */}
                               <div style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 800, color: '#d4af37', letterSpacing: 0.5 }}>
                                 ×{p.quantity ?? 1} pc{(p.quantity ?? 1) > 1 ? 's' : ''}
                               </div>
                             </div>
-                            {/* What this line costs in total, so the required
-                                spend isn't left as mental arithmetic */}
-                            {(p.quantity ?? 1) > 1 && (
-                              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 5 }}>
-                                {t('product_line_total', 'Total')}:{' '}
-                                <span style={{ color: done ? '#10b981' : '#d4af37', fontWeight: 800, fontFamily: 'monospace' }}>
-                                  ${(Number(p.price) * (p.quantity ?? 1)).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                </span>
+                            {/* Name the exact bundle to pick on the product page */}
+                            {p.bundle_label && (
+                              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 6, lineHeight: 1.5 }}>
+                                <i className="fa-solid fa-box" style={{ marginRight: 6, fontSize: 10, color: '#d4af37' }} />
+                                {p.bundle_label}
                               </div>
                             )}
                           </div>
