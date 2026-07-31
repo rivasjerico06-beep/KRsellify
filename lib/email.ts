@@ -112,7 +112,7 @@ export async function sendOrderConfirmation({
 
       <p style="font-size:13px;color:#8ba0aa;margin:24px 0 0;text-align:center;line-height:1.6">
         Questions? Reply to this email or contact us at<br>
-        <a href="mailto:support@themagaoffers.net" style="color:#f59e0b;font-weight:600">support@themagaoffers.net</a>
+        <a href="mailto:themagaoffer@gmail.com" style="color:#f59e0b;font-weight:600">themagaoffer@gmail.com</a>
       </p>
     </div>
 
@@ -127,7 +127,7 @@ export async function sendOrderConfirmation({
   await getResend().emails.send({
     from: FROM,
     to,
-    replyTo: 'support@themagaoffers.net',
+    replyTo: 'themagaoffer@gmail.com',
     subject: `✓ Order Confirmed — Maga Offers (#${orderNumber ?? orderId.slice(0, 8).toUpperCase()})`,
     html,
   })
@@ -242,7 +242,7 @@ export async function sendWireInstructions({
 
       <p style="font-size:13px;color:#8ba0aa;margin:0;text-align:center;line-height:1.6">
         Your order ships once we confirm your payment (usually 1–3 business days).<br>
-        Questions? <a href="mailto:support@themagaoffers.net" style="color:#f59e0b;font-weight:600">support@themagaoffers.net</a>
+        Questions? <a href="mailto:themagaoffer@gmail.com" style="color:#f59e0b;font-weight:600">themagaoffer@gmail.com</a>
       </p>
     </div>
 
@@ -256,7 +256,7 @@ export async function sendWireInstructions({
   await getResend().emails.send({
     from: FROM,
     to,
-    replyTo: 'support@themagaoffers.net',
+    replyTo: 'themagaoffer@gmail.com',
     subject: viaLink
       ? `Complete your payment — Maga Offers (Ref: #${ref})`
       : `Bank transfer instructions — Maga Offers (Ref: #${ref})`,
@@ -358,7 +358,7 @@ export async function sendOrderStatusUpdate({
         Should you have any questions regarding your order, please do not hesitate to contact us.
       </p>
       <p style="font-size:14px;color:#4a6170;margin:0 0 28px;line-height:1.7">
-        Email: <a href="mailto:support@themagaoffers.net" style="color:#093459;font-weight:600;text-decoration:none">support@themagaoffers.net</a>
+        Email: <a href="mailto:themagaoffer@gmail.com" style="color:#093459;font-weight:600;text-decoration:none">themagaoffer@gmail.com</a>
       </p>
 
       <p style="font-size:14px;color:#0d1f2d;margin:0;line-height:1.7">
@@ -382,7 +382,7 @@ export async function sendOrderStatusUpdate({
   await getResend().emails.send({
     from: FROM,
     to,
-    replyTo: 'support@themagaoffers.net',
+    replyTo: 'themagaoffer@gmail.com',
     subject: `${meta.label} — Maga Offers (Ref: #${orderNumber ?? orderId.slice(0, 8).toUpperCase()})`,
     html,
   })

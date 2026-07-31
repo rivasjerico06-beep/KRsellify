@@ -74,7 +74,7 @@ export default function UploadReceiptPage() {
             <h1 style={{ fontSize: 22, fontWeight: 900, color: 'var(--heading)', marginBottom: 8 }}>Order not found</h1>
             <p style={{ fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.6 }}>
               This upload link looks invalid or expired. Please use the link from your bank-transfer email, or contact{' '}
-              <a href="mailto:support@themagaoffers.net" style={{ color: 'var(--teal)', fontWeight: 700 }}>support@themagaoffers.net</a>.
+              <a href="mailto:themagaoffer@gmail.com" style={{ color: 'var(--teal)', fontWeight: 700 }}>themagaoffer@gmail.com</a>.
             </p>
           </>
         ) : done ? (

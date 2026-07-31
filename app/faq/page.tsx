@@ -20,7 +20,7 @@ const FAQS = [
   },
   {
     q: 'What is your return policy?',
-    a: 'We accept returns within 30 days of delivery for items in original, unopened condition. Contact us at support@themagaoffers.net to initiate a return.',
+    a: 'We accept returns within 30 days of delivery for items in original, unopened condition. Contact us at themagaoffer@gmail.com to initiate a return.',
   },
   {
     q: 'How do I track my order?',
@@ -28,7 +28,7 @@ const FAQS = [
   },
   {
     q: 'Can I cancel or modify my order?',
-    a: 'Orders can be cancelled or modified within 2 hours of placement. After that, we may have already started processing. Contact us immediately at support@themagaoffers.net.',
+    a: 'Orders can be cancelled or modified within 2 hours of placement. After that, we may have already started processing. Contact us immediately at themagaoffer@gmail.com.',
   },
   {
     q: 'Is my payment information secure?',
@@ -44,7 +44,7 @@ const FAQS = [
   },
   {
     q: 'My order arrived damaged. What do I do?',
-    a: 'We\'re sorry to hear that. Please take photos and contact us within 48 hours at support@themagaoffers.net. We\'ll send a replacement or issue a full refund.',
+    a: 'We\'re sorry to hear that. Please take photos and contact us within 48 hours at themagaoffer@gmail.com. We\'ll send a replacement or issue a full refund.',
   },
 ]
 
@@ -81,7 +81,7 @@ export default function FaqPage() {
     ? FAQS.filter(f => !/coupon|promo|discount|vip/i.test(`${f.q} ${f.a}`))
     : FAQS
   return (
-    <InfoPageLayout title="Frequently Asked Questions" subtitle="Can't find what you're looking for? Email us at support@themagaoffers.net" breadcrumb="FAQ">
+    <InfoPageLayout title="Frequently Asked Questions" subtitle="Can't find what you're looking for? Email us at themagaoffer@gmail.com" breadcrumb="FAQ">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {faqs.map(f => <FaqItem key={f.q} q={f.q} a={f.a} />)}
       </div>

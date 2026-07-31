@@ -52,7 +52,7 @@ export default function TermsPage() {
         </Section>
 
         <Section title="Contact">
-          <p>Questions about these terms? Email <strong>support@themagaoffers.net</strong>.</p>
+          <p>Questions about these terms? Email <strong>themagaoffer@gmail.com</strong>.</p>
         </Section>
       </div>
     </InfoPageLayout>

@@ -54,11 +54,11 @@ export default function PrivacyPage() {
             <li>Request deletion of your account and data</li>
             <li>Opt out of marketing communications at any time</li>
           </ul>
-          <p style={{ marginTop: 10 }}>To exercise these rights, email us at <strong>support@themagaoffers.net</strong>.</p>
+          <p style={{ marginTop: 10 }}>To exercise these rights, email us at <strong>themagaoffer@gmail.com</strong>.</p>
         </Section>
 
         <Section title="Contact">
-          <p>Questions about this policy? Email us at <strong>support@themagaoffers.net</strong>. We aim to respond within 2 business days.</p>
+          <p>Questions about this policy? Email us at <strong>themagaoffer@gmail.com</strong>. We aim to respond within 2 business days.</p>
         </Section>
       </div>
     </InfoPageLayout>

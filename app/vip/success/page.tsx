@@ -42,8 +42,8 @@ function VipSuccessContent() {
         <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0f2441', marginBottom: 10 }}>Activation issue</h2>
         <p style={{ color: '#555', lineHeight: 1.6, marginBottom: 20 }}>
           Your payment may have gone through. Please contact{' '}
-          <a href="mailto:support@themagaoffers.net" style={{ color: '#093459', fontWeight: 700 }}>
-            support@themagaoffers.net
+          <a href="mailto:themagaoffer@gmail.com" style={{ color: '#093459', fontWeight: 700 }}>
+            themagaoffer@gmail.com
           </a>{' '}
           and we'll activate your account right away.
         </p>
