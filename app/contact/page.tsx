@@ -25,7 +25,7 @@ export default function ContactPage() {
     })
 
     if (res.ok) { setSent(true) }
-    else { setError('Something went wrong. Please email us directly at support@themagaoffers.net') }
+    else { setError('Something went wrong. Please email us directly at themagaoffer@gmail.com') }
     setSending(false)
   }
 
@@ -40,7 +40,7 @@ export default function ContactPage() {
         {/* Contact info */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {[
-            { icon: 'fa-envelope',  title: 'Email',    value: 'support@themagaoffers.net' },
+            { icon: 'fa-envelope',  title: 'Email',    value: 'themagaoffer@gmail.com' },
             { icon: 'fa-clock',     title: 'Response time', value: 'Within 24 hours' },
             { icon: 'fa-headset',   title: 'Agent support', value: 'Click "Need an Agent?" on any page' },
           ].map(c => (

@@ -36,7 +36,9 @@ export async function POST(request: Request) {
 
   await resend.emails.send({
     from: FROM,
-    to: 'support@themagaoffers.net',
+    // Matches the address shown on the Contact page — otherwise the form
+    // advertises one inbox and quietly delivers to another.
+    to: 'themagaoffer@gmail.com',
     replyTo: email.trim(),
     subject: subject?.trim() ? `[Contact] ${subject.trim()}` : `[Contact] Message from ${name.trim()}`,
     html: `
