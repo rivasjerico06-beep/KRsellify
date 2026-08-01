@@ -49,11 +49,30 @@ function SearchResults() {
     fetchProducts(query)
   }, [query, fetchProducts])
 
+  // The URL is the single source of truth for what's being searched. Without
+  // this, a second search from the header — which pushes /search?q=…&cat=… —
+  // left this page showing the first query, because the state above only
+  // reads the params once on mount.
+  useEffect(() => {
+    const q = searchParams.get('q') ?? ''
+    setQuery(q)
+    setInputVal(q)
+    setCategory(searchParams.get('cat') ?? 'all')
+  }, [searchParams])
+
+  function searchUrl(q: string, cat: string) {
+    const params = new URLSearchParams()
+    if (q) params.set('q', q)
+    // The category rode along from the header dropdown but was dropped the
+    // moment you searched again from this page.
+    if (cat !== 'all') params.set('cat', cat)
+    const qs = params.toString()
+    return qs ? `/search?${qs}` : '/search'
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const q = inputVal.trim()
-    setQuery(q)
-    router.replace(`/search?q=${encodeURIComponent(q)}`, { scroll: false })
+    router.replace(searchUrl(inputVal.trim(), category), { scroll: false })
   }
 
   const filtered = products.filter(p => {
@@ -105,7 +124,7 @@ function SearchResults() {
           {/* Category filters */}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
             {CATEGORIES.map(c => (
-              <motion.button key={c.value} onClick={() => setCategory(c.value)}
+              <motion.button key={c.value} onClick={() => router.replace(searchUrl(query, c.value), { scroll: false })}
                 whileTap={{ scale: 0.96 }}
                 style={{ border: category === c.value ? '2px solid var(--teal)' : '2px solid var(--gray)', background: category === c.value ? 'var(--teal)' : 'var(--white)', color: category === c.value ? 'white' : 'var(--text-mid)', padding: '7px 16px', borderRadius: 50, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}>
                 {c.label}
@@ -144,7 +163,7 @@ function SearchResults() {
             )}
           </div>
           {query && (
-            <button onClick={() => { setQuery(''); setInputVal(''); router.replace('/search') }}
+            <button onClick={() => router.replace(searchUrl('', category), { scroll: false })}
               style={{ background: 'none', border: 'none', color: 'var(--text-light)', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit' }}>
               <i className="fa-solid fa-xmark" /> Clear search
             </button>

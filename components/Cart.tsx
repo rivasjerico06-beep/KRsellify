@@ -86,6 +86,21 @@ export default function Cart() {
                               You receive: {(item.bundle_qty ?? 1) * item.qty} pcs total
                             </div>
                           )}
+                          {/* How the item got here. The cart mixes two entry
+                              points — the heart on a product card and Buy —
+                              and without this pill a saved item and a bought
+                              one look identical in the drawer. */}
+                          <div style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 4,
+                            borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700,
+                            background: item.via === 'heart' ? 'rgba(224,84,84,0.12)' : 'rgba(88,148,143,0.12)',
+                            border: `1px solid ${item.via === 'heart' ? 'rgba(224,84,84,0.3)' : 'rgba(88,148,143,0.3)'}`,
+                            color: item.via === 'heart' ? 'var(--sale-red)' : 'var(--teal)',
+                          }}>
+                            <i className={`fa-solid ${item.via === 'heart' ? 'fa-heart' : 'fa-cart-shopping'}`} style={{ fontSize: 10 }} />
+                            {item.via === 'heart' ? 'Added via heart' : 'Added via cart'}
+                          </div>
+
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
                             <motion.button whileTap={{ scale: 0.85 }} onClick={() => updateQty(item.id, -1)} style={{ background: 'var(--gray)', border: 'none', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</motion.button>
                             <span style={{ fontSize: 16, fontWeight: 700, minWidth: 24, textAlign: 'center' }}>{item.qty}</span>
