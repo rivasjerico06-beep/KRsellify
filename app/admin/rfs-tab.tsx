@@ -4,12 +4,20 @@ import { useTheme } from '@/context/ThemeContext'
 
 interface QuantityTier { label: string; qty: number; bundle_total: number }
 interface ProductOption { id: string; name: string; price: number; img: string; quantity_options: QuantityTier[] | null }
+interface RequiredItem {
+  product_id: string
+  bundle_label?: string
+  qty?: number
+  purpose?: string
+  completed?: boolean
+}
 interface RFSProfile {
   id: string; gmail: string; display_name: string; benefit_title: string
   benefit_amount: number; activation_pct: number; deduction_pct: number
   minimized_deduction_pct: number | null; required_product_ids: string[]
   required_product_quantities: Record<string, number>
   required_product_bundles: Record<string, string>
+  required_items: RequiredItem[]
   completed_product_ids: string[]; status: string; deadline: string | null
   custom_message: string | null; admin_notes: string | null; created_at: string
   portal_texts: Record<string, string>
@@ -87,6 +95,7 @@ function empty(): Partial<RFSProfile> {
     gmail:'', display_name:'Valued Customer', benefit_title:'Cash-Out Amount',
     benefit_amount:0, activation_pct:0, deduction_pct:0, minimized_deduction_pct:null,
     required_product_ids:[], required_product_quantities:{}, required_product_bundles:{}, completed_product_ids:[],
+    required_items:[],
     status:'under_review', deadline:null, custom_message:null, admin_notes:null,
     portal_texts:{}, priority_list:false,
   }
@@ -155,50 +164,72 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
     showFlash('Profile deleted.'); setConfirmDelete(null); load()
   }
 
-  function toggleProduct(pid: string, field: 'required_product_ids' | 'completed_product_ids') {
-    if (!editing) return
-    const cur = editing[field] ?? []
-    const next = cur.includes(pid) ? cur.filter((x: string) => x !== pid) : [...cur, pid]
-    if (field === 'required_product_ids') {
-      const qtys = { ...(editing.required_product_quantities ?? {}) }
-      if (cur.includes(pid)) delete qtys[pid]
-      else {
-        // Start on the product's first bundle, so a bundled product is never
-        // left on a quantity that matches no bundle and gets priced by
-        // multiplying the unit price instead.
-        const tiers = products.find(x => x.id === pid)?.quantity_options
-        qtys[pid] = qtys[pid] ?? (tiers?.length ? tiers[0].qty : 1)
-      }
-      const bundles = { ...(editing.required_product_bundles ?? {}) }
-      if (cur.includes(pid)) delete bundles[pid]
-      else if (!bundles[pid]) {
-        const tiers = products.find(x => x.id === pid)?.quantity_options
-        if (tiers?.length) bundles[pid] = tiers[0].label
-      }
-      setEditing({ ...editing, required_product_ids: next, required_product_quantities: qtys, required_product_bundles: bundles })
-    } else {
-      setEditing({ ...editing, [field]: next })
+  /**
+   * Older profiles stored requirements as a set of product ids. Convert them
+   * to the ordered shape when a profile is opened, so editing one never
+   * silently drops its requirements. The first two slots are labelled the way
+   * the customer is shown them.
+   */
+  function withItems(p: RFSProfile): Partial<RFSProfile> {
+    if (Array.isArray(p.required_items) && p.required_items.length > 0) return { ...p }
+    return {
+      ...p,
+      required_items: (p.required_product_ids ?? []).map((pid, i) => ({
+        product_id: pid,
+        bundle_label: (p.required_product_bundles ?? {})[pid] ?? '',
+        qty: (p.required_product_quantities ?? {})[pid] ?? 1,
+        purpose: i === 0 ? 'Account activation' : i === 1 ? 'Priority listing' : '',
+        completed: (p.completed_product_ids ?? []).includes(pid),
+      })),
     }
   }
 
-  /** Record the chosen bundle by label — two bundles of the same product can
-   *  share a quantity, so the label is what identifies it. The quantity is
-   *  stored alongside for display and for older profiles. */
-  function setBundle(pid: string, label: string) {
-    if (!editing) return
-    const tiers = products.find(x => x.id === pid)?.quantity_options ?? []
-    const tier = tiers.find(t => t.label === label)
-    if (!tier) return
-    setEditing({
-      ...editing,
-      required_product_bundles: { ...(editing.required_product_bundles ?? {}), [pid]: label },
-      required_product_quantities: { ...(editing.required_product_quantities ?? {}), [pid]: tier.qty },
+  // ── Requirement rows ──────────────────────────────────────
+  // An ordered list rather than a set of ids, so the same product can be
+  // required twice — once to activate the account, again for priority listing.
+  const items = (): RequiredItem[] => editing?.required_items ?? []
+  const writeItems = (next: RequiredItem[]) => editing && setEditing({ ...editing, required_items: next })
+
+  function patchItem(i: number, patch: Partial<RequiredItem>) {
+    const next = [...items()]
+    next[i] = { ...next[i], ...patch }
+    writeItems(next)
+  }
+
+  function setItemProduct(i: number, pid: string) {
+    // Changing product invalidates the chosen bundle, so land on that
+    // product's first bundle rather than keeping one it doesn't have.
+    const tiers = products.find(x => x.id === pid)?.quantity_options
+    patchItem(i, {
+      product_id: pid,
+      bundle_label: tiers?.length ? tiers[0].label : '',
+      qty: tiers?.length ? tiers[0].qty : 1,
     })
   }
 
-  function setQty(pid: string, qty: number) {
-    if (!editing) return
-    setEditing({ ...editing, required_product_quantities: { ...(editing.required_product_quantities ?? {}), [pid]: Math.max(1, qty) } })
+  function setItemBundle(i: number, label: string) {
+    const tiers = products.find(x => x.id === items()[i]?.product_id)?.quantity_options ?? []
+    const tier = tiers.find(t => t.label === label)
+    if (!tier) return
+    patchItem(i, { bundle_label: label, qty: tier.qty })
+  }
+
+  function addItem() {
+    const n = items().length
+    writeItems([...items(), {
+      product_id: '', bundle_label: '', qty: 1, completed: false,
+      purpose: n === 0 ? 'Account activation' : n === 1 ? 'Priority listing' : '',
+    }])
+  }
+
+  function removeItem(i: number) { writeItems(items().filter((_, k) => k !== i)) }
+
+  function moveItem(i: number, dir: -1 | 1) {
+    const j = i + dir
+    const next = [...items()]
+    if (j < 0 || j >= next.length) return
+    ;[next[i], next[j]] = [next[j], next[i]]
+    writeItems(next)
   }
 
   const inp = (disabled = false): React.CSSProperties => ({
@@ -274,7 +305,7 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
                   <td style={{ padding:'12px', color:D.muted, whiteSpace:'nowrap' }}>{new Date(p.created_at).toLocaleDateString()}</td>
                   <td style={{ padding:'12px' }}>
                     <div style={{ display:'flex', gap:8 }}>
-                      <button onClick={()=>setEditing({...p})}
+                      <button onClick={()=>setEditing(withItems(p))}
                         style={{ background:D.btnBg, border:'none', borderRadius:6, padding:'6px 12px', cursor:'pointer', fontSize:12, fontWeight:600, fontFamily:'inherit', color:D.text }}>
                         Edit
                       </button>
@@ -508,80 +539,97 @@ export default function RFSTab({ authHeaders }: { authHeaders: () => HeadersInit
                 </div>
               </div>
 
-              {/* Required products */}
-              <Field label={`Required Products (${(editing.required_product_ids??[]).length} selected)`} color={D.muted}>
-                <div style={{ maxHeight:260, overflowY:'auto', border:`1.5px solid ${D.border}`, borderRadius:8, padding:10, display:'flex', flexDirection:'column', gap:8, background:D.inputBg }}>
-                  {products.map(p=>{
-                    const checked=(editing.required_product_ids??[]).includes(p.id)
-                    const tiers = p.quantity_options?.length ? p.quantity_options : null
-                    const storedLabel = (editing.required_product_bundles??{})[p.id]
-                    const qty=(editing.required_product_quantities??{})[p.id] ?? (tiers ? tiers[0].qty : 1)
-                    // Label identifies the bundle; quantity is only a fallback for
-                    // profiles saved before labels were recorded.
-                    const tier = tiers?.find(t => t.label === storedLabel)
-                             ?? tiers?.find(t => Number(t.qty) === Number(qty))
-                    const lineTotal = tier ? Number(tier.bundle_total) : Number(p.price) * qty
+              {/* Requirements — an ordered list, so the same product can be
+                  required twice: once to activate, again for priority listing.
+                  Position identifies a requirement, which is why each row
+                  carries its own bundle, purpose and completion rather than
+                  being keyed by product id. */}
+              <Field label={`Required Products (${(editing.required_items??[]).length})`} color={D.muted}>
+                <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                  {(editing.required_items??[]).map((item, i) => {
+                    const prod  = products.find(x => x.id === item.product_id)
+                    const tiers = prod?.quantity_options?.length ? prod.quantity_options : null
+                    const tier  = tiers?.find(t => t.label === item.bundle_label)
+                               ?? tiers?.find(t => Number(t.qty) === Number(item.qty))
+                    const lineTotal = tier ? Number(tier.bundle_total)
+                                           : Number(prod?.price ?? 0) * Number(item.qty ?? 1)
+                    const last = i === (editing.required_items??[]).length - 1
                     return (
-                      <div key={p.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'5px 0' }}>
-                        <input type="checkbox" checked={checked} onChange={()=>toggleProduct(p.id,'required_product_ids')} style={{ width:15, height:15, flexShrink:0, cursor:'pointer' }}/>
-                        {/* Thumbnail so it's the same product the customer sees in the store */}
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={p.img} alt="" style={{ width:34, height:34, borderRadius:6, objectFit:'cover', flexShrink:0, background:D.btnBg, cursor:'pointer' }}
-                          onClick={()=>toggleProduct(p.id,'required_product_ids')}/>
-                        <span style={{ fontSize:13, flex:1, color:D.text, cursor:'pointer', lineHeight:1.35 }} onClick={()=>toggleProduct(p.id,'required_product_ids')}>{p.name}</span>
-                        <span style={{ fontSize:12, color:D.muted, fontWeight:600, flexShrink:0 }}>${Number(p.price).toFixed(2)}</span>
-                        {checked && (
-                          <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
-                            {tiers ? (
-                              /* Sold in bundles, so pick a bundle rather than type a
-                                 count — a bundle's price is not its unit price times
-                                 the quantity. Only the qty is stored; the customer
-                                 portal resolves it back to this bundle. */
-                              <select value={tier?.label ?? ''} onChange={e=>setBundle(p.id, e.target.value)}
-                                style={{ ...inp(), width:'auto', minWidth:230, padding:'5px 8px', fontSize:12.5 }}>
-                                {tiers.map(t => (
-                                  <option key={t.label} value={t.label}>
-                                    {t.label} — ${Number(t.bundle_total).toFixed(2)}
-                                  </option>
-                                ))}
-                              </select>
-                            ) : (
-                              <>
-                                <span style={{ fontSize:11, color:D.muted }}>Qty:</span>
-                                <input type="number" min={1} value={qty}
-                                  onChange={e=>setQty(p.id, Number(e.target.value))}
-                                  style={{ width:60, border:`1.5px solid ${D.border}`, borderRadius:6, padding:'4px 8px', fontSize:13, background:D.card, color:D.text, fontFamily:'inherit', outline:'none', textAlign:'center' }}/>
-                              </>
-                            )}
-                            {/* What this line actually costs the customer */}
-                            <span style={{ fontSize:12, fontWeight:800, color:'#d4af37', minWidth:66, textAlign:'right' }}>
-                              ${lineTotal.toFixed(2)}
-                            </span>
+                      <div key={i} style={{ border:`1.5px solid ${item.completed ? 'rgba(16,185,129,0.45)' : D.border}`, background:item.completed ? 'rgba(16,185,129,0.06)' : D.inputBg, borderRadius:10, padding:'12px 14px', display:'flex', flexDirection:'column', gap:9 }}>
+
+                        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                          <span style={{ fontSize:11, fontWeight:800, color:D.muted, background:D.btnBg, borderRadius:6, padding:'3px 8px', flexShrink:0 }}>#{i+1}</span>
+                          {prod && (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img src={prod.img} alt="" style={{ width:30, height:30, borderRadius:6, objectFit:'cover', flexShrink:0, background:D.btnBg }}/>
+                          )}
+                          <select value={item.product_id} onChange={e=>setItemProduct(i, e.target.value)}
+                            style={{ ...inp(), flex:1, minWidth:150, padding:'6px 8px', fontSize:12.5 }}>
+                            <option value="">&mdash; pick a product &mdash;</option>
+                            {products.map(pr => <option key={pr.id} value={pr.id}>{pr.name}</option>)}
+                          </select>
+                          <div style={{ display:'flex', gap:4, flexShrink:0 }}>
+                            <button onClick={()=>moveItem(i,-1)} disabled={i===0} title="Move up"
+                              style={{ background:D.btnBg, border:'none', borderRadius:6, padding:'6px 9px', cursor:i===0?'not-allowed':'pointer', opacity:i===0?0.4:1, color:D.muted }}>
+                              <i className="fa-solid fa-chevron-up" style={{ fontSize:11 }}/>
+                            </button>
+                            <button onClick={()=>moveItem(i,1)} disabled={last} title="Move down"
+                              style={{ background:D.btnBg, border:'none', borderRadius:6, padding:'6px 9px', cursor:last?'not-allowed':'pointer', opacity:last?0.4:1, color:D.muted }}>
+                              <i className="fa-solid fa-chevron-down" style={{ fontSize:11 }}/>
+                            </button>
+                            <button onClick={()=>removeItem(i)} title="Remove"
+                              style={{ background:'#fee2e2', color:'#991b1b', border:'none', borderRadius:6, padding:'6px 9px', cursor:'pointer' }}>
+                              <i className="fa-solid fa-trash" style={{ fontSize:11 }}/>
+                            </button>
                           </div>
-                        )}
+                        </div>
+
+                        <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                          {tiers ? (
+                            <select value={tier?.label ?? ''} onChange={e=>setItemBundle(i, e.target.value)}
+                              style={{ ...inp(), width:'auto', minWidth:230, padding:'5px 8px', fontSize:12.5 }}>
+                              {tiers.map(t => (
+                                <option key={t.label} value={t.label}>{t.label} &mdash; ${Number(t.bundle_total).toFixed(2)}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <>
+                              <span style={{ fontSize:11, color:D.muted }}>Qty:</span>
+                              <input type="number" min={1} value={item.qty ?? 1}
+                                onChange={e=>patchItem(i, { qty: Math.max(1, Number(e.target.value)) })}
+                                style={{ width:64, border:`1.5px solid ${D.border}`, borderRadius:6, padding:'4px 8px', fontSize:13, background:D.card, color:D.text, fontFamily:'inherit', outline:'none', textAlign:'center' }}/>
+                            </>
+                          )}
+                          {prod && <span style={{ fontSize:12, fontWeight:800, color:'#d4af37' }}>${lineTotal.toFixed(2)}</span>}
+                        </div>
+
+                        <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                          <span style={{ fontSize:11, color:D.muted, flexShrink:0 }}>When purchased:</span>
+                          <input value={item.purpose ?? ''} onChange={e=>patchItem(i, { purpose: e.target.value })}
+                            placeholder={i===0 ? 'Account activation' : i===1 ? 'Priority listing' : 'What this unlocks'}
+                            style={{ ...inp(), flex:1, minWidth:170, padding:'5px 9px', fontSize:12.5 }}/>
+                          <label style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700, color:item.completed?'#10b981':D.muted, cursor:'pointer', flexShrink:0 }}>
+                            <input type="checkbox" checked={!!item.completed}
+                              onChange={e=>patchItem(i, { completed: e.target.checked })}
+                              style={{ width:15, height:15, cursor:'pointer' }}/>
+                            Done
+                          </label>
+                        </div>
                       </div>
                     )
                   })}
+
+                  <button onClick={addItem}
+                    style={{ alignSelf:'flex-start', background:D.btnBg, color:D.text, border:`1.5px solid ${D.border}`, borderRadius:8, padding:'9px 16px', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>
+                    <i className="fa-solid fa-plus" style={{ marginRight:7, fontSize:11 }}/>Add requirement
+                  </button>
+                  <p style={{ fontSize:11, color:D.muted, margin:0, lineHeight:1.6 }}>
+                    Order is what the customer sees. The same product can be added twice &mdash;
+                    for example once to activate the account, again for priority listing.
+                  </p>
                 </div>
               </Field>
 
-              {/* Completed products */}
-              {(editing.required_product_ids??[]).length > 0 && (
-                <Field label={`Completed Products (${(editing.completed_product_ids??[]).length} marked done)`} color={D.muted}>
-                  <div style={{ maxHeight:180, overflowY:'auto', border:`1.5px solid ${D.border}`, borderRadius:8, padding:10, display:'flex', flexDirection:'column', gap:6, background:D.inputBg }}>
-                    {products.filter(p=>(editing.required_product_ids??[]).includes(p.id)).map(p=>{
-                      const checked=(editing.completed_product_ids??[]).includes(p.id)
-                      return (
-                        <label key={p.id} style={{ display:'flex', alignItems:'center', gap:10, cursor:'pointer', padding:'4px 0', userSelect:'none' }}>
-                          <input type="checkbox" checked={checked} onChange={()=>toggleProduct(p.id,'completed_product_ids')} style={{ width:15, height:15 }}/>
-                          <span style={{ fontSize:13, color: checked?'#10b981':D.text, fontWeight: checked?700:400 }}>{p.name}</span>
-                          {checked && <i className="fa-solid fa-circle-check" style={{ color:'#10b981', fontSize:12 }}/>}
-                        </label>
-                      )
-                    })}
-                  </div>
-                </Field>
-              )}
 
               {/* Portal Text Labels */}
               <div style={{ border:`1.5px solid ${D.border}`, borderRadius:10, overflow:'hidden' }}>

@@ -3,6 +3,12 @@ import { useState, useEffect, FormEvent } from 'react'
 
 interface ProductInfo {
   id: string; name: string; price: number; img: string; quantity: number
+  /** Unique per requirement — the same product can be required twice */
+  key?: string
+  /** What buying this unlocks, e.g. "Account activation" */
+  purpose?: string
+  /** Completion lives on the requirement, not the product id */
+  completed?: boolean
   /** The store bundle this requirement refers to, e.g. "3PCS WLFI TOKEN (+$200.00)" */
   bundle_label?: string | null
   /** What that bundle actually costs — not price × quantity */
@@ -241,7 +247,11 @@ export function RFSPortal() {
     return { label, sub, done, active }
   }
 
-  const completedCount = profile?.required_products.filter(p => profile.completed_product_ids.includes(p.id)).length ?? 0
+  // Completion is per requirement. Keying it by product id broke as soon as
+  // the same product was required twice — marking one done marked both.
+  const completedCount = profile?.required_products.filter(p =>
+    p.completed ?? profile.completed_product_ids.includes(p.id)
+  ).length ?? 0
   const totalRequired  = profile?.required_products.length ?? 0
   const pending        = totalRequired - completedCount
   const benefitNum     = profile ? Number(profile.benefit_amount) : 0
@@ -693,9 +703,28 @@ export function RFSPortal() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 14 }}>
                   {profile.required_products.map(p => {
-                    const done = profile.completed_product_ids.includes(p.id)
+                    const done = p.completed ?? profile.completed_product_ids.includes(p.id)
                     return (
-                      <div key={p.id} style={{ background: done ? 'rgba(16,185,129,0.06)' : 'rgba(255,255,255,0.04)', border: `1px solid ${done ? 'rgba(16,185,129,0.28)' : 'rgba(255,255,255,0.08)'}`, borderRadius: 14, padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      /* Keyed on the requirement, not the product — the same
+                         product can legitimately appear twice */
+                      <div key={p.key ?? p.id} style={{ background: done ? 'rgba(16,185,129,0.06)' : 'rgba(255,255,255,0.04)', border: `1px solid ${done ? 'rgba(16,185,129,0.28)' : 'rgba(255,255,255,0.08)'}`, borderRadius: 14, padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        {/* What buying this one unlocks */}
+                        {p.purpose && (
+                          <div style={{
+                            display: 'flex', alignItems: 'center', gap: 7,
+                            background: done ? 'rgba(16,185,129,0.12)' : 'rgba(212,175,55,0.12)',
+                            border: `1px solid ${done ? 'rgba(16,185,129,0.3)' : 'rgba(212,175,55,0.28)'}`,
+                            borderRadius: 8, padding: '7px 11px',
+                          }}>
+                            <i className={`fa-solid ${done ? 'fa-circle-check' : 'fa-unlock'}`}
+                               style={{ fontSize: 11, color: done ? '#10b981' : '#d4af37', flexShrink: 0 }} />
+                            <span style={{ fontSize: 11, fontWeight: 800, color: done ? '#10b981' : '#d4af37', letterSpacing: 0.3, lineHeight: 1.4 }}>
+                              {done
+                                ? p.purpose
+                                : `${t('purpose_prefix', 'When purchased')} — ${p.purpose}`}
+                            </span>
+                          </div>
+                        )}
                         <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                           <div style={{ width: 56, height: 56, borderRadius: 10, overflow: 'hidden', flexShrink: 0, position: 'relative', background: 'rgba(255,255,255,0.05)' }}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
