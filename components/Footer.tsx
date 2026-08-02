@@ -8,7 +8,7 @@ import { useSiteConfig } from '@/context/SiteConfigContext'
 
 export default function Footer() {
   const {
-    blurb, shop: SHOP, support: SUPPORT, company: COMPANY,
+    blurb, address, shop: SHOP, support: SUPPORT, company: COMPANY,
     socials: SOCIALS, paymentBadges, copyright,
   } = useSiteConfig().footer_config
 
@@ -20,9 +20,15 @@ export default function Footer() {
           <Link href="/" style={{ display: 'inline-block', marginBottom: 14 }}>
             <Image src="/logo.png" alt="Maga Offers" width={72} height={72} style={{ objectFit: 'contain', borderRadius: 6 }} />
           </Link>
-          <p style={{ fontSize: 15, lineHeight: 1.75, maxWidth: 280, marginBottom: 24 }}>
+          <p style={{ fontSize: 15, lineHeight: 1.75, maxWidth: 280, marginBottom: address ? 14 : 24 }}>
             {blurb}
           </p>
+          {address && (
+            <p style={{ display: 'flex', gap: 9, alignItems: 'flex-start', fontSize: 14, lineHeight: 1.7, maxWidth: 280, marginBottom: 24, color: 'rgba(255,255,255,0.72)' }}>
+              <i className="fa-solid fa-location-dot" style={{ color: 'var(--teal-light)', fontSize: 14, marginTop: 4, flexShrink: 0 }} />
+              <span>{address}</span>
+            </p>
+          )}
           <div style={{ display: 'flex', gap: 10 }}>
             {SOCIALS.map(s => (
               <motion.a key={s.icon} href={s.href} target="_blank" rel="noopener noreferrer"

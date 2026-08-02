@@ -58,6 +58,8 @@ export const DEFAULT_NAV_CONFIG: SiteNavConfig = {
 // ── Footer ────────────────────────────────────────────────────
 export interface SiteFooterConfig {
   blurb: string
+  /** Business address shown under the blurb. Hidden when blank. */
+  address: string
   shop: SiteLink[]
   support: SiteLink[]
   company: SiteLink[]
@@ -69,6 +71,7 @@ export interface SiteFooterConfig {
 
 export const DEFAULT_FOOTER_CONFIG: SiteFooterConfig = {
   blurb: 'Premium collectibles, rare finds, and exclusive memorabilia — authenticated and shipped to your door.',
+  address: '24M Jaime street Jalandoni Wilson Jaro iloilo',
   shop: [
     { label: 'All Products',   href: '/shop' },
     { label: 'Medallions',     href: '/shop?cat=medallions' },
@@ -127,6 +130,8 @@ export const DEFAULT_CATEGORIES_CONFIG: SiteCategoriesConfig = {
 
 // ── Site identity & shop-wide values ──────────────────────────
 export interface SiteIdentityConfig {
+  /** Brand name shown beside the logo in the header. Hidden when blank. */
+  brandName: string
   /** Browser tab title and search-result title */
   title: string
   /** Meta description */
@@ -141,6 +146,7 @@ export interface SiteIdentityConfig {
 }
 
 export const DEFAULT_IDENTITY_CONFIG: SiteIdentityConfig = {
+  brandName: 'MAGA OFFERS',
   title: 'Maga Offers — Premium Collectibles & Patriot Merchandise',
   description: 'Authentic limited-edition patriot collectibles. Verified, premium quality, and ready to own.',
   freeShippingText: '$399',
@@ -208,6 +214,9 @@ export function normalizeFooterConfig(value: unknown): SiteFooterConfig {
     : []
   return {
     blurb:         str(v.blurb, DEFAULT_FOOTER_CONFIG.blurb),
+    // Cleared on purpose means hidden, so only a never-set value falls back —
+    // same rule as paymentBadges below.
+    address:       typeof v.address === 'string' ? v.address.trim() : DEFAULT_FOOTER_CONFIG.address,
     shop:          normalizeLinks(v.shop,    DEFAULT_FOOTER_CONFIG.shop),
     support:       normalizeLinks(v.support,  DEFAULT_FOOTER_CONFIG.support),
     company:       normalizeLinks(v.company,  DEFAULT_FOOTER_CONFIG.company),
@@ -240,6 +249,8 @@ export function normalizeCategoriesConfig(value: unknown): SiteCategoriesConfig 
 export function normalizeIdentityConfig(value: unknown): SiteIdentityConfig {
   const v = value && typeof value === 'object' ? (value as Record<string, unknown>) : {}
   return {
+    // Cleared on purpose means logo-only, so only a never-set value falls back.
+    brandName:        typeof v.brandName === 'string' ? v.brandName.trim() : DEFAULT_IDENTITY_CONFIG.brandName,
     title:            str(v.title, DEFAULT_IDENTITY_CONFIG.title),
     description:      str(v.description, DEFAULT_IDENTITY_CONFIG.description),
     freeShippingText: str(v.freeShippingText, DEFAULT_IDENTITY_CONFIG.freeShippingText),

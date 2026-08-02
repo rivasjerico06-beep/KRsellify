@@ -18,6 +18,7 @@ export default function Header() {
   const payLinkCfg = usePayLinkConfig()
   const showCart = payLinkCfg !== null && !payLinkCfg.hideAddToCart
   const showPromos = payLinkCfg !== null && !payLinkCfg.hidePromos
+  const brandName = useSiteConfig().site_identity.brandName
   const { user, profile, isAdmin, isApprovedAgent, signOut } = useAuth()
   const { isDark, toggleDark } = useTheme()
   const router = useRouter()
@@ -64,7 +65,7 @@ export default function Header() {
     >
       {/* top row */}
       <div style={{ maxWidth: 1340, margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', gap: 16, height: 64, borderBottom: pathname === '/' ? '1px solid var(--gray)' : '2px solid var(--gray)' }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, textDecoration: 'none' }}>
           <Image
             src="/logo.png"
             alt="Maga Offers"
@@ -73,6 +74,12 @@ export default function Header() {
             style={{ objectFit: 'contain', borderRadius: 6 }}
             priority
           />
+          {brandName && (
+            // Hidden on narrow screens so the search field keeps its room
+            <span className="mo-header-brand" style={{ fontSize: 17, fontWeight: 900, color: 'var(--heading)', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+              {brandName}
+            </span>
+          )}
         </a>
 
         {/* desktop search */}
