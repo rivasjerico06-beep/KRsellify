@@ -3,36 +3,34 @@
 --  Run in: Supabase Dashboard → SQL Editor → New Query
 -- ============================================================
 --
---  Adds three orders that were placed off-platform (their 9-digit order
---  numbers come from another system; this app mints 5-digit ones) so they
---  show up in admin → Orders.
+--  Adds three orders placed off-platform (their 9-digit order numbers come
+--  from another system; this app mints 5-digit ones) so they appear in
+--  admin → Orders.
 --
---  Touches nothing that already exists:
---    * every row is guarded by NOT EXISTS on its order_number, so running
+--  Adds only these three rows:
+--    * each insert is guarded by NOT EXISTS on its order_number, so running
 --      this twice inserts nothing the second time
---    * no UPDATE or DELETE anywhere — existing orders are not read, moved
---      or renumbered
+--    * no UPDATE and no DELETE anywhere — existing orders are not read,
+--      moved or renumbered
 --    * the one schema change is an additive ADD COLUMN IF NOT EXISTS
 --
---  Each amount is exactly 90% of a catalog bundle price, so each order is
---  recorded as that bundle with a 10% discount. That keeps the drawer
---  internally consistent — subtotal is rendered as total + discount_amount,
---  and it now matches the bundle's real price. The coupon code itself is
---  left null because it wasn't supplied.
+--  Every amount is exactly 90% of a catalog bundle price, so each order is
+--  recorded as that bundle with a 10% discount rather than as an off-catalog
+--  lump sum. The order drawer renders subtotal as total + discount_amount,
+--  so this makes the subtotal land on the bundle's real price:
 --
---    635838873   $1,299.00 − 10%  = $1,169.10
---    636137509     $599.00 − 10%  =   $539.10
---    637736474   $1,399.00 − 10%  = $1,259.10
+--    635838873   $1,299.00 − 10%  = $1,169.10   D.O.G.E, 25-piece bundle
+--    636137509     $599.00 − 10%  =   $539.10   D.O.G.E, 10-piece bundle
+--    637736474   $1,399.00 − 10%  = $1,259.10   WLFI, 35PCS bundle
 --
---  If those were not discounted orders, set discount_amount to 0 and change
---  bundle_total to match total in the VALUES block below.
+--  The coupon code itself is left null — it wasn't recorded in the source.
 -- ============================================================
 
 -- The app writes shipping_address on every checkout but no migration ever
 -- created the column (the API carries a 42703 fallback that inserts without
--- it). Sue placed these as a guest, so there is no profile to read her name,
--- phone and address from — shipping_address is what makes them show in the
--- order drawer.
+-- it). These were placed as a guest, so there is no profile to read the
+-- customer's name, phone and address from — shipping_address is what makes
+-- them show in the order drawer.
 alter table public.orders add column if not exists shipping_address jsonb;
 
 with ship as (
@@ -60,18 +58,20 @@ incoming (
      1299.00::numeric, 1169.10::numeric, 129.90::numeric,
      timestamptz '2026-05-20 08:17:43+08'),
 
-    -- ⚠ The one order where the note contradicts itself: $539.10 is exactly
-    -- 90% of $599, which is the *10-piece* D.O.G.E bundle, but the note says
-    -- quantity 5 — and the 5-piece bundle is $399 (→ $359.10). The amount is
-    -- trusted here because that is the money that actually moved. To go the
-    -- other way instead, swap this line for:
-    --   '5 (+$200.00)', 399.00, 359.10, 39.90
+    -- The source note reads "Quantity: 5", but $539.10 is exactly 90% of
+    -- $599 — the 10-piece bundle. The 5-piece bundle is $399, which would
+    -- have been $359.10. Recorded against the amount, because that is the
+    -- figure that has to reconcile with the payment, it matches a real
+    -- catalog price to the cent, and it carries the same 10% discount as the
+    -- other two orders. The quantity field in these notes is the unreliable
+    -- one: order 637736474 below arrived with five variant labels pasted
+    -- into it.
     (636137509, 'D.O.G.E COIN', 'D.O.G.E COIN Collectible', '10 (+$400.00)',
      599.00, 539.10, 59.90,
      timestamptz '2026-05-21 10:29:21+08'),
 
     -- The note pastes several WLFI variant labels in a row; $1,259.10 is
-    -- exactly 90% of $1,399, which is the single "35PCS - WLFI TOKEN" bundle.
+    -- exactly 90% of $1,399, the single "35PCS - WLFI TOKEN" bundle.
     (637736474, 'TRUMP WLFI TOKEN', 'TRUMP WLFI TOKEN', '35PCS - WLFI TOKEN',
      1399.00, 1259.10, 139.90,
      timestamptz '2026-05-29 21:16:37+08')
@@ -98,8 +98,8 @@ select
   ),
   i.total,
   i.discount_amount,
-  null,                          -- coupon code unknown
-  'paid',
+  null,                          -- coupon code not recorded in the source
+  'paid',                        -- settled orders; change per-order in the drawer
   s.addr,
   i.placed_at
 from incoming i
