@@ -13,6 +13,7 @@ import { SiteWireConfig, DEFAULT_WIRE_CONFIG, normalizeWireConfig } from '@/lib/
 import { SitePayLinkConfig, DEFAULT_PAY_LINK_CONFIG, normalizePayLinkConfig, isSafePayLinkUrl } from '@/lib/pay-link'
 import { SiteRfsConfig, DEFAULT_RFS_CONFIG, normalizeRfsConfig, isRfsOwner } from '@/lib/rfs-config'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
+import { downloadInvoicePdf, DEFAULT_INVOICE_BRAND } from '@/lib/invoice-pdf'
 import { SupportConversationRow, SupportMessage } from '@/lib/support'
 
 // Support-tab unlock token. sessionStorage, so closing the browser re-locks it.
@@ -2730,6 +2731,24 @@ function AdminContent() {
                   <i className="fa-solid fa-clock" style={{ marginRight: 6 }} />
                   Placed {selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleString() : '—'}
                 </p>
+
+                {/* Invoice */}
+                <button
+                  onClick={async () => {
+                    try {
+                      await downloadInvoicePdf(selectedOrder, {
+                        ...DEFAULT_INVOICE_BRAND,
+                        // The identity title reads "Maga Offers — Premium
+                        // Collectibles…"; the invoice header wants the name only.
+                        name: siteConfig.site_identity.title.split('—')[0].trim() || DEFAULT_INVOICE_BRAND.name,
+                      })
+                    } catch {
+                      flash('Could not generate the invoice')
+                    }
+                  }}
+                  style={{ width: '100%', background: D.inputBg, border: `1.5px solid ${D.border}`, color: D.text, padding: '11px', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <i className="fa-solid fa-file-arrow-down" /> Download Invoice (PDF)
+                </button>
 
                 {/* Delete this order (e.g. test orders) */}
                 <button
