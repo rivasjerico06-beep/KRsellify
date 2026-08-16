@@ -390,11 +390,14 @@ function AdminContent() {
   const [agents, setAgents]           = useState<AgentProfile[]>([])
   const [analytics, setAnalytics]     = useState<AnalyticsData | null>(null)
   const [siteConfig, setSiteConfig]   = useState<SiteConfig>(DEFAULT_CONFIG)
-  // The identity title reads "Maga Offers — Premium Collectibles…"; the
-  // invoice and receipt headers want the name on its own.
+  // brandName is the store's name on its own; the title trails a tagline
+  // after an em dash. Fall back to the title's leading half when the owner
+  // has cleared brandName for a logo-only header.
   const docBrand = {
     ...DEFAULT_INVOICE_BRAND,
-    name: siteConfig.site_identity.title.split('—')[0].trim() || DEFAULT_INVOICE_BRAND.name,
+    name: siteConfig.site_identity.brandName.trim()
+      || siteConfig.site_identity.title.split('—')[0].trim()
+      || DEFAULT_INVOICE_BRAND.name,
   }
   const [leads, setLeads]             = useState<(Lead & { agent_profiles?: { display_name: string } | null })[]>([])
   const [approvedAgents, setApprovedAgents] = useState<AgentProfile[]>([])
