@@ -12,6 +12,16 @@ import { usePayLinkConfig } from '@/lib/use-pay-link'
 
 export default function Header() {
   const NAV_LINKS = useSiteConfig().nav_config.links
+  // The search dropdown used to hardcode four categories while the nav below
+  // it carried six, so Apparel and Accessories were unreachable from search
+  // even though /shop and /search both understand them. Both lists now come
+  // from the same config so they can't drift apart again.
+  const SEARCH_CATS = Array.from(
+    new Map(
+      [{ cat: 'all', label: 'All' }, ...NAV_LINKS.filter(l => l.cat !== 'all')]
+        .map(l => [l.cat, l] as const)
+    ).values()
+  )
   const { cartCount, cartTotal, setCartOpen } = useCart()
   // One-product-at-a-time mode has no browsable cart, and promo mode hides
   // every coupon/VIP entry point. Null while loading, so nothing flashes in.
@@ -88,10 +98,9 @@ export default function Header() {
             value={searchCat}
             onChange={e => setSearchCat(e.target.value)}
             style={{ border: 'none', outline: 'none', background: 'var(--gray)', padding: '0 14px', fontSize: 14, color: 'var(--text-mid)', cursor: 'pointer', fontFamily: 'inherit' }}>
-            <option value="all">All</option>
-            <option value="medallions">Medallions</option>
-            <option value="collectibles">Collectibles</option>
-            <option value="crypto">Crypto</option>
+            {SEARCH_CATS.map(c => (
+              <option key={c.cat} value={c.cat}>{c.label}</option>
+            ))}
           </select>
           <input
             type="text"
