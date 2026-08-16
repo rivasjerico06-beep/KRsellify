@@ -204,9 +204,12 @@ export default function OwnerConsole({ authHeaders }: { authHeaders: () => Heade
 
       {/* ── Site identity ── */}
       <Section icon="fa-globe" title="Site Identity" saving={saving === 'site_identity'}
-        hint="Browser tab title, the description search engines show, and the free-shipping threshold used across the site."
+        hint="The name beside the logo, browser tab title, the description search engines show, and the free-shipping threshold used across the site."
         onSave={() => save('site_identity', identity, 'Site identity')}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <Field label="Brand name beside the logo" value={identity.brandName}
+            placeholder="MAGA OFFERS"
+            onChange={v => setIdentity({ ...identity, brandName: v })} />
           <Field label="Browser title" value={identity.title} onChange={v => setIdentity({ ...identity, title: v })} />
           <div>
             <label style={LABEL}>Meta description</label>
@@ -286,7 +289,7 @@ export default function OwnerConsole({ authHeaders }: { authHeaders: () => Heade
 
       {/* ── Footer ── */}
       <Section icon="fa-shoe-prints" title="Footer" saving={saving === 'footer_config'}
-        hint="Everything in the footer: the blurb under the logo, all three link columns, social icons, card badges and the copyright line."
+        hint="Everything in the footer: the blurb under the logo, your business address, all three link columns, social icons, card badges and the copyright line."
         onSave={() => save('footer_config', footer, 'Footer')}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div>
@@ -294,6 +297,17 @@ export default function OwnerConsole({ authHeaders }: { authHeaders: () => Heade
             <textarea value={footer.blurb} rows={2}
               onChange={e => setFooter({ ...footer, blurb: e.target.value })}
               style={{ ...INPUT, resize: 'vertical' }} />
+          </div>
+
+          <div>
+            <label style={LABEL}>Business address</label>
+            <textarea value={footer.address} rows={2}
+              placeholder="24M Jaime street Jalandoni Wilson Jaro iloilo"
+              onChange={e => setFooter({ ...footer, address: e.target.value })}
+              style={{ ...INPUT, resize: 'vertical' }} />
+            <p style={{ fontSize: 12, color: 'var(--text-light)', margin: '6px 0 0', lineHeight: 1.6 }}>
+              Shown under the blurb with a pin icon. Leave blank to hide it.
+            </p>
           </div>
 
           {([

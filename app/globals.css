@@ -215,6 +215,7 @@ html.theme-transition *::after {
 /* ── Layout responsive ──────────────────────────────────── */
 .mo-header-search  { flex: 1; display: flex; max-width: 560px; }
 .mo-header-cart-label { display: inline; }
+.mo-header-brand { display: inline; }
 .mo-mobile-menu-btn { display: none; }
 
 .mo-footer-grid {
@@ -240,6 +241,7 @@ html.theme-transition *::after {
 @media (max-width: 768px) {
   .mo-header-search    { display: none !important; }
   .mo-header-cart-label { display: none; }
+  .mo-header-brand     { font-size: 15px; }
   .mo-mobile-menu-btn  { display: flex !important; }
   .mo-desktop-nav      { display: none; }
 
