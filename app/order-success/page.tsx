@@ -9,6 +9,7 @@ import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { SiteWireConfig, wireFieldList } from '@/lib/wire-config'
 import { usePayLinkConfig } from '@/lib/use-pay-link'
+import { downloadReceiptPdf } from '@/lib/order-pdf'
 
 const COLORS = ['#58948F', '#093459', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981', '#f97316', '#06b6d4']
 
@@ -285,6 +286,10 @@ function GiftCardBonusModal({ authToken, onClose }: { authToken?: string; onClos
 export default function OrderSuccessPage() {
   const router = useRouter()
   const [order, setOrder] = useState<OrderInfo | null>(null)
+  // The order payload carries no timestamp, and localStorage is cleared the
+  // moment this page mounts — so the order was placed seconds ago and the
+  // page opening is the closest honest stand-in for its date.
+  const [openedAt] = useState(() => new Date().toISOString())
   const [showConfetti, setShowConfetti] = useState(true)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [authToken, setAuthToken] = useState<string | undefined>(undefined)
@@ -531,6 +536,19 @@ export default function OrderSuccessPage() {
                 </span>
               </p>
             )}
+
+            <button
+              onClick={() => downloadReceiptPdf({
+                ...order,
+                discount_amount: order.discount,
+                created_at: openedAt,
+                // A wire order is placed but not yet settled, so its receipt
+                // must not claim to be paid.
+                status: order.payment_method === 'wire' ? 'pending_payment' : 'paid',
+              })}
+              style={{ width: '100%', marginTop: 14, background: 'transparent', border: '1.5px solid var(--gray)', color: 'var(--heading)', borderRadius: 50, padding: '12px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <i className="fa-solid fa-receipt" /> Download Receipt (PDF)
+            </button>
           </motion.div>
         )}
 

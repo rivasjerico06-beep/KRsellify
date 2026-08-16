@@ -13,7 +13,7 @@ import { SiteWireConfig, DEFAULT_WIRE_CONFIG, normalizeWireConfig } from '@/lib/
 import { SitePayLinkConfig, DEFAULT_PAY_LINK_CONFIG, normalizePayLinkConfig, isSafePayLinkUrl } from '@/lib/pay-link'
 import { SiteRfsConfig, DEFAULT_RFS_CONFIG, normalizeRfsConfig, isRfsOwner } from '@/lib/rfs-config'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
-import { downloadInvoicePdf, DEFAULT_INVOICE_BRAND } from '@/lib/invoice-pdf'
+import { downloadInvoicePdf, downloadReceiptPdf, DEFAULT_INVOICE_BRAND } from '@/lib/order-pdf'
 import { SupportConversationRow, SupportMessage } from '@/lib/support'
 
 // Support-tab unlock token. sessionStorage, so closing the browser re-locks it.
@@ -390,6 +390,12 @@ function AdminContent() {
   const [agents, setAgents]           = useState<AgentProfile[]>([])
   const [analytics, setAnalytics]     = useState<AnalyticsData | null>(null)
   const [siteConfig, setSiteConfig]   = useState<SiteConfig>(DEFAULT_CONFIG)
+  // The identity title reads "Maga Offers — Premium Collectibles…"; the
+  // invoice and receipt headers want the name on its own.
+  const docBrand = {
+    ...DEFAULT_INVOICE_BRAND,
+    name: siteConfig.site_identity.title.split('—')[0].trim() || DEFAULT_INVOICE_BRAND.name,
+  }
   const [leads, setLeads]             = useState<(Lead & { agent_profiles?: { display_name: string } | null })[]>([])
   const [approvedAgents, setApprovedAgents] = useState<AgentProfile[]>([])
   const [loading, setLoading]         = useState(false)
@@ -2732,23 +2738,22 @@ function AdminContent() {
                   Placed {selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleString() : '—'}
                 </p>
 
-                {/* Invoice */}
-                <button
-                  onClick={async () => {
-                    try {
-                      await downloadInvoicePdf(selectedOrder, {
-                        ...DEFAULT_INVOICE_BRAND,
-                        // The identity title reads "Maga Offers — Premium
-                        // Collectibles…"; the invoice header wants the name only.
-                        name: siteConfig.site_identity.title.split('—')[0].trim() || DEFAULT_INVOICE_BRAND.name,
-                      })
-                    } catch {
-                      flash('Could not generate the invoice')
-                    }
-                  }}
-                  style={{ width: '100%', background: D.inputBg, border: `1.5px solid ${D.border}`, color: D.text, padding: '11px', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                  <i className="fa-solid fa-file-arrow-down" /> Download Invoice (PDF)
-                </button>
+                {/* Invoice (seller's copy) and receipt (customer's copy) */}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {([
+                    { label: 'Invoice', icon: 'fa-file-invoice', run: downloadInvoicePdf },
+                    { label: 'Receipt', icon: 'fa-receipt',      run: downloadReceiptPdf },
+                  ] as const).map(doc => (
+                    <button key={doc.label}
+                      onClick={async () => {
+                        try { await doc.run(selectedOrder, docBrand) }
+                        catch { flash(`Could not generate the ${doc.label.toLowerCase()}`) }
+                      }}
+                      style={{ flex: 1, background: D.inputBg, border: `1.5px solid ${D.border}`, color: D.text, padding: '11px', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                      <i className={`fa-solid ${doc.icon}`} /> {doc.label}
+                    </button>
+                  ))}
+                </div>
 
                 {/* Delete this order (e.g. test orders) */}
                 <button

@@ -1,19 +1,22 @@
 /**
- * INVOICE PDF
- * -----------
- * Builds a plain, formal one-page invoice for an order and downloads it.
+ * ORDER DOCUMENTS — invoice and receipt PDFs
+ * ------------------------------------------
+ * One plain, one-page document rendered in two variants:
  *
- * Deliberately unstyled: black text on white, thin rules, left-aligned
- * labels and right-aligned amounts. It is a document to file or hand to a
- * courier, not a piece of the storefront's design, so none of the site's
- * navy/teal/gold palette appears here.
+ *   invoice — the admin's copy. Carries the ship-to block.
+ *   receipt — the customer's copy. Headed RECEIPT, marks the order paid,
+ *             and drops the ship-to block they filled in themselves.
  *
- * jsPDF is imported dynamically so it stays out of the admin bundle until
- * someone actually exports an invoice.
+ * Both are deliberately unstyled: black text on white, thin rules,
+ * left-aligned labels and right-aligned amounts. These are documents to file
+ * or hand to a courier, not pieces of the storefront's design, so none of the
+ * site's navy/teal/gold palette appears here.
+ *
+ * jsPDF is imported dynamically so it stays out of the page bundles until
+ * someone actually downloads something.
  */
 
 import type { jsPDF as JsPdfDoc } from 'jspdf'
-import type { Order } from './types'
 
 export interface InvoiceBrand {
   /** Seller name in the header, e.g. "Maga Offers" */
@@ -29,6 +32,49 @@ export const DEFAULT_INVOICE_BRAND: InvoiceBrand = {
   site: 'themagaoffer.com',
   supportEmail: 'themagaoffer@gmail.com',
 }
+
+/**
+ * Everything a document needs, and nothing more. Kept structural rather than
+ * reusing lib/types' Order so the customer-facing pages — which each carry
+ * their own narrower order shape — can pass theirs straight in.
+ */
+export interface OrderDocumentData {
+  id?: string
+  order_number?: number | null
+  created_at?: string
+  status?: string
+  payment_method?: string | null
+  coupon_code?: string | null
+  total: number
+  discount_amount?: number | null
+  guest_email?: string | null
+  customer_email?: string | null
+  customer_name?: string | null
+  customer_address?: string | null
+  customer_city?: string | null
+  customer_phone?: string | null
+  items: {
+    name: string
+    qty: number
+    price: number
+    bundle_label?: string
+    bundle_price?: number
+  }[]
+  shipping_address?: {
+    firstName?: string
+    lastName?: string
+    address?: string
+    apartment?: string
+    city?: string
+    region?: string
+    postalCode?: string
+    country?: string
+    phone?: string
+  } | null
+}
+
+type Order = OrderDocumentData
+export type DocumentVariant = 'invoice' | 'receipt'
 
 // ── Code 128B ─────────────────────────────────────────────────
 // Widths of alternating bars and spaces, starting with a bar. Every symbol
@@ -87,6 +133,28 @@ function paymentLabel(order: Order): string {
   return (m && PAYMENT_LABELS[m]) || '—'
 }
 
+/**
+ * What to stamp on a receipt. Anything downstream of payment counts as paid;
+ * an order still awaiting a wire must not claim to be, and a cancelled one
+ * says so rather than staying silent.
+ */
+function paidStamp(status?: string): string | null {
+  switch (status) {
+    case 'paid':
+    case 'confirmed':
+    case 'packed':
+    case 'shipped':
+    case 'delivered':
+      return 'PAID'
+    case 'pending_payment':
+      return 'AWAITING PAYMENT'
+    case 'cancelled':
+      return 'CANCELLED'
+    default:
+      return null
+  }
+}
+
 function orderRef(order: Order): string {
   return String(order.order_number ?? order.id?.slice(0, 6).toUpperCase() ?? '—')
 }
@@ -143,15 +211,16 @@ const M = 54                // margin
 const RIGHT = PAGE_W - M
 
 /**
- * Draws the invoice onto an existing document. Split out from the download so
- * the layout can be exercised outside a browser — nothing in here touches the
- * DOM, the network or the filesystem.
+ * Draws the document onto an existing page. Split out from the download so the
+ * layout can be exercised outside a browser — nothing in here touches the DOM,
+ * the network or the filesystem.
  */
-export function renderInvoice(
+export function renderOrderDocument(
   doc: JsPdfDoc,
   order: Order,
   brand: InvoiceBrand = DEFAULT_INVOICE_BRAND,
   logo: string | null = null,
+  variant: DocumentVariant = 'invoice',
 ) {
   const rule = (y: number) => {
     doc.setDrawColor(170)
@@ -195,6 +264,7 @@ export function renderInvoice(
       : '—',
     M, y, 10.5,
   )
+  if (variant === 'receipt') text('RECEIPT', RIGHT, y, 10.5, true, 'right')
   y += 12
   rule(y)
 
@@ -205,9 +275,13 @@ export function renderInvoice(
   y += 12
   rule(y)
 
-  // Order reference
+  // Order reference, and on a receipt whether the money has landed
   y += 18
   text(`Order #${orderRef(order)}`, M, y, 11, true)
+  if (variant === 'receipt') {
+    const stamp = paidStamp(order.status)
+    if (stamp) text(stamp, RIGHT, y, 11, true, 'right')
+  }
   y += 12
   rule(y)
 
@@ -257,8 +331,9 @@ export function renderInvoice(
   y += 14
   rule(y)
 
-  // Ship to
-  const ship = shipLines(order)
+  // Ship to — the invoice's copy only. On a receipt it is the address the
+  // customer just typed in, so it is noise on their own copy.
+  const ship = variant === 'invoice' ? shipLines(order) : []
   if (ship.length) {
     y += 20
     text('Ship to', M, y, 9, true)
@@ -292,10 +367,18 @@ export function renderInvoice(
   text('Thank you for your order!', PAGE_W / 2, y, 10, false, 'center')
 }
 
-/** Builds the invoice and hands it to the browser as a download. */
-export async function downloadInvoicePdf(order: Order, brand: InvoiceBrand = DEFAULT_INVOICE_BRAND) {
+/** Builds a document and hands it to the browser as a download. */
+async function download(order: Order, brand: InvoiceBrand, variant: DocumentVariant) {
   const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ unit: 'pt', format: 'letter' })
-  renderInvoice(doc, order, brand, await loadLogo())
-  doc.save(`invoice-${orderRef(order)}.pdf`)
+  renderOrderDocument(doc, order, brand, await loadLogo(), variant)
+  doc.save(`${variant}-${orderRef(order)}.pdf`)
 }
+
+/** The seller's copy — carries the ship-to block. */
+export const downloadInvoicePdf = (order: Order, brand: InvoiceBrand = DEFAULT_INVOICE_BRAND) =>
+  download(order, brand, 'invoice')
+
+/** The customer's copy — headed RECEIPT and stamped with the payment state. */
+export const downloadReceiptPdf = (order: Order, brand: InvoiceBrand = DEFAULT_INVOICE_BRAND) =>
+  download(order, brand, 'receipt')
