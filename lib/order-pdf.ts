@@ -3,9 +3,10 @@
  * ------------------------------------------
  * One plain, one-page document rendered in two variants:
  *
- *   invoice — the admin's copy. Carries the ship-to block.
- *   receipt — the customer's copy. Headed RECEIPT, marks the order paid,
- *             and drops the ship-to block they filled in themselves.
+ *   invoice — the bill for the order.
+ *   receipt — the same, headed RECEIPT and stamped with the payment state.
+ *
+ * Both carry the ship-to block, and both are pulled from the admin only.
  *
  * Both are deliberately unstyled: black text on white, thin rules,
  * left-aligned labels and right-aligned amounts. These are documents to file
@@ -331,9 +332,10 @@ export function renderOrderDocument(
   y += 14
   rule(y)
 
-  // Ship to — the invoice's copy only. On a receipt it is the address the
-  // customer just typed in, so it is noise on their own copy.
-  const ship = variant === 'invoice' ? shipLines(order) : []
+  // Ship to — on both documents. Receipts are pulled from the admin, not
+  // handed to the customer, so the delivery address is the useful part
+  // rather than something the reader already knows.
+  const ship = shipLines(order)
   if (ship.length) {
     y += 20
     text('Ship to', M, y, 9, true)
