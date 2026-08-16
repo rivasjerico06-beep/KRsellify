@@ -5,7 +5,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '@/context/ThemeContext'
-import { downloadReceiptPdf } from '@/lib/order-pdf'
 
 interface OrderItem {
   name: string
@@ -246,12 +245,6 @@ export default function TrackOrderPage() {
                           ${Number(order.total).toFixed(2)}
                         </span>
                       </div>
-
-                      <button
-                        onClick={() => downloadReceiptPdf({ ...order, guest_email: email.trim() })}
-                        style={{ width: '100%', marginTop: 14, background: 'transparent', border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.18)' : 'var(--gray)'}`, color: isDark ? '#e2f0ef' : 'var(--heading)', borderRadius: 50, padding: '12px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                        <i className="fa-solid fa-receipt" /> Download Receipt (PDF)
-                      </button>
                     </div>
                   ))}
                 </div>
