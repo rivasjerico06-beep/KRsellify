@@ -29,7 +29,9 @@ export interface InvoiceBrand {
 }
 
 export const DEFAULT_INVOICE_BRAND: InvoiceBrand = {
-  name: 'Maga Offers',
+  name: "PATRIOT'S ONLINE SHOP",
+  // Domain and mailbox are live endpoints, not branding — renaming them here
+  // would print an address that doesn't resolve and a mailbox nobody reads.
   site: 'themagaoffer.com',
   supportEmail: 'themagaoffer@gmail.com',
 }

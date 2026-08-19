@@ -146,7 +146,7 @@ export interface SiteIdentityConfig {
 }
 
 export const DEFAULT_IDENTITY_CONFIG: SiteIdentityConfig = {
-  brandName: 'MAGA OFFERS',
+  brandName: "PATRIOT'S ONLINE SHOP",
   title: 'Maga Offers — Premium Collectibles & Patriot Merchandise',
   description: 'Authentic limited-edition patriot collectibles. Verified, premium quality, and ready to own.',
   freeShippingText: '$399',
