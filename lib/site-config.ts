@@ -71,7 +71,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
     visible: true,
     bg_color: 'navy',
     text: 'Free shipping on orders $399+',
-    highlight: 'Use code MAGA10 for 10% off',
+    highlight: 'Use code THEMAGA10 for 10% off',
     suffix: 'Limited time only',
   },
   hero_slides: [

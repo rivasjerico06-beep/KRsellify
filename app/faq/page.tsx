@@ -36,7 +36,7 @@ const FAQS = [
   },
   {
     q: 'Do you offer discounts or coupon codes?',
-    a: 'Yes! Use code MAGA10 for 10% off your first order. Loyal customers automatically receive tier-based coupons (Silver, Gold, Platinum) as they spend more.',
+    a: 'Yes! Use code THEMAGA10 for 10% off your first order. Loyal customers automatically receive tier-based coupons (Silver, Gold, Platinum) as they spend more.',
   },
   {
     q: 'What is the Agent program?',
