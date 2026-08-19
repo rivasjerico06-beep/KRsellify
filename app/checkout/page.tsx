@@ -697,7 +697,7 @@ export default function CheckoutPage() {
                   {wireSubmitting ? 'Opening payment…' : `${payLinkCfg?.label || 'Pay'} $${finalTotal.toFixed(2)}`}
                 </button>
                 <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 10, lineHeight: 1.5, textAlign: 'center' }}>
-                  Your order isn&rsquo;t placed until The MAGA confirms your payment. You&rsquo;ll be notified by email once it is.
+                  Your order isn&rsquo;t placed until PATRIOT’S ONLINE SHOP confirms your payment. You&rsquo;ll be notified by email once it is.
                 </p>
               </div>
             ) : !wireCfg?.enabled || wireCfg.maintenance ? (
@@ -717,7 +717,7 @@ export default function CheckoutPage() {
                   ))}
                   <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 12, lineHeight: 1.5 }}>
                     Wire <strong>${finalTotal.toFixed(2)}</strong> to the account above from your bank, then upload
-                    your receipt below. The MAGA will verify your payment and email you once your order is placed.
+                    your receipt below. PATRIOT’S ONLINE SHOP will verify your payment and email you once your order is placed.
                   </p>
                 </div>
 
@@ -762,7 +762,7 @@ export default function CheckoutPage() {
                   {wireSubmitting ? 'Submitting…' : 'Submit Order & Receipt'}
                 </button>
                 <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 10, lineHeight: 1.5, textAlign: 'center' }}>
-                  The MAGA will confirm your payment and notify you by email once your order is placed.
+                  PATRIOT’S ONLINE SHOP will confirm your payment and notify you by email once your order is placed.
                 </p>
               </div>
             )

@@ -490,7 +490,7 @@ function AgentContent() {
       {/* header */}
       <div style={{ background: 'var(--navy)', padding: '16px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 900, color: 'white' }}>
-          Maga <span style={{ color: 'var(--teal-light)' }}>Offers</span>
+          PATRIOT’S <span style={{ color: 'var(--teal-light)' }}>ONLINE SHOP</span>
           <span style={{ fontSize: 11, fontWeight: 600, background: 'var(--teal)', padding: '2px 10px', borderRadius: 20, marginLeft: 10, verticalAlign: 'middle' }}>Agent</span>
         </a>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
@@ -623,7 +623,7 @@ function AgentContent() {
                           { n: 4, text: 'Customer fills in their EMAIL and full SHIPPING ADDRESS — use the same email or phone you have on their lead, or the sale may not credit to you', bold: true },
                           { n: 5, text: 'A green “Pay $___” button appears. Tapping it opens the secure payment page in a new tab and reserves the order' },
                           { n: 6, text: 'Customer pays the EXACT amount shown. The order is NOT placed yet — it sits at “Verifying Payment”', bold: true },
-                          { n: 7, text: 'The MAGA confirms the money arrived, then the customer gets the “Order Confirmed” email. ONLY THEN is it a real sale — and it appears in your My Sales', bold: true },
+                          { n: 7, text: 'PATRIOT’S ONLINE SHOP confirms the money arrived, then the customer gets the “Order Confirmed” email. ONLY THEN is it a real sale — and it appears in your My Sales', bold: true },
                           { n: 8, text: 'Log the call as “Converted / Ordered” and write the exact email the customer used in your Notes' },
                         ].map(s => (
                           <div key={s.n} style={{

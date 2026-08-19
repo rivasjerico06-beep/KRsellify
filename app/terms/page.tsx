@@ -1,6 +1,6 @@
 ﻿import InfoPageLayout from '@/components/InfoPageLayout'
 
-export const metadata = { title: 'Terms of Service — Maga Offers' }
+export const metadata = { title: 'Terms of Service — PATRIOT’S ONLINE SHOP' }
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section style={{ background: 'var(--white)', borderRadius: 16, padding: '28px 32px', boxShadow: '0 2px 10px rgba(9,52,89,0.06)' }}>
@@ -14,11 +14,11 @@ export default function TermsPage() {
     <InfoPageLayout title="Terms of Service" subtitle="Last updated: January 2025" breadcrumb="Terms of Service">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <Section title="Acceptance of Terms">
-          <p>By accessing or using Maga Offers, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our site.</p>
+          <p>By accessing or using PATRIOT’S ONLINE SHOP, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our site.</p>
         </Section>
 
         <Section title="Products & Pricing">
-          <p style={{ marginBottom: 10 }}>All products listed on Maga Offers are subject to availability. We reserve the right to:</p>
+          <p style={{ marginBottom: 10 }}>All products listed on PATRIOT’S ONLINE SHOP are subject to availability. We reserve the right to:</p>
           <ul style={{ listStyle: 'disc', paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
             <li>Change prices without prior notice</li>
             <li>Limit the quantity of products sold per customer</li>
@@ -32,7 +32,7 @@ export default function TermsPage() {
         </Section>
 
         <Section title="Shipping & Delivery">
-          <p>Estimated delivery times are not guaranteed. Maga Offers is not liable for delays caused by shipping carriers, customs, or events outside our control. Risk of loss passes to you upon delivery to the carrier.</p>
+          <p>Estimated delivery times are not guaranteed. PATRIOT’S ONLINE SHOP is not liable for delays caused by shipping carriers, customs, or events outside our control. Risk of loss passes to you upon delivery to the carrier.</p>
         </Section>
 
         <Section title="Returns & Refunds">
@@ -40,11 +40,11 @@ export default function TermsPage() {
         </Section>
 
         <Section title="Intellectual Property">
-          <p>All content on this site — including logos, product images, text, and design — is the property of Maga Offers or its licensors. You may not reproduce, distribute, or create derivative works without our written permission.</p>
+          <p>All content on this site — including logos, product images, text, and design — is the property of PATRIOT’S ONLINE SHOP or its licensors. You may not reproduce, distribute, or create derivative works without our written permission.</p>
         </Section>
 
         <Section title="Limitation of Liability">
-          <p>To the fullest extent permitted by law, Maga Offers is not liable for any indirect, incidental, or consequential damages arising from your use of our site or products. Our total liability shall not exceed the amount you paid for the item in question.</p>
+          <p>To the fullest extent permitted by law, PATRIOT’S ONLINE SHOP is not liable for any indirect, incidental, or consequential damages arising from your use of our site or products. Our total liability shall not exceed the amount you paid for the item in question.</p>
         </Section>
 
         <Section title="Governing Law">

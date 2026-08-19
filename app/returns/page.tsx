@@ -1,7 +1,7 @@
 ﻿import InfoPageLayout from '@/components/InfoPageLayout'
 import Link from 'next/link'
 
-export const metadata = { title: 'Returns & Exchanges — Maga Offers' }
+export const metadata = { title: 'Returns & Exchanges — PATRIOT’S ONLINE SHOP' }
 
 export default function ReturnsPage() {
   return (

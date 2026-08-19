@@ -1,6 +1,6 @@
 ﻿import InfoPageLayout from '@/components/InfoPageLayout'
 
-export const metadata = { title: 'Shipping Info — Maga Offers' }
+export const metadata = { title: 'Shipping Info — PATRIOT’S ONLINE SHOP' }
 
 export default function ShippingPage() {
   return (

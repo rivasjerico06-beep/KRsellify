@@ -77,7 +77,7 @@ export default function VipPage() {
       {/* Nav */}
       <div style={{ padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         <Link href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 900, color: 'white', textDecoration: 'none' }}>
-          Maga <span style={{ color: '#4dd9b8' }}>Offers</span>
+          PATRIOT’S <span style={{ color: '#4dd9b8' }}>ONLINE SHOP</span>
         </Link>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           <Link href="/shop" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Shop</Link>

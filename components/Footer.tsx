@@ -18,7 +18,7 @@ export default function Footer() {
         {/* brand */}
         <div className="mo-footer-brand">
           <Link href="/" style={{ display: 'inline-block', marginBottom: 14 }}>
-            <Image src="/logo.png" alt="Maga Offers" width={72} height={72} style={{ objectFit: 'contain', borderRadius: 6 }} />
+            <Image src="/logo.png" alt="PATRIOT’S ONLINE SHOP" width={72} height={72} style={{ objectFit: 'contain', borderRadius: 6 }} />
           </Link>
           <p style={{ fontSize: 15, lineHeight: 1.75, maxWidth: 280, marginBottom: address ? 14 : 24 }}>
             {blurb}

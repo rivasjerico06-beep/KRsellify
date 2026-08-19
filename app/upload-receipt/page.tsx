@@ -60,7 +60,7 @@ export default function UploadReceiptPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--off-white)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
       <Link href="/" style={{ marginBottom: 28 }}>
-        <Image src="/logo.png" alt="Maga Offers" width={64} height={64} style={{ objectFit: 'contain' }} />
+        <Image src="/logo.png" alt="PATRIOT’S ONLINE SHOP" width={64} height={64} style={{ objectFit: 'contain' }} />
       </Link>
 
       <div style={{ background: 'var(--white)', borderRadius: 20, padding: '36px 32px', maxWidth: 480, width: '100%', boxShadow: '0 8px 40px rgba(9,52,89,0.12)', textAlign: 'center' }}>

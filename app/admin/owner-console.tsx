@@ -208,7 +208,7 @@ export default function OwnerConsole({ authHeaders }: { authHeaders: () => Heade
         onSave={() => save('site_identity', identity, 'Site identity')}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <Field label="Brand name beside the logo" value={identity.brandName}
-            placeholder="MAGA OFFERS"
+            placeholder="PATRIOT’S ONLINE SHOP"
             onChange={v => setIdentity({ ...identity, brandName: v })} />
           <Field label="Browser title" value={identity.title} onChange={v => setIdentity({ ...identity, title: v })} />
           <div>

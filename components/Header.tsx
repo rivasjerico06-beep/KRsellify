@@ -78,7 +78,7 @@ export default function Header() {
         <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, textDecoration: 'none' }}>
           <Image
             src="/logo.png"
-            alt="Maga Offers"
+            alt="PATRIOT’S ONLINE SHOP"
             width={52}
             height={52}
             style={{ objectFit: 'contain', borderRadius: 6 }}

@@ -1018,7 +1018,7 @@ function AdminContent() {
       {/* top bar */}
       <div style={{ background: 'var(--navy)', padding: '14px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 900, color: 'white' }}>
-          Maga <span style={{ color: 'var(--teal-light)' }}>Offers</span>
+          PATRIOT’S <span style={{ color: 'var(--teal-light)' }}>ONLINE SHOP</span>
           <span style={{ fontSize: 10, fontWeight: 700, background: 'var(--sale-red)', padding: '2px 8px', borderRadius: 20, marginLeft: 8, verticalAlign: 'middle' }}>ADMIN</span>
         </a>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>

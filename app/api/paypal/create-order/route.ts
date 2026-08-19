@@ -112,11 +112,11 @@ export async function POST(request: Request) {
         intent: 'CAPTURE',
         purchase_units: [{
           amount: { currency_code: 'USD', value: amount.toFixed(2) },
-          description: 'Maga Offers Order',
+          description: 'PATRIOT’S ONLINE SHOP Order',
           payee: { merchant_id: process.env.PAYPAL_MERCHANT_ID },
         }],
         application_context: {
-          brand_name: 'Maga Offers',
+          brand_name: 'PATRIOT’S ONLINE SHOP',
           landing_page: 'LOGIN',
           user_action: 'PAY_NOW',
           shipping_preference: 'NO_SHIPPING',

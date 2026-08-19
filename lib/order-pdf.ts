@@ -20,7 +20,7 @@
 import type { jsPDF as JsPdfDoc } from 'jspdf'
 
 export interface InvoiceBrand {
-  /** Seller name in the header, e.g. "Maga Offers" */
+  /** Seller name in the header, e.g. "PATRIOT’S ONLINE SHOP" */
   name: string
   /** Site shown under the name, e.g. "themagaoffer.com" */
   site: string

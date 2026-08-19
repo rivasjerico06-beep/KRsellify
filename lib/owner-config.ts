@@ -88,7 +88,7 @@ export const DEFAULT_FOOTER_CONFIG: SiteFooterConfig = {
     { label: 'Contact Us',          href: '/contact' },
   ],
   company: [
-    { label: 'About Maga Offers', href: '/about' },
+    { label: 'About PATRIOT’S ONLINE SHOP', href: '/about' },
     { label: 'Privacy Policy',    href: '/privacy' },
     { label: 'Terms of Service',  href: '/terms' },
   ],
@@ -99,7 +99,7 @@ export const DEFAULT_FOOTER_CONFIG: SiteFooterConfig = {
     { icon: 'fa-youtube',    href: 'https://youtube.com/@themagaoffers' },
   ],
   paymentBadges: ['VISA', 'MC', 'AMEX', 'PayPal'],
-  copyright: '© 2026 Maga Offers. All rights reserved. Made with',
+  copyright: '© 2026 PATRIOT’S ONLINE SHOP. All rights reserved. Made with',
 }
 
 // ── Category cards ────────────────────────────────────────────
@@ -147,7 +147,7 @@ export interface SiteIdentityConfig {
 
 export const DEFAULT_IDENTITY_CONFIG: SiteIdentityConfig = {
   brandName: "PATRIOT'S ONLINE SHOP",
-  title: 'Maga Offers — Premium Collectibles & Patriot Merchandise',
+  title: 'PATRIOT’S ONLINE SHOP — Premium Collectibles & Patriot Merchandise',
   description: 'Authentic limited-edition patriot collectibles. Verified, premium quality, and ready to own.',
   freeShippingText: '$399',
 }

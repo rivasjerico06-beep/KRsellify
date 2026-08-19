@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-const FROM = process.env.EMAIL_FROM ?? 'Maga Offers <orders@themagaoffers.com>'
+const FROM = process.env.EMAIL_FROM ?? 'PATRIOT’S ONLINE SHOP <orders@themagaoffers.com>'
 
 function esc(str: string): string {
   return str

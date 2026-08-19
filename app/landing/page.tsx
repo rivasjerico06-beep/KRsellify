@@ -151,7 +151,7 @@ function ProductCard3D({ p, i }: { p: typeof PRODUCTS[0]; i: number }) {
 
         {/* Info */}
         <div style={{ padding: '20px 22px 24px' }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Maga Offers Exclusive</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase' }}>PATRIOT’S ONLINE SHOP Exclusive</p>
           <h3 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 21, fontWeight: 700, color: 'white', lineHeight: 1.2, marginBottom: 14 }}>{p.name}</h3>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
@@ -258,7 +258,7 @@ function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.75, delay: 0.55 }}
           style={{ fontSize: 'clamp(15px,1.9vw,20px)', color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, maxWidth: 560, margin: '28px auto 52px' }}>
-          Maga Offers curates the world's most exceptional crypto memorabilia, gold bars, and rare medallions — each piece authenticated, limited, and ready to become your legacy.
+          PATRIOT’S ONLINE SHOP curates the world's most exceptional crypto memorabilia, gold bars, and rare medallions — each piece authenticated, limited, and ready to become your legacy.
         </motion.p>
 
         {/* CTAs */}
@@ -369,7 +369,7 @@ function WhySection() {
             <div style={{ width: 40, height: 1, background: 'var(--gold)', opacity: 0.5 }} />
           </div>
           <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(38px,5vw,68px)', fontWeight: 700, color: 'white', lineHeight: 1.1, marginBottom: 20 }}>
-            Maga Offers
+            PATRIOT’S ONLINE SHOP
             <br />
             <span style={{ background: 'linear-gradient(135deg, var(--gold), #fbbf24)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Difference</span>
           </h2>
@@ -566,7 +566,7 @@ function FinalCTA() {
         </h2>
 
         <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.55)', lineHeight: 1.75, marginBottom: 52 }}>
-          Join thousands of collectors who trust Maga Offers for the rarest, most beautiful pieces in the world. Limited stock. Unlimited prestige.
+          Join thousands of collectors who trust PATRIOT’S ONLINE SHOP for the rarest, most beautiful pieces in the world. Limited stock. Unlimited prestige.
         </p>
 
         <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 48 }}>
@@ -603,8 +603,8 @@ function FinalCTA() {
 function LandingFooter() {
   return (
     <div style={{ background: '#010811', borderTop: '1px solid rgba(202,138,4,0.12)', padding: '28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-      <p style={{ fontFamily: 'var(--font-cormorant)', fontSize: 22, fontWeight: 700, color: 'var(--gold)', letterSpacing: '0.08em' }}>MAGA OFFERS</p>
-      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>© {new Date().getFullYear()} Maga Offers. All rights reserved.</p>
+      <p style={{ fontFamily: 'var(--font-cormorant)', fontSize: 22, fontWeight: 700, color: 'var(--gold)', letterSpacing: '0.08em' }}>PATRIOT’S ONLINE SHOP</p>
+      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>© {new Date().getFullYear()} PATRIOT’S ONLINE SHOP. All rights reserved.</p>
       <div style={{ display: 'flex', gap: 20 }}>
         {[['/', 'Shop'], ['/about', 'About'], ['/faq', 'FAQ'], ['/contact', 'Contact']].map(([href, label]) => (
           <Link key={href} href={href} style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontWeight: 500, transition: 'color 0.2s' }}

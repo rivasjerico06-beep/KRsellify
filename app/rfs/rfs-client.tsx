@@ -139,7 +139,7 @@ export function RFSUnavailable() {
 
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 460, width: '100%', textAlign: 'center' }}>
         <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: 4, color: 'white', marginBottom: 10 }}>
-          MAGA <span style={{ color: '#d4af37' }}>OFFERS</span>
+          PATRIOT’S <span style={{ color: '#d4af37' }}>ONLINE SHOP</span>
         </div>
         <div style={{ width: 56, height: 3, background: 'linear-gradient(90deg,#d4af37,#f5d87a)', margin: '0 auto 44px', borderRadius: 2 }} />
 
@@ -314,7 +314,7 @@ export function RFSPortal() {
 
           <div style={{ position: 'relative', zIndex: 1, marginBottom: 44, textAlign: 'center' }}>
             <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: 4, color: 'white' }}>
-              MAGA <span style={{ color: '#d4af37' }}>OFFERS</span>
+              PATRIOT’S <span style={{ color: '#d4af37' }}>ONLINE SHOP</span>
             </div>
             <div style={{ width: 56, height: 3, background: 'linear-gradient(90deg,#d4af37,#f5d87a)', margin: '10px auto 0', borderRadius: 2 }} />
           </div>
@@ -401,7 +401,7 @@ export function RFSPortal() {
           {/* Top bar */}
           <div style={{ zIndex: 20, background: 'rgba(6,10,20,0.94)', borderBottom: '1px solid rgba(212,175,55,0.12)', padding: '13px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, backdropFilter: 'blur(16px)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div style={{ fontSize: 17, fontWeight: 900, letterSpacing: 3 }}>MAGA <span style={{ color: '#d4af37' }}>OFFERS</span></div>
+              <div style={{ fontSize: 17, fontWeight: 900, letterSpacing: 3 }}>PATRIOT’S <span style={{ color: '#d4af37' }}>ONLINE SHOP</span></div>
               <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.1)' }} />
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase' }}>{t('topbar_label', 'Rewards Portal')}</div>
             </div>

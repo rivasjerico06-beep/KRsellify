@@ -1,6 +1,6 @@
 ﻿import InfoPageLayout from '@/components/InfoPageLayout'
 
-export const metadata = { title: 'Privacy Policy — Maga Offers' }
+export const metadata = { title: 'Privacy Policy — PATRIOT’S ONLINE SHOP' }
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section style={{ background: 'var(--white)', borderRadius: 16, padding: '28px 32px', boxShadow: '0 2px 10px rgba(9,52,89,0.06)' }}>
@@ -14,7 +14,7 @@ export default function PrivacyPage() {
     <InfoPageLayout title="Privacy Policy" subtitle="Last updated: January 2025" breadcrumb="Privacy Policy">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <Section title="Information We Collect">
-          <p>When you use Maga Offers, we collect information you provide directly: your name, email address, phone number, and shipping address when you place an order or create an account. We also collect usage data such as pages visited, products viewed, and search queries to improve your experience.</p>
+          <p>When you use PATRIOT’S ONLINE SHOP, we collect information you provide directly: your name, email address, phone number, and shipping address when you place an order or create an account. We also collect usage data such as pages visited, products viewed, and search queries to improve your experience.</p>
         </Section>
 
         <Section title="How We Use Your Information">

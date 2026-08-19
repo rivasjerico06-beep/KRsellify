@@ -43,7 +43,7 @@ export async function POST(request: Request) {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: 'Maga Offers VIP Membership',
+            name: 'PATRIOT’S ONLINE SHOP VIP Membership',
             description: '30% off every order, exclusive access & early releases',
           },
           unit_amount: Math.round(vipPrice * 100),

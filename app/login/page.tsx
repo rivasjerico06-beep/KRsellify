@@ -165,7 +165,7 @@ export default function LoginPage() {
         <motion.div variants={stagger} initial="hidden" animate="visible" style={{ textAlign: 'center', marginBottom: 30 }}>
           <motion.a href="/" variants={fadeUp}
             style={{ fontFamily: 'var(--font-playfair)', fontSize: 34, fontWeight: 900, color: isDark ? '#e2f0ef' : '#093459', display: 'block', marginBottom: 6, letterSpacing: '-0.02em', textDecoration: 'none' }}>
-            Maga <span style={{ color: '#58948f', textShadow: '0 0 28px rgba(88,148,143,0.5)' }}>Offers</span>
+            PATRIOT’S <span style={{ color: '#58948f', textShadow: '0 0 28px rgba(88,148,143,0.5)' }}>ONLINE SHOP</span>
           </motion.a>
           <motion.p variants={fadeUp} style={{ color: isDark ? '#7ab5b0' : '#8ba0aa', fontSize: 16 }}>
             Staff & Admin Access

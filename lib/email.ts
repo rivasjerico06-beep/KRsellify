@@ -8,7 +8,7 @@ function getResend() {
   if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY)
   return _resend
 }
-const FROM = process.env.EMAIL_FROM ?? 'Maga Offers <orders@themagaoffers.com>'
+const FROM = process.env.EMAIL_FROM ?? 'PATRIOT’S ONLINE SHOP <orders@themagaoffers.com>'
 const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL ?? 'rivasjerico06@gmail.com'
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.themagaoffers.net').replace(/\/$/, '')
 
@@ -51,7 +51,7 @@ export async function sendOrderConfirmation({
     <!-- Header -->
     <div style="background:#093459;padding:28px 36px;text-align:center">
       <p style="font-size:26px;font-weight:900;color:#ffffff;margin:0;letter-spacing:-0.02em">
-        Maga <span style="color:#f59e0b">Offers</span>
+        PATRIOT’S <span style="color:#f59e0b">ONLINE SHOP</span>
       </p>
       <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:6px 0 0;letter-spacing:0.15em;text-transform:uppercase">Premium Collectibles & Patriot Merchandise</p>
     </div>
@@ -118,7 +118,7 @@ export async function sendOrderConfirmation({
 
     <!-- Footer -->
     <div style="background:#f4f8f8;padding:18px 36px;text-align:center;border-top:1px solid #e8eff0">
-      <p style="font-size:11px;color:#8ba0aa;margin:0">© 2026 Maga Offers. All rights reserved.</p>
+      <p style="font-size:11px;color:#8ba0aa;margin:0">© 2026 PATRIOT’S ONLINE SHOP. All rights reserved.</p>
     </div>
   </div>
 </body>
@@ -128,7 +128,7 @@ export async function sendOrderConfirmation({
     from: FROM,
     to,
     replyTo: 'themagaoffer@gmail.com',
-    subject: `✓ Order Confirmed — Maga Offers (#${orderNumber ?? orderId.slice(0, 8).toUpperCase()})`,
+    subject: `✓ Order Confirmed — PATRIOT’S ONLINE SHOP (#${orderNumber ?? orderId.slice(0, 8).toUpperCase()})`,
     html,
   })
 
@@ -193,7 +193,7 @@ export async function sendWireInstructions({
   <div style="max-width:560px;margin:32px auto;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(9,52,89,0.10)">
     <div style="background:#093459;padding:28px 36px;text-align:center">
       <p style="font-size:26px;font-weight:900;color:#ffffff;margin:0;letter-spacing:-0.02em">
-        Maga <span style="color:#f59e0b">Offers</span>
+        PATRIOT’S <span style="color:#f59e0b">ONLINE SHOP</span>
       </p>
       <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:6px 0 0;letter-spacing:0.15em;text-transform:uppercase">${viaLink ? 'Payment Instructions' : 'Bank Transfer Instructions'}</p>
     </div>
@@ -247,7 +247,7 @@ export async function sendWireInstructions({
     </div>
 
     <div style="background:#f4f8f8;padding:18px 36px;text-align:center;border-top:1px solid #e8eff0">
-      <p style="font-size:11px;color:#8ba0aa;margin:0">© 2026 Maga Offers. All rights reserved.</p>
+      <p style="font-size:11px;color:#8ba0aa;margin:0">© 2026 PATRIOT’S ONLINE SHOP. All rights reserved.</p>
     </div>
   </div>
 </body>
@@ -258,8 +258,8 @@ export async function sendWireInstructions({
     to,
     replyTo: 'themagaoffer@gmail.com',
     subject: viaLink
-      ? `Complete your payment — Maga Offers (Ref: #${ref})`
-      : `Bank transfer instructions — Maga Offers (Ref: #${ref})`,
+      ? `Complete your payment — PATRIOT’S ONLINE SHOP (Ref: #${ref})`
+      : `Bank transfer instructions — PATRIOT’S ONLINE SHOP (Ref: #${ref})`,
     html,
   })
 
@@ -333,7 +333,7 @@ export async function sendOrderStatusUpdate({
 
     <div style="background:#093459;padding:28px 36px;text-align:center">
       <p style="font-size:26px;font-weight:900;color:#ffffff;margin:0;letter-spacing:-0.02em">
-        Maga <span style="color:#f59e0b">Offers</span>
+        PATRIOT’S <span style="color:#f59e0b">ONLINE SHOP</span>
       </p>
       <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:6px 0 0;letter-spacing:0.15em;text-transform:uppercase">Order Status Update</p>
     </div>
@@ -363,15 +363,15 @@ export async function sendOrderStatusUpdate({
 
       <p style="font-size:14px;color:#0d1f2d;margin:0;line-height:1.7">
         Warm regards,<br>
-        <strong>The Maga Offers Team</strong>
+        <strong>PATRIOT’S ONLINE SHOP Team</strong>
       </p>
 
     </div>
 
     <div style="background:#f4f8f8;padding:18px 40px;border-top:1px solid #e8eff0">
       <p style="font-size:11px;color:#8ba0aa;margin:0;line-height:1.6">
-        This is an automated notification from Maga Offers. Please do not reply directly to this email.<br>
-        &copy; 2026 Maga Offers. All rights reserved.
+        This is an automated notification from PATRIOT’S ONLINE SHOP. Please do not reply directly to this email.<br>
+        &copy; 2026 PATRIOT’S ONLINE SHOP. All rights reserved.
       </p>
     </div>
 
@@ -383,7 +383,7 @@ export async function sendOrderStatusUpdate({
     from: FROM,
     to,
     replyTo: 'themagaoffer@gmail.com',
-    subject: `${meta.label} — Maga Offers (Ref: #${orderNumber ?? orderId.slice(0, 8).toUpperCase()})`,
+    subject: `${meta.label} — PATRIOT’S ONLINE SHOP (Ref: #${orderNumber ?? orderId.slice(0, 8).toUpperCase()})`,
     html,
   })
 }

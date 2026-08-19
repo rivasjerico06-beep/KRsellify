@@ -375,7 +375,7 @@ export default function OrderSuccessPage() {
 
       {/* logo */}
       <Link href="/" style={{ marginBottom: 32, display: 'block' }}>
-        <Image src="/logo.png" alt="Maga Offers" width={72} height={72} style={{ objectFit: 'contain' }} />
+        <Image src="/logo.png" alt="PATRIOT’S ONLINE SHOP" width={72} height={72} style={{ objectFit: 'contain' }} />
       </Link>
 
       <motion.div
@@ -416,7 +416,7 @@ export default function OrderSuccessPage() {
             ? 'Your order is reserved. Finish your payment on the secure page that opened — if it didn’t open, use the button below.'
             : order?.payment_method === 'wire'
             ? (order?.receipt_uploaded
-                ? 'The MAGA has received your transfer receipt. We’ll verify your payment, and you’ll be notified at your email once your order is placed.'
+                ? 'PATRIOT’S ONLINE SHOP has received your transfer receipt. We’ll verify your payment, and you’ll be notified at your email once your order is placed.'
                 : 'One more step — complete your bank transfer below and upload your receipt to finish your order.')
             : 'Thank you for your purchase. We’ll start processing your order right away.'}
         </motion.p>
@@ -473,7 +473,7 @@ export default function OrderSuccessPage() {
               {receiptDone ? (
                 <p style={{ fontSize: 13, color: '#15803d', fontWeight: 700, lineHeight: 1.6 }}>
                   <i className="fa-solid fa-circle-check" style={{ marginRight: 6 }} />
-                  The MAGA has received your receipt. You&apos;ll be notified at your email once your payment is verified and your order is placed. Thank you!
+                  PATRIOT’S ONLINE SHOP has received your receipt. You&apos;ll be notified at your email once your payment is verified and your order is placed. Thank you!
                 </p>
               ) : (
                 <>
