@@ -7,6 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
+import { useCart } from '@/context/CartContext'
 import { SiteWireConfig, wireFieldList } from '@/lib/wire-config'
 import { usePayLinkConfig } from '@/lib/use-pay-link'
 
@@ -282,8 +283,21 @@ function GiftCardBonusModal({ authToken, onClose }: { authToken?: string; onClos
   )
 }
 
+/**
+ * Card payments come back here from the Airwallex hosted page. Landing on the
+ * success URL is only a hint that the money moved, so the page asks the server
+ * to verify the intent against Airwallex before it claims anything.
+ *
+ * 'pending' is not a failure: it means the payment is still settling (or the
+ * webhook beat us to it and is mid-flight). The order is safe either way —
+ * the webhook finishes it whether or not this tab is still open.
+ */
+type CardPaymentState = 'idle' | 'confirming' | 'paid' | 'pending'
+
 export default function OrderSuccessPage() {
   const router = useRouter()
+  const { clearCart } = useCart()
+  const [cardState, setCardState] = useState<CardPaymentState>('idle')
   const [order, setOrder] = useState<OrderInfo | null>(null)
   const [showConfetti, setShowConfetti] = useState(true)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -321,12 +335,14 @@ export default function OrderSuccessPage() {
   useEffect(() => {
     // Load order from localStorage
     let isWireOrder = false
+    let isCardOrder = false
     try {
       const raw = localStorage.getItem('themaga_last_order')
       if (raw) {
         const parsed = JSON.parse(raw)
         setOrder(parsed)
         isWireOrder = parsed?.payment_method === 'wire'
+        isCardOrder = parsed?.payment_method === 'airwallex'
         if (parsed?.receipt_uploaded) setReceiptDone(true)
         localStorage.removeItem('themaga_last_order')
       }
@@ -347,11 +363,63 @@ export default function OrderSuccessPage() {
     })
 
     const t = setTimeout(() => setShowConfetti(false), 4000)
-    // Wire orders stay put — the customer needs time to read the bank details and upload a receipt
-    if (!isWireOrder) redirectRef.current = setTimeout(() => router.push('/'), 30000)
+    // Wire and card orders stay put — one needs time to read the bank details
+    // and upload a receipt, the other is still confirming with Airwallex.
+    if (!isWireOrder && !isCardOrder) redirectRef.current = setTimeout(() => router.push('/'), 30000)
 
     return () => { clearTimeout(t); if (redirectRef.current) clearTimeout(redirectRef.current) }
   }, [router])
+
+  // Verify the Airwallex payment. Reaching this page came from Airwallex's own
+  // success redirect, so the cart is emptied regardless of what verification
+  // says — leaving it full would invite an accidental second purchase.
+  useEffect(() => {
+    const intentId = new URLSearchParams(window.location.search).get('intent_id')
+    if (!intentId) return
+
+    // Deferred by a tick on purpose. CartProvider hydrates itself from
+    // localStorage in its own mount effect, which runs *after* this one — a
+    // clear dispatched here would be flushed and then immediately overwritten
+    // by that hydration, leaving a stale cart badge on screen.
+    const clearTimer = setTimeout(clearCart, 0)
+    setCardState('confirming')
+    let cancelled = false
+
+    // The webhook usually lands within a second or two, but a card that needs
+    // an extra beat to settle shouldn't show the shopper a scary message —
+    // hence a few polite retries before falling back to "we'll email you".
+    async function confirm() {
+      for (let attempt = 0; attempt < 4 && !cancelled; attempt++) {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 2000))
+        try {
+          const res = await fetch('/api/airwallex/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ intent_id: intentId }),
+          })
+          const data = await res.json()
+          if (cancelled) return
+          if (data.paid) {
+            setCardState('paid')
+            setOrder(prev => prev ?? {
+              id: data.order_id ?? '',
+              order_number: data.order_number ?? null,
+              total: Number(data.total ?? 0),
+              discount: 0,
+              itemCount: 0,
+              items: [],
+              payment_method: 'airwallex',
+            })
+            return
+          }
+        } catch {}
+      }
+      if (!cancelled) setCardState('pending')
+    }
+
+    confirm()
+    return () => { cancelled = true; clearTimeout(clearTimer) }
+  }, [clearCart])
 
   function cancelRedirect() {
     if (redirectRef.current) clearTimeout(redirectRef.current)
@@ -403,7 +471,13 @@ export default function OrderSuccessPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 900, color: 'var(--heading)', marginBottom: 10 }}>
-          {order?.pay_link_url
+          {cardState === 'confirming'
+            ? 'Confirming Payment…'
+            : cardState === 'pending'
+            ? 'Payment Received'
+            : cardState === 'paid'
+            ? 'Payment Confirmed!'
+            : order?.pay_link_url
             ? 'Almost Done!'
             : order?.payment_method === 'wire'
             ? (order?.receipt_uploaded ? 'Receipt Received!' : 'Order Received!')
@@ -412,7 +486,13 @@ export default function OrderSuccessPage() {
 
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
           style={{ fontSize: 15, color: 'var(--text-mid)', lineHeight: 1.6, marginBottom: 28 }}>
-          {order?.pay_link_url
+          {cardState === 'confirming'
+            ? 'Just a moment while we confirm your card payment with Airwallex.'
+            : cardState === 'pending'
+            ? 'Your payment is still settling. Nothing more is needed from you — we’ll email your confirmation the moment it clears.'
+            : cardState === 'paid'
+            ? 'Thank you for your purchase. Your payment cleared and we’ll start processing your order right away.'
+            : order?.pay_link_url
             ? 'Your order is reserved. Finish your payment on the secure page that opened — if it didn’t open, use the button below.'
             : order?.payment_method === 'wire'
             ? (order?.receipt_uploaded

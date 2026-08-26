@@ -42,6 +42,10 @@ const OPEN_PREFIXES = [
   '/api/paypal',          // create-order + capture-order
   '/api/stripe/webhook',
   '/api/paymongo/webhook',
+  // Card payments. Only the webhook — /api/airwallex/create-intent stays shut
+  // so no NEW payment can be started while the shop is down, but one already
+  // in flight still gets confirmed and the order still gets marked paid.
+  '/api/airwallex/webhook',
 ]
 
 export function isOpenDuringMaintenance(pathname: string): boolean {

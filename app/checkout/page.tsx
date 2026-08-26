@@ -74,6 +74,12 @@ export default function CheckoutPage() {
   const paypalSucceeded = useRef(false)
   const isValidationError = useRef(false)
   const [payMethod, setPayMethod] = useState<'paypal' | 'wire'>('paypal')
+  // Card payment via Airwallex. Availability is decided server-side (the API
+  // credentials never reach the browser), so the checkout asks rather than
+  // reading an env var it can't be sure about.
+  const [airwallexEnabled, setAirwallexEnabled] = useState(false)
+  const [awSubmitting, setAwSubmitting] = useState(false)
+  const [awError, setAwError] = useState('')
   const [wireSubmitting, setWireSubmitting] = useState(false)
   const [wireCfg, setWireCfg] = useState<SiteWireConfig | null>(null)
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
@@ -103,6 +109,15 @@ export default function CheckoutPage() {
           if (pl.enabled && pl.links.length) setPayMethod('wire')
         }
       })
+      .catch(() => {})
+  }, [])
+
+  // Is card payment live? Answered by the server, which is the only side that
+  // can see the Airwallex credentials and the payments-maintenance switch.
+  useEffect(() => {
+    fetch('/api/airwallex/status')
+      .then(r => r.json())
+      .then((d: { enabled?: boolean }) => setAirwallexEnabled(d.enabled === true))
       .catch(() => {})
   }, [])
 
@@ -161,6 +176,14 @@ export default function CheckoutPage() {
     : null
   const payLinkActive = !!matchedPayLink
   const showPromos = payLinkCfg !== null && !payLinkCfg.hidePromos
+
+  /**
+   * Which payment UI to render. Card wins outright when it's live — it takes
+   * any amount, so unlike a fixed pay link it never has to hand the customer
+   * back to bank transfer. Everything below it behaves exactly as before, so
+   * turning Airwallex off restores the previous checkout untouched.
+   */
+  const effectiveMethod: 'airwallex' | 'paypal' | 'wire' = airwallexEnabled ? 'airwallex' : payMethod
 
   async function validateCoupon() {
     if (!couponCode.trim()) return
@@ -249,6 +272,98 @@ export default function CheckoutPage() {
       showToast('Could not place order. Please try again.')
     } finally {
       setWireSubmitting(false)
+    }
+  }
+
+  /**
+   * Card checkout via the Airwallex Hosted Payment Page.
+   *
+   * Same principle as the pay-link flow: the order is recorded first, so we
+   * hold the name, address and line items even if the shopper never comes
+   * back. It stays 'pending_payment' until the payment is verified against the
+   * Airwallex API — the redirect landing on /order-success proves nothing on
+   * its own.
+   *
+   * The cart is deliberately NOT cleared here. If the shopper cancels on the
+   * hosted page they come straight back to a checkout that still has their
+   * items; /order-success clears it once payment is confirmed.
+   */
+  async function submitAirwallexOrder() {
+    if (!requireEmail()) return
+    if (!requireShipping()) return
+    setAwSubmitting(true)
+    setAwError('')
+    try {
+      const res = await fetch('/api/airwallex/create-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          items: cart.map(i => ({
+            id: i.id, qty: i.qty, bundle_label: i.bundle_label,
+            img: i.img, via: i.via, category: i.category,
+          })),
+          coupon_code: couponDiscount > 0 ? couponCode.trim() : undefined,
+          email: email.trim(),
+          shipping_address: ship,
+          agent_code: readAgentRef(),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setAwError(data.error ?? 'Could not start payment. Please try again.')
+        return
+      }
+
+      // Handed to /order-success so it can show the real receipt straight away
+      // instead of an empty screen while it confirms with Airwallex.
+      try {
+        localStorage.setItem('themaga_last_order', JSON.stringify({
+          id: data.order_id ?? '',
+          order_number: data.order_number ?? null,
+          total: data.total ?? finalTotal,
+          discount: data.discount_amount ?? discountAmount,
+          itemCount: cart.reduce((s, i) => s + i.qty, 0),
+          items: cart.map(i => ({ name: i.name, price: i.bundle_price ?? i.price, qty: i.qty, img: i.img })),
+          guest_email: email.trim(),
+          shipping_address: ship,
+          payment_method: 'airwallex',
+          reference: data.order_number ?? (data.order_id ? String(data.order_id).slice(0, 8).toUpperCase() : ''),
+        }))
+      } catch {}
+
+      // Loaded on demand: the SDK is only needed by shoppers who actually
+      // reach the pay step, so it stays out of the initial checkout bundle.
+      const { init } = await import('@airwallex/components-sdk')
+      const { payments } = await init({ env: data.env, enabledElements: ['payments'] })
+      if (!payments) throw new Error('Airwallex payments element unavailable')
+
+      // No failUrl or cancelUrl on purpose. Airwallex deprecated failUrl and
+      // recommends letting the hosted page handle a declined card in place —
+      // bouncing the shopper back here would just lose the retry. A shopper
+      // who backs out lands on this page again with their cart intact, since
+      // it is only cleared once payment is confirmed.
+      await payments.redirectToCheckout({
+        env: data.env,
+        intent_id: data.intent_id,
+        client_secret: data.client_secret,
+        currency: data.currency,
+        country_code: data.country_code,
+        shopper_email: email.trim(),
+        shopper_name: `${ship.firstName} ${ship.lastName}`.trim() || undefined,
+        // Improves the odds of a frictionless 3DS challenge.
+        requiredBillingContactFields: ['address'],
+        // The intent id is passed explicitly rather than relying on Airwallex
+        // appending it, so /order-success always knows what to confirm.
+        successUrl: `${window.location.origin}/order-success?intent_id=${encodeURIComponent(data.intent_id)}`,
+      })
+    } catch (err) {
+      console.error('[checkout/airwallex]', err)
+      setAwError('Could not open the payment page. Please try again.')
+    } finally {
+      setAwSubmitting(false)
     }
   }
 
@@ -663,7 +778,52 @@ export default function CheckoutPage() {
             Payment
           </label>
 
-          {payMethod === 'wire' ? (
+          {effectiveMethod === 'airwallex' ? (
+            <div>
+              <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 10, padding: '16px 18px', marginBottom: 14 }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#15803d', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <i className="fa-solid fa-credit-card" style={{ marginRight: 7 }} />
+                  Pay by Card
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, paddingBottom: 12, borderBottom: '1px solid #bbf7d0' }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-light)' }}>Amount due</span>
+                  <span style={{ fontSize: 22, fontWeight: 900, color: '#15803d' }}>${finalTotal.toFixed(2)}</span>
+                </div>
+                <p style={{ fontSize: 12.5, color: '#3f6212', marginTop: 12, lineHeight: 1.6 }}>
+                  You&rsquo;ll finish on our secure card page — Visa, Mastercard and Amex accepted. Your card details
+                  are never stored on this site.
+                </p>
+              </div>
+
+              {awError && (
+                <div style={{ background: '#fff5f5', border: '1.5px solid #fca5a5', borderRadius: 10, padding: '13px 16px', marginBottom: 14 }}>
+                  <p style={{ fontSize: 13, color: '#b91c1c', fontWeight: 700, lineHeight: 1.55 }}>
+                    <i className="fa-solid fa-circle-exclamation" style={{ marginRight: 7 }} />
+                    {awError}
+                  </p>
+                </div>
+              )}
+
+              {(emailMissing || shipMissing) && (
+                <div style={{ background: '#fff8ec', border: '1.5px solid #fcd9a3', borderRadius: 10, padding: '14px 16px', marginBottom: 14 }}>
+                  <p style={{ fontSize: 12.5, color: '#92400e', lineHeight: 1.6 }}>
+                    <i className="fa-solid fa-lock" style={{ marginRight: 6 }} />
+                    Fill in your <strong>email</strong> and <strong>shipping address</strong> above so we know where to
+                    send your order — then you can pay.
+                  </p>
+                </div>
+              )}
+
+              <button type="button" onClick={submitAirwallexOrder} disabled={awSubmitting || emailMissing || shipMissing}
+                style={{ width: '100%', background: '#16a34a', border: 'none', borderRadius: 10, color: 'white', fontSize: 17, fontWeight: 800, padding: '16px', cursor: awSubmitting ? 'wait' : (emailMissing || shipMissing) ? 'not-allowed' : 'pointer', opacity: (awSubmitting || emailMissing || shipMissing) ? 0.55 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                <i className={`fa-solid ${awSubmitting ? 'fa-spinner fa-spin' : 'fa-lock'}`} style={{ fontSize: 14 }} />
+                {awSubmitting ? 'Opening secure payment…' : `Pay $${finalTotal.toFixed(2)}`}
+              </button>
+              <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 10, lineHeight: 1.5, textAlign: 'center' }}>
+                Powered by Airwallex. You&rsquo;ll get an emailed confirmation the moment your payment clears.
+              </p>
+            </div>
+          ) : effectiveMethod === 'wire' ? (
             payLinkActive ? (
               <div>
                 <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 10, padding: '16px 18px', marginBottom: 14 }}>
@@ -858,7 +1018,16 @@ export default function CheckoutPage() {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginTop: 18, padding: '12px 16px', background: 'var(--off-white)', borderRadius: 8, border: '1px solid var(--gray)' }}>
             <i className="fa-solid fa-lock" style={{ color: '#059669', fontSize: 16, flexShrink: 0, marginTop: 2 }} />
             <div>
-              {payLinkActive ? (
+              {effectiveMethod === 'airwallex' ? (
+                <>
+                  <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 700, display: 'block' }}>
+                    Secure checkout — encrypted card payment
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--text-light)', lineHeight: 1.5, display: 'block', marginTop: 2 }}>
+                    Card details are entered on Airwallex&apos;s PCI-compliant payment page and never touch this site. Your order is confirmed the moment the payment clears.
+                  </span>
+                </>
+              ) : payLinkActive ? (
                 <>
                   <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 700, display: 'block' }}>
                     Secure checkout — encrypted payment page
@@ -867,7 +1036,7 @@ export default function CheckoutPage() {
                     Your order is reserved as soon as you continue. We confirm your payment and email you once your order is placed.
                   </span>
                 </>
-              ) : payMethod === 'wire' ? (
+              ) : effectiveMethod === 'wire' ? (
                 <>
                   <span style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, fontWeight: 700, display: 'block' }}>
                     Secure checkout — pay directly from your bank
@@ -909,12 +1078,16 @@ export default function CheckoutPage() {
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--navy)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>3</div>
               <div>
                 <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-dark)', marginBottom: 3 }}>
-                  {payLinkActive ? 'Pay securely' : payMethod === 'wire' ? 'Pay by bank transfer' : 'Pay with PayPal'}
+                  {effectiveMethod === 'airwallex'
+                    ? 'Pay by card'
+                    : payLinkActive ? 'Pay securely' : effectiveMethod === 'wire' ? 'Pay by bank transfer' : 'Pay with PayPal'}
                 </p>
                 <p style={{ fontSize: 14, color: 'var(--text-light)', lineHeight: 1.6 }}>
-                  {payLinkActive
+                  {effectiveMethod === 'airwallex'
+                    ? 'Tap Pay to open our secure card page. Your order is confirmed automatically as soon as the payment clears.'
+                    : payLinkActive
                     ? 'Tap Pay to open our secure payment page and pay the exact total. We verify your payment and email you once your order is placed.'
-                    : payMethod === 'wire'
+                    : effectiveMethod === 'wire'
                     ? 'Wire the exact total to the account shown, then upload your transfer receipt. We verify your payment and email you once your order is placed.'
                     : 'Log in to your PayPal account to complete your purchase securely.'}
                 </p>

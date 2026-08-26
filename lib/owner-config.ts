@@ -155,9 +155,14 @@ export const DEFAULT_IDENTITY_CONFIG: SiteIdentityConfig = {
 // ── Payments switch ───────────────────────────────────────────
 export interface SitePaymentsConfig {
   /**
-   * When true the PayPal button at checkout and the card button on VIP are
-   * replaced with an "under maintenance" notice. Previously an environment
-   * variable, so flipping it needed a redeploy.
+   * When true every online payment button is replaced with an "under
+   * maintenance" notice: the Airwallex card button at checkout, the PayPal
+   * button, and the card button on VIP. Previously an environment variable, so
+   * flipping it needed a redeploy.
+   *
+   * Note this defaults to TRUE — a shop that has never saved this setting is
+   * in maintenance, so a fresh Airwallex install shows no card button until
+   * it is explicitly turned off in admin → Owner Console → Payments.
    */
   maintenance: boolean
 }

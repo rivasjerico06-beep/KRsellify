@@ -230,7 +230,7 @@ export default function OwnerConsole({ authHeaders }: { authHeaders: () => Heade
 
       {/* ── Payments ── */}
       <Section icon="fa-credit-card" title="Payments" saving={saving === 'payments_config'}
-        hint="Turns the PayPal button at checkout and the card button on VIP into an “under maintenance” notice. Bank transfer and pay links are unaffected."
+        hint="Turns the card button at checkout (Airwallex), the PayPal button and the card button on VIP into an “under maintenance” notice. Bank transfer and pay links are unaffected."
         onSave={() => save('payments_config', payments, 'Payments setting')}>
         <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
           <input type="checkbox" checked={payments.maintenance}
