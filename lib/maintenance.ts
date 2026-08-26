@@ -9,15 +9,15 @@
  * outage is temporary, so the site's existing ranking is held rather than
  * de-indexed as gone.
  *
- * To bring the site back:
- *   - set MAINTENANCE_MODE=false in the host's env vars (no redeploy of
- *     code needed — just a restart), or
- *   - flip the fallback below to false and deploy.
+ * The site is currently LIVE. To take it down again:
+ *   - set MAINTENANCE_MODE=true in the host's env vars (no code change or
+ *     redeploy needed — just a restart), or
+ *   - flip the fallback below and deploy.
  *
- * Default is ON, so an unset variable keeps the site down rather than
- * quietly publishing it.
+ * Default is OFF while the shop is trading, so an unset or mistyped variable
+ * leaves the site up rather than silently taking a working storefront down.
  */
-export const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'false' ? false : true
+export const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true'
 
 /**
  * Paths that stay reachable while the site is down.
