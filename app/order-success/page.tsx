@@ -5,11 +5,9 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { useCart } from '@/context/CartContext'
 import { SiteWireConfig, wireFieldList } from '@/lib/wire-config'
-import { usePayLinkConfig } from '@/lib/use-pay-link'
 
 const COLORS = ['#58948F', '#093459', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981', '#f97316', '#06b6d4']
 
@@ -63,226 +61,6 @@ interface OrderInfo {
   pay_link_url?: string | null
 }
 
-function GiftCardBonusModal({ authToken, onClose }: { authToken?: string; onClose: () => void }) {
-  const [couponCode, setCouponCode] = useState<string | null>(null)
-  const [wonChoice, setWonChoice] = useState<30 | 50 | null>(null)
-  const [countdown, setCountdown] = useState(180) // 3 minutes
-  const [copied, setCopied] = useState(false)
-  const [paypalError, setPaypalError] = useState('')
-
-  useEffect(() => {
-    if (couponCode) return
-    const t = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) { clearInterval(t); onClose(); return 0 }
-        return prev - 1
-      })
-    }, 1000)
-    return () => clearInterval(t)
-  }, [couponCode, onClose])
-
-  const mins = String(Math.floor(countdown / 60)).padStart(2, '0')
-  const secs = String(countdown % 60).padStart(2, '0')
-
-  async function handleApprove(orderID: string, choice: 30 | 50) {
-    setPaypalError('')
-    const res = await fetch('/api/coupons/gift-bonus', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-      },
-      body: JSON.stringify({ orderID, choice }),
-    })
-    const data = await res.json()
-    if (data.code) {
-      setWonChoice(choice)
-      setCouponCode(data.code)
-    } else {
-      setPaypalError(data.error ?? 'Something went wrong. Please contact support.')
-    }
-  }
-
-  function copyCode() {
-    if (!couponCode) return
-    navigator.clipboard.writeText(couponCode).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.76)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, overflowY: 'auto' }}
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
-    >
-      <motion.div
-        initial={{ scale: 0.88, opacity: 0, y: 24 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-        style={{ background: 'white', borderRadius: 24, padding: '40px 32px', maxWidth: 540, width: '100%', textAlign: 'center', position: 'relative', boxShadow: '0 24px 80px rgba(0,0,0,0.4)', margin: 'auto' }}
-      >
-        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#94a3b8', lineHeight: 1 }}>
-          <i className="fa-solid fa-xmark" />
-        </button>
-
-        {!couponCode ? (
-          <PayPalScriptProvider options={{ clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? '', currency: 'USD', intent: 'capture' }}>
-            {/* Header */}
-            <div style={{ width: 68, height: 68, borderRadius: '50%', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', margin: '0 auto 18px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(245,158,11,0.35)' }}>
-              <i className="fa-solid fa-bolt" style={{ color: 'white', fontSize: 28 }} />
-            </div>
-
-            <div style={{ display: 'inline-block', background: '#fef3c7', border: '1.5px solid #fbbf24', borderRadius: 50, padding: '4px 14px', fontSize: 11, fontWeight: 800, color: '#92400e', letterSpacing: '0.06em', marginBottom: 14 }}>
-              LIMITED TIME OFFER
-            </div>
-
-            <h2 style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', marginBottom: 6, lineHeight: 1.3 }}>
-              Exclusive Discount Coupons
-            </h2>
-            <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, marginBottom: 6 }}>
-              Grab a powerful discount for your next order before this offer disappears!
-            </p>
-
-            <p style={{ fontSize: 13, color: '#ef4444', fontWeight: 800, marginBottom: 28 }}>
-              <i className="fa-solid fa-clock" style={{ marginRight: 5 }} />
-              Offer expires in {mins}:{secs}
-            </p>
-
-            {paypalError && (
-              <p style={{ fontSize: 13, color: '#ef4444', fontWeight: 700, marginBottom: 16, padding: '10px 14px', background: '#fff5f5', borderRadius: 8, border: '1px solid #fca5a5' }}>
-                {paypalError}
-              </p>
-            )}
-
-            {/* 30% card — $30 */}
-            <div style={{ border: '2px solid #e2e8f0', borderRadius: 16, padding: '20px 20px 16px', marginBottom: 14, textAlign: 'left' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                <div>
-                  <span style={{ fontSize: 28, fontWeight: 900, color: '#0f172a' }}>30% OFF</span>
-                  <span style={{ fontSize: 14, color: '#64748b', marginLeft: 8 }}>coupon</span>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: '#059669' }}>$30</div>
-                  <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>one-time payment</div>
-                </div>
-              </div>
-              <p style={{ fontSize: 12, color: '#64748b', marginBottom: 14 }}>
-                Get 30% off your entire next order. No minimum spend.
-              </p>
-              <PayPalButtons
-                style={{ layout: 'horizontal', color: 'blue', shape: 'rect', label: 'pay', height: 40, tagline: false }}
-                createOrder={async () => {
-                  const res = await fetch('/api/coupons/gift-bonus/create-order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ choice: 30 }),
-                  })
-                  const data = await res.json()
-                  if (!data.id) throw new Error(data.error ?? 'Failed')
-                  return data.id
-                }}
-                onApprove={async (data) => handleApprove(data.orderID, 30)}
-                onError={() => setPaypalError('Payment error. Please try again.')}
-              />
-            </div>
-
-            {/* 50% card — $50 */}
-            <div style={{ border: '2.5px solid #ef4444', borderRadius: 16, padding: '20px 20px 16px', textAlign: 'left', background: '#fffbfb', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: 10, right: 12, background: '#ef4444', color: 'white', borderRadius: 50, fontSize: 9, fontWeight: 900, padding: '3px 8px', letterSpacing: '0.05em' }}>
-                BEST DEAL
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                <div>
-                  <span style={{ fontSize: 28, fontWeight: 900, color: '#0f172a' }}>50% OFF</span>
-                  <span style={{ fontSize: 14, color: '#64748b', marginLeft: 8 }}>coupon</span>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: '#ef4444' }}>$50</div>
-                  <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>one-time payment</div>
-                </div>
-              </div>
-              <p style={{ fontSize: 12, color: '#64748b', marginBottom: 14 }}>
-                Half off your entire next order — maximum savings on any purchase!
-              </p>
-              <PayPalButtons
-                style={{ layout: 'horizontal', color: 'gold', shape: 'rect', label: 'pay', height: 40, tagline: false }}
-                createOrder={async () => {
-                  const res = await fetch('/api/coupons/gift-bonus/create-order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ choice: 50 }),
-                  })
-                  const data = await res.json()
-                  if (!data.id) throw new Error(data.error ?? 'Failed')
-                  return data.id
-                }}
-                onApprove={async (data) => handleApprove(data.orderID, 50)}
-                onError={() => setPaypalError('Payment error. Please try again.')}
-              />
-            </div>
-
-            <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 16 }}>
-              Single-use coupon. No minimum spend. No expiry.
-            </p>
-
-            <div style={{ marginTop: 16, padding: '10px 14px', background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 10 }}>
-              <p style={{ fontSize: 12, color: '#15803d', fontWeight: 700 }}>
-                <i className="fa-solid fa-circle-check" style={{ marginRight: 5 }} />
-                THEMAGA10 (10% off) is already activated for your email!
-              </p>
-            </div>
-          </PayPalScriptProvider>
-        ) : (
-          <>
-            <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg, var(--teal), #059669)', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(88,148,143,0.4)' }}>
-              <i className="fa-solid fa-check" style={{ color: 'white', fontSize: 30 }} />
-            </div>
-
-            <h2 style={{ fontSize: 24, fontWeight: 900, color: '#0f172a', marginBottom: 6 }}>
-              Your {wonChoice}% Off Coupon!
-            </h2>
-            <p style={{ fontSize: 14, color: '#64748b', marginBottom: 24 }}>
-              Use this code at checkout on your next order.
-            </p>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#f8fafc', border: '2.5px dashed #cbd5e1', borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
-              <span style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 900, color: '#0f172a', flex: 1, letterSpacing: '0.08em', textAlign: 'left' }}>
-                {couponCode}
-              </span>
-              <motion.button
-                whileTap={{ scale: 0.92 }}
-                onClick={copyCode}
-                style={{ background: copied ? '#059669' : 'var(--navy)', border: 'none', borderRadius: 8, color: 'white', fontSize: 13, fontWeight: 700, padding: '10px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', flexShrink: 0 }}
-              >
-                <i className={`fa-solid ${copied ? 'fa-circle-check' : 'fa-copy'}`} />
-                {copied ? 'Copied!' : 'Copy'}
-              </motion.button>
-            </div>
-
-            <p style={{ fontSize: 13, color: '#64748b', marginBottom: 24, lineHeight: 1.6 }}>
-              {wonChoice}% off your entire next order. Single-use, no minimum spend, no expiry.
-            </p>
-
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={onClose}
-              style={{ width: '100%', background: 'var(--navy)', border: 'none', borderRadius: 50, color: 'white', fontSize: 15, fontWeight: 700, padding: '14px', cursor: 'pointer' }}
-            >
-              <i className="fa-solid fa-store" style={{ marginRight: 8 }} />
-              Continue Shopping
-            </motion.button>
-          </>
-        )}
-      </motion.div>
-    </motion.div>
-  )
-}
-
 /**
  * Card payments come back here from the Airwallex hosted page. Landing on the
  * success URL is only a hint that the money moved, so the page asks the server
@@ -301,12 +79,6 @@ export default function OrderSuccessPage() {
   const [order, setOrder] = useState<OrderInfo | null>(null)
   const [showConfetti, setShowConfetti] = useState(true)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [authToken, setAuthToken] = useState<string | undefined>(undefined)
-  const [showBonusModal, setShowBonusModal] = useState(false)
-  // The post-order upsell sells 30%/50% coupons — hidden along with every other
-  // promo, since a discount pushes a repeat order off its fixed pay-link amount.
-  const payLinkCfg = usePayLinkConfig()
-  const showPromos = payLinkCfg !== null && !payLinkCfg.hidePromos
   const redirectRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [receiptUploading, setReceiptUploading] = useState(false)
   const [receiptDone, setReceiptDone] = useState(false)
@@ -348,18 +120,14 @@ export default function OrderSuccessPage() {
       }
     } catch {}
 
-    // Check for gift card bonus flag
-    const hasGiftCardBonus = localStorage.getItem('themaga_gift_card_bonus')
-    if (hasGiftCardBonus) {
-      localStorage.removeItem('themaga_gift_card_bonus')
-      // Delay modal slightly so order success screen loads first
-      setTimeout(() => setShowBonusModal(true), 2000)
-    }
+    // The gift-card upsell that used to fire here is gone, but the flag it
+    // watched for may still be sitting in a returning shopper's browser.
+    // Clearing it keeps that stale key from lingering forever.
+    try { localStorage.removeItem('themaga_gift_card_bonus') } catch {}
 
     // Auth session
     getBrowserSupabase().auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session)
-      setAuthToken(session?.access_token)
     })
 
     const t = setTimeout(() => setShowConfetti(false), 4000)
@@ -430,16 +198,6 @@ export default function OrderSuccessPage() {
       onClick={cancelRedirect}>
 
       <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
-
-      {/* Gift card bonus modal */}
-      <AnimatePresence>
-        {showBonusModal && showPromos && (
-          <GiftCardBonusModal
-            authToken={authToken}
-            onClose={() => setShowBonusModal(false)}
-          />
-        )}
-      </AnimatePresence>
 
       {/* logo */}
       <Link href="/" style={{ marginBottom: 32, display: 'block' }}>

@@ -998,9 +998,8 @@ export default function CheckoutPage() {
                       guest_email: email.trim(),
                       shipping_address: ship,
                     }))
-                    if (order.has_gift_card) {
-                      localStorage.setItem('themaga_gift_card_bonus', 'true')
-                    }
+                    // The gift-card flag used to trigger a coupon upsell on the
+                    // success page. That upsell is gone, so nothing reads it.
                   } catch {}
                   paypalSucceeded.current = true
                   clearCart()
