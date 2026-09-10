@@ -92,11 +92,14 @@ export function wireFieldList(cfg?: SiteWireConfig | null): [string, string][] {
     ['Branch code',                       cfg.branchCode],
     ['SWIFT code',                        cfg.swift],
     ['Bank name',                         cfg.bankName],
+    // Straight after the bank's name, because a sender filling in an
+    // international wire is asked for the two together. A US bank rejects the
+    // transfer outright without the branch address.
+    ['Bank address',                      cfg.bankAddress],
     ['Location',                          cfg.location],
     // US-style rows, kept so switching to a US account needs no code change.
     // Blank on a Singapore account, and blanks are dropped below.
     ['Account type',                      cfg.accountType],
     ['Routing number (for wire and ACH)', cfg.routingNumber],
-    ['Address',                           cfg.bankAddress],
   ] as [string, string][]).filter(([, v]) => v && v.trim() !== '')
 }
