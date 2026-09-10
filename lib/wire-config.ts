@@ -12,6 +12,22 @@
  * customers until an admin fills in the details and enables it.
  */
 
+/**
+ * Bank transfer is the only payment method customers are shown.
+ *
+ * The checkout still contains the card, PayPal and pay-link branches, and
+ * they still work — this forces the two values that select between them, so
+ * every one of those branches resolves to bank transfer without any of them
+ * being deleted. Set to false to hand the choice back to configuration:
+ * Airwallex credentials bring back the card, a live pay_link brings back the
+ * hosted link, and neither falls through to PayPal.
+ *
+ * Deliberately not a database setting. Which methods a shop accepts is a
+ * decision that should need a deploy behind it, not a checkbox that can
+ * silently start routing customers somewhere unintended.
+ */
+export const WIRE_ONLY = true
+
 export interface SiteWireConfig {
   enabled: boolean
   maintenance: boolean // when true, bank transfer shows but the Place Order button is paused
