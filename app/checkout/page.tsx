@@ -878,6 +878,16 @@ export default function CheckoutPage() {
                       <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)', fontFamily: 'monospace', textAlign: 'right' }}>{v}</span>
                     </div>
                   ))}
+                  {/* The transfer happens here, before an order exists — the
+                      receipt is uploaded below and the order is only created
+                      on submit. So these instructions have to be on this page:
+                      the order-success copy and the emailed instructions both
+                      arrive after the money has already been sent. */}
+                  {wireCfg.memoNote.trim() && (
+                    <p style={{ fontSize: 12.5, color: '#92400e', background: '#fff8ec', border: '1px solid #fcd9a3', borderRadius: 8, padding: '10px 12px', marginTop: 12, lineHeight: 1.6 }}>
+                      <strong>Important:</strong> {wireCfg.memoNote.trim()}
+                    </p>
+                  )}
                   <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 12, lineHeight: 1.5 }}>
                     Wire <strong>${finalTotal.toFixed(2)}</strong> to the account above from your bank, then upload
                     your receipt below. PATRIOT’S ONLINE SHOP will verify your payment and email you once your order is placed.

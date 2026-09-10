@@ -61,7 +61,16 @@ export const DEFAULT_WIRE_CONFIG: SiteWireConfig = {
   bankCode: '',
   branchCode: '',
   location: '',
-  memoNote: 'Include your order reference number in the transfer memo so we can match your payment.',
+  // Says SWIFT explicitly, because that is the only rail this account
+  // accepts, and tells the sender to leave the intermediary field blank —
+  // Airwallex lists no correspondent bank, and a customer guessing at one is
+  // the most common way these transfers get misrouted.
+  //
+  // It asks for name and email rather than an order number on purpose: the
+  // order does not exist until the receipt is uploaded at the end of
+  // checkout, so at the moment of transfer the customer has no number to
+  // quote. Email is what the order is keyed on anyway.
+  memoNote: 'Send this as an International (SWIFT) transfer. If your bank asks for an intermediary or correspondent bank, leave it blank. Put your name and the email you are using for this order in the transfer reference so we can match your payment. Your bank will likely charge an international transfer fee.',
 }
 
 // Coerce an unknown stored value into a complete SiteWireConfig, so missing or
