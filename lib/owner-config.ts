@@ -71,7 +71,10 @@ export interface SiteFooterConfig {
 
 export const DEFAULT_FOOTER_CONFIG: SiteFooterConfig = {
   blurb: 'Premium collectibles, rare finds, and exclusive memorabilia — authenticated and shipped to your door.',
-  address: '24M Jaime street Jalandoni Wilson Jaro iloilo',
+  // Matches the business address registered with Airwallex. Customers wiring
+  // money compare the site against the payee details, so a mismatch here
+  // reads as a red flag on the one page where trust matters most.
+  address: '24 M Jayme St., Our Lady of Fatima, Jaro, City of Iloilo, Iloilo 5000, Philippines',
   shop: [
     { label: 'All Products',   href: '/shop' },
     { label: 'Medallions',     href: '/shop?cat=medallions' },
