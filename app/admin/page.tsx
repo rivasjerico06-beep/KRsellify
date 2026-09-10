@@ -2370,13 +2370,17 @@ function AdminContent() {
                           filled straight off the bank's account details page */}
                       {([
                         { key: 'accountName',   label: 'Account Name',                      ph: 'Name on the account' },
-                        { key: 'accountType',   label: 'Account type',                      ph: 'e.g. Checking' },
-                        { key: 'routingNumber', label: 'Routing number (for wire and ACH)', ph: 'Routing number' },
-                        { key: 'accountNumber', label: 'Account number',                    ph: 'Account or IBAN number' },
-                        { key: 'bankAddress',   label: 'Address',                           ph: 'Bank address' },
-                        { key: 'swift',         label: 'Swift/BIC',                         ph: 'For international wires' },
+                        { key: 'accountNumber', label: 'Bank account number',               ph: 'Account or IBAN number' },
+                        { key: 'bankCode',      label: 'Bank code',                         ph: 'Singapore-style local code' },
+                        { key: 'branchCode',    label: 'Branch code',                       ph: 'Singapore-style local code' },
+                        { key: 'swift',         label: 'SWIFT code',                        ph: 'For international wires' },
+                        { key: 'bankName',      label: 'Bank name',                         ph: 'e.g. DBS Bank Ltd' },
+                        { key: 'location',      label: 'Location',                          ph: 'Country the bank is in' },
+                        { key: 'accountType',   label: 'Account type — US accounts only, leave blank otherwise',      ph: 'e.g. Checking' },
+                        { key: 'routingNumber', label: 'Routing number — US accounts only, leave blank otherwise',    ph: 'Routing number' },
+                        { key: 'bankAddress',   label: 'Bank address — leave blank to hide the row',                  ph: 'Full branch address' },
                         { key: 'memoNote',      label: 'Memo / Note — shown as a separate reminder, not a bank row', ph: 'e.g. Include your order number' },
-                      ] as { key: 'bankAddress' | 'accountName' | 'accountNumber' | 'accountType' | 'routingNumber' | 'swift' | 'memoNote'; label: string; ph: string }[]).map(f => (
+                      ] as { key: 'bankAddress' | 'accountName' | 'accountNumber' | 'accountType' | 'routingNumber' | 'swift' | 'bankCode' | 'branchCode' | 'location' | 'bankName' | 'memoNote'; label: string; ph: string }[]).map(f => (
                         <div key={f.key}>
                           <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-mid)', display: 'block', marginBottom: 5 }}>{f.label}</label>
                           <input value={wireForm[f.key]} onChange={e => setWireForm({ ...wireForm, [f.key]: e.target.value })} placeholder={f.ph}

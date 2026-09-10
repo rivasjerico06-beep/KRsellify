@@ -22,6 +22,13 @@ export interface SiteWireConfig {
   accountType: string
   routingNumber: string
   swift: string
+  // Singapore-style local clearing details. A US account identifies itself
+  // with one routing number; a Singapore one uses a bank code plus a branch
+  // code, so both shapes have to be expressible.
+  bankCode: string
+  branchCode: string
+  /** Country the receiving bank sits in — the sender's bank asks for it */
+  location: string
   memoNote: string
 }
 
@@ -35,6 +42,9 @@ export const DEFAULT_WIRE_CONFIG: SiteWireConfig = {
   accountType: '',
   routingNumber: '',
   swift: '',
+  bankCode: '',
+  branchCode: '',
+  location: '',
   memoNote: 'Include your order reference number in the transfer memo so we can match your payment.',
 }
 
@@ -53,6 +63,9 @@ export function normalizeWireConfig(value: unknown): SiteWireConfig {
     accountType:   str(v.accountType),
     routingNumber: str(v.routingNumber),
     swift:         str(v.swift),
+    bankCode:      str(v.bankCode),
+    branchCode:    str(v.branchCode),
+    location:      str(v.location),
     memoNote:      str(v.memoNote, DEFAULT_WIRE_CONFIG.memoNote),
   }
 }
@@ -74,10 +87,16 @@ export function wireFieldList(cfg?: SiteWireConfig | null): [string, string][] {
   if (!cfg) return []
   return ([
     ['Account Name',                      cfg.accountName],
+    ['Bank account number',               cfg.accountNumber],
+    ['Bank code',                         cfg.bankCode],
+    ['Branch code',                       cfg.branchCode],
+    ['SWIFT code',                        cfg.swift],
+    ['Bank name',                         cfg.bankName],
+    ['Location',                          cfg.location],
+    // US-style rows, kept so switching to a US account needs no code change.
+    // Blank on a Singapore account, and blanks are dropped below.
     ['Account type',                      cfg.accountType],
     ['Routing number (for wire and ACH)', cfg.routingNumber],
-    ['Account number',                    cfg.accountNumber],
     ['Address',                           cfg.bankAddress],
-    ['Swift/BIC',                         cfg.swift],
   ] as [string, string][]).filter(([, v]) => v && v.trim() !== '')
 }
