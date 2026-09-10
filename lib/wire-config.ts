@@ -61,16 +61,25 @@ export const DEFAULT_WIRE_CONFIG: SiteWireConfig = {
   bankCode: '',
   branchCode: '',
   location: '',
-  // Says SWIFT explicitly, because that is the only rail this account
-  // accepts, and tells the sender to leave the intermediary field blank —
-  // Airwallex lists no correspondent bank, and a customer guessing at one is
-  // the most common way these transfers get misrouted.
+  // Four things, each of which costs real money when it is missing:
   //
-  // It asks for name and email rather than an order number on purpose: the
-  // order does not exist until the receipt is uploaded at the end of
-  // checkout, so at the moment of transfer the customer has no number to
-  // quote. Email is what the order is keyed on anyway.
-  memoNote: 'Send this as an International (SWIFT) transfer. If your bank asks for an intermediary or correspondent bank, leave it blank. Put your name and the email you are using for this order in the transfer reference so we can match your payment. Your bank will likely charge an international transfer fee.',
+  //   SWIFT named explicitly, because it is the only rail this account
+  //   accepts, and the intermediary field told to stay blank — Airwallex
+  //   lists no correspondent bank, and a customer guessing at one is the
+  //   most common way these transfers get misrouted.
+  //
+  //   Charges paid by the sender ("OUR"). On the default shared option,
+  //   intermediary banks deduct their fee from the principal, so the amount
+  //   that lands is short of the order total and cannot be matched to it.
+  //
+  //   Name and email as the reference rather than an order number: the order
+  //   does not exist until the receipt is uploaded at the end of checkout, so
+  //   at the moment of transfer the customer has no number to quote. Email is
+  //   what the order is keyed on anyway.
+  //
+  //   An arrival window, so nobody assumes the payment failed on day two and
+  //   sends it a second time.
+  memoNote: 'Send the exact amount in USD as an International (SWIFT) transfer, and put your name and the email you are using for this order in the transfer reference so we can match your payment. If your bank asks for an intermediary or correspondent bank, leave it blank. Please choose the option where you pay all bank charges (usually shown as "OUR" or "sender pays all fees"), otherwise intermediary banks deduct from the amount and we cannot match your payment to your order. Funds usually arrive in 1–5 business days.',
 }
 
 // Coerce an unknown stored value into a complete SiteWireConfig, so missing or
