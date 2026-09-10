@@ -2376,9 +2376,9 @@ function AdminContent() {
                         { key: 'swift',         label: 'SWIFT code',                        ph: 'For international wires' },
                         { key: 'bankName',      label: 'Bank name',                         ph: 'e.g. DBS Bank Ltd' },
                         { key: 'location',      label: 'Location',                          ph: 'Country the bank is in' },
-                        { key: 'accountType',   label: 'Account type — US accounts only, leave blank otherwise',      ph: 'e.g. Checking' },
-                        { key: 'routingNumber', label: 'Routing number — US accounts only, leave blank otherwise',    ph: 'Routing number' },
-                        { key: 'bankAddress',   label: 'Bank address — leave blank to hide the row',                  ph: 'Full branch address' },
+                        { key: 'accountType',   label: 'Account type',                                             ph: 'e.g. Current' },
+                        { key: 'bankAddress',   label: 'Bank address — street, city and postal code',               ph: 'Full branch address' },
+                        { key: 'routingNumber', label: 'Routing number — US accounts only, leave blank otherwise',   ph: 'Routing number' },
                         { key: 'memoNote',      label: 'Memo / Note — shown as a separate reminder, not a bank row', ph: 'e.g. Include your order number' },
                       ] as { key: 'bankAddress' | 'accountName' | 'accountNumber' | 'accountType' | 'routingNumber' | 'swift' | 'bankCode' | 'branchCode' | 'location' | 'bankName' | 'memoNote'; label: string; ph: string }[]).map(f => (
                         <div key={f.key}>
