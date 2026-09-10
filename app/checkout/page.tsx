@@ -10,7 +10,7 @@ import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 import { useSiteConfig } from '@/context/SiteConfigContext'
 import PaymentMaintenanceNotice from '@/components/PaymentMaintenanceNotice'
-import { SiteWireConfig, normalizeWireConfig, wireFieldList } from '@/lib/wire-config'
+import { SiteWireConfig, normalizeWireConfig, wireFieldList, WIRE_ONLY } from '@/lib/wire-config'
 import { SitePayLinkConfig, normalizePayLinkConfig, findPayLink } from '@/lib/pay-link'
 
 const COUNTRIES = [
@@ -174,16 +174,19 @@ export default function CheckoutPage() {
   const matchedPayLink = payLinkCfg
     ? findPayLink(payLinkCfg, cart.map(i => ({ id: i.id })), Number(finalTotal.toFixed(2)))
     : null
-  const payLinkActive = !!matchedPayLink
+  const payLinkActive = WIRE_ONLY ? false : !!matchedPayLink
   const showPromos = payLinkCfg !== null && !payLinkCfg.hidePromos
 
   /**
-   * Which payment UI to render. Card wins outright when it's live — it takes
-   * any amount, so unlike a fixed pay link it never has to hand the customer
-   * back to bank transfer. Everything below it behaves exactly as before, so
-   * turning Airwallex off restores the previous checkout untouched.
+   * Which payment UI to render.
+   *
+   * WIRE_ONLY pins this to bank transfer, so the card and PayPal branches
+   * below are unreachable no matter what the Airwallex credentials or the
+   * payments switch say. Without the pin, card would win outright whenever
+   * it's live, and an unloaded wire_config would fall through to PayPal.
    */
-  const effectiveMethod: 'airwallex' | 'paypal' | 'wire' = airwallexEnabled ? 'airwallex' : payMethod
+  const effectiveMethod: 'airwallex' | 'paypal' | 'wire' =
+    WIRE_ONLY ? 'wire' : airwallexEnabled ? 'airwallex' : payMethod
 
   async function validateCoupon() {
     if (!couponCode.trim()) return
