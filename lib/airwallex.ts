@@ -110,6 +110,38 @@ async function airwallexFetch(path: string, init?: RequestInit): Promise<Record<
   return data as Record<string, unknown>
 }
 
+// ── Account readiness ─────────────────────────────────────────
+// Valid credentials are not enough. An account Airwallex hasn't activated for
+// online payments logs in fine, then rejects every intent with a 400
+// configuration_error. Card wins outright at checkout, so offering it in that
+// state would replace a working checkout with one that always fails. Airwallex
+// itself is asked instead: an account that can take payments lists at least
+// one payment method type.
+//
+// Cached because the checkout asks on every page load. A "not ready" answer is
+// re-checked after a minute, so cards appear on their own soon after Airwallex
+// switches the account on — no redeploy needed.
+
+let readyCache: { ready: boolean; checkedAt: number } | null = null
+
+export async function isAirwallexReady(): Promise<boolean> {
+  if (!isAirwallexConfigured()) return false
+
+  const ttl = readyCache?.ready ? 10 * 60_000 : 60_000
+  if (readyCache && Date.now() - readyCache.checkedAt < ttl) return readyCache.ready
+
+  try {
+    const data = await airwallexFetch('/api/v1/pa/config/payment_method_types', { method: 'GET' })
+    const ready = Array.isArray(data.items) && data.items.length > 0
+    readyCache = { ready, checkedAt: Date.now() }
+  } catch (err) {
+    // Fail towards the fallback checkout, never towards a dead card button.
+    console.error('[airwallex] readiness check failed', err)
+    readyCache = { ready: false, checkedAt: Date.now() }
+  }
+  return readyCache.ready
+}
+
 // ── PaymentIntents ────────────────────────────────────────────
 
 export interface AirwallexPaymentIntent {

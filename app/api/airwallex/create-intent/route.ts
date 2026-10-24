@@ -3,7 +3,7 @@ import { getAdminSupabase } from '@/lib/supabase-admin'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
 import { resolveAgentCode } from '@/lib/agent-attribution'
 import { getSiteConfig } from '@/lib/site-config'
-import { createPaymentIntent, isAirwallexConfigured, airwallexEnv } from '@/lib/airwallex'
+import { createPaymentIntent, isAirwallexReady, airwallexEnv } from '@/lib/airwallex'
 
 /**
  * Starts an Airwallex Hosted Payment Page checkout.
@@ -41,7 +41,9 @@ function siteOrigin(request: Request): string {
 
 export async function POST(request: Request) {
   try {
-    if (!isAirwallexConfigured())
+    // Checked before the order is written — an account that can't take
+    // payments would otherwise leave a pending_payment order per click.
+    if (!await isAirwallexReady())
       return NextResponse.json({ error: 'Card payments are not available right now.' }, { status: 503 })
 
     const siteCfg = await getSiteConfig()
