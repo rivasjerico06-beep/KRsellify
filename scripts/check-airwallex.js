@@ -108,10 +108,36 @@ async function main() {
     process.exit(1)
   }
 
-  // ── 3. Payment permission ───────────────────────────────────
-  // Authenticating only proves the key is real. Creating an intent is what
-  // proves it is SCOPED for payments — the most common misconfiguration.
-  console.log(bold('\n3. Payment permissions'))
+  // ── 3. Payment permission + account activation ──────────────
+  // Authenticating only proves the key is real. Two further things can be
+  // wrong, and they look similar from the outside but have opposite fixes:
+  //   - the key isn't SCOPED for payments        → recreate the key
+  //   - the ACCOUNT isn't enabled for card acceptance → talk to Airwallex
+  // Listing the enabled payment methods separates them: it needs the same
+  // read scope as everything else, so a 200 proves the key is fine, and an
+  // empty list proves the account is not yet live for payments.
+  console.log(bold('\n3. Payment permissions & account activation'))
+
+  let enabledMethods = null
+  try {
+    const res = await fetch(`${API_BASE[env]}/api/v1/pa/config/payment_method_types`, { headers: { Authorization: `Bearer ${token}` } })
+    const data = await res.json().catch(() => ({}))
+    if (res.status === 401 || res.status === 403) {
+      fail('Key cannot read payment config', 'Recreate the key with the Payment Acceptance scope (Read + Write).')
+    } else if (res.ok) {
+      enabledMethods = Array.isArray(data.items) ? data.items : []
+      pass('Key has the Payment Acceptance scope', 'read config succeeded')
+      if (enabledMethods.length === 0) {
+        fail('Your Airwallex account has NO payment methods enabled',
+          'The credentials are correct — the account itself is not activated for card\n        acceptance yet. Nothing in this codebase can fix that: finish business\n        verification (KYB) and have Airwallex switch on Online Payments.')
+      } else {
+        const names = enabledMethods.map(m => m.name || m.payment_method_type || '?').join(', ')
+        pass(`${enabledMethods.length} payment method(s) enabled`, names.slice(0, 120))
+      }
+    }
+  } catch (err) {
+    info(`Could not list payment methods: ${err.message}`)
+  }
 
   try {
     const res = await fetch(`${API_BASE[env]}/api/v1/pa/payment_intents/create`, {
@@ -128,8 +154,17 @@ async function main() {
     const data = await res.json().catch(() => ({}))
     if (!res.ok) {
       fail(`Could not create a test PaymentIntent (HTTP ${res.status})`, data.message || data.code || '')
-      console.log(dim('        The key authenticates but lacks payment permissions. Recreate it'))
-      console.log(dim('        with the Payments scope enabled.'))
+      // A 400 configuration_error is NOT a permissions problem — the key is
+      // fine and the account is not switched on. Saying "fix your scopes"
+      // here sends you off recreating a key that was never the issue.
+      if (data.code === 'configuration_error' || res.status === 400) {
+        console.log(dim('        This is an ACCOUNT problem, not a key problem: Airwallex has not'))
+        console.log(dim('        enabled card acceptance on this merchant account. Ask Airwallex to'))
+        console.log(dim('        activate Online Payments; the integration is ready and waiting.'))
+      } else if (res.status === 401 || res.status === 403) {
+        console.log(dim('        The key authenticates but is not scoped for payments. Recreate it'))
+        console.log(dim('        with Payment Acceptance → Read + Write.'))
+      }
     } else {
       pass('Created a test PaymentIntent', `${data.id} · never confirmed, expires on its own`)
       // Sanity-check the units gotcha: we asked for 1.00, not 100 cents.
