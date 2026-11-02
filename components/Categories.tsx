@@ -71,6 +71,9 @@ function CategoryCard({ c }: { c: Cat }) {
 
 export default function Categories({ products }: { products: Product[] }) {
   const CATS = useSiteConfig().categories_config.items
+  // Every card removed in the Owner Console: drop the section rather than
+  // leave its heading over an empty row.
+  if (CATS.length === 0) return null
   const catsWithCounts: Cat[] = CATS.map(c => ({
     ...c,
     count: c.cat === 'all' ? products.length : products.filter(p => p.category === c.cat).length,
@@ -98,10 +101,11 @@ export default function Categories({ products }: { products: Product[] }) {
         viewport={{ once: true }}
         // Four hard 200px columns plus gaps needs 848px, so on a phone the row
         // ran off the side and dragged the whole page wider than the screen.
-        // .mo-cat-grid drops it to two flexible columns under 768px; desktop
-        // keeps the original 4 × 200px exactly.
+        // .mo-cat-grid drops it to two flexible columns under 768px. Desktop
+        // keeps 200px columns, one per card up to four, so removing a card
+        // re-centres the rest instead of leaving an empty slot at the end.
         className="mo-cat-grid"
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 200px)', gap: 16, justifyContent: 'center' }}>
+        style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(CATS.length, 4)}, 200px)`, gap: 16, justifyContent: 'center' }}>
         {catsWithCounts.map(c => <CategoryCard key={c.cat} c={c} />)}
       </motion.div>
     </div>

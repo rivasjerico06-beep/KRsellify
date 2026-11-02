@@ -16,6 +16,7 @@ const OWNER_ONLY_KEYS = new Set([
   'categories_config',
   'site_identity',
   'payments_config',
+  'shop_sidebar_config',
 ])
 
 export async function GET(request: Request) {
