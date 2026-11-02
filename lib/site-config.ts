@@ -9,8 +9,9 @@ import {
   SiteCategoriesConfig, DEFAULT_CATEGORIES_CONFIG,
   SiteIdentityConfig, DEFAULT_IDENTITY_CONFIG,
   SitePaymentsConfig, DEFAULT_PAYMENTS_CONFIG,
+  SiteShopSidebarConfig, DEFAULT_SHOP_SIDEBAR_CONFIG,
   normalizeNavConfig, normalizeFooterConfig, normalizeCategoriesConfig,
-  normalizeIdentityConfig, normalizePaymentsConfig,
+  normalizeIdentityConfig, normalizePaymentsConfig, normalizeShopSidebarConfig,
 } from './owner-config'
 
 export interface SiteAnnounceBar {
@@ -64,6 +65,7 @@ export interface SiteConfig {
   categories_config: SiteCategoriesConfig
   site_identity: SiteIdentityConfig
   payments_config: SitePaymentsConfig
+  shop_sidebar_config: SiteShopSidebarConfig
 }
 
 export const DEFAULT_CONFIG: SiteConfig = {
@@ -134,6 +136,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
   categories_config: DEFAULT_CATEGORIES_CONFIG,
   site_identity: DEFAULT_IDENTITY_CONFIG,
   payments_config: DEFAULT_PAYMENTS_CONFIG,
+  shop_sidebar_config: DEFAULT_SHOP_SIDEBAR_CONFIG,
 }
 
 /**
@@ -150,6 +153,7 @@ function normalizeOwnerKeys(cfg: SiteConfig): SiteConfig {
     categories_config: normalizeCategoriesConfig(cfg.categories_config),
     site_identity:     normalizeIdentityConfig(cfg.site_identity),
     payments_config:   normalizePaymentsConfig(cfg.payments_config),
+    shop_sidebar_config: normalizeShopSidebarConfig(cfg.shop_sidebar_config),
   }
 }
 

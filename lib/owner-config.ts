@@ -11,10 +11,14 @@
  *
  * Normalizers coerce whatever is stored into a complete, safe shape: a
  * half-written row, a missing key or a value of the wrong type must never be
- * able to blank out the header or crash a page. Rows that lose their required
- * fields are dropped rather than rendered empty, and a list that ends up empty
- * falls back to the defaults.
+ * able to crash a page. Rows that lose their required fields are dropped
+ * rather than rendered empty, and a footer list that ends up empty falls back
+ * to the defaults. The header nav and the category cards are different: the
+ * owner may remove every item, so those lists are kept even when nothing is
+ * left in them, and only a value that was never saved falls back.
  */
+
+import type { Product } from './types'
 
 // ── Links ─────────────────────────────────────────────────────
 export interface SiteLink {
@@ -131,6 +135,63 @@ export const DEFAULT_CATEGORIES_CONFIG: SiteCategoriesConfig = {
   ],
 }
 
+// ── Shop page sidebar ─────────────────────────────────────────
+/**
+ * The panel beside the products on /shop. Its rows are fixed here rather than
+ * typed in by the owner because each one counts real products — an editable
+ * label could end up reading "Under $100" over a count of everything under
+ * $200. What the owner controls is which rows show.
+ */
+export interface ShopSidebarRow {
+  id: string
+  label: string
+}
+
+export interface ShopSidebarCountRow extends ShopSidebarRow {
+  /** The products this row counts */
+  test: (p: Product) => boolean
+}
+
+/** Category buttons. The id is the category slug; "all" is every product. */
+export const SHOP_SIDEBAR_CATEGORIES: ShopSidebarRow[] = [
+  { id: 'all',          label: 'All Products' },
+  { id: 'medallions',   label: 'Medallions' },
+  { id: 'collectibles', label: 'Collectibles' },
+  { id: 'crypto',       label: 'Crypto' },
+]
+
+export const SHOP_SIDEBAR_PRICES: ShopSidebarCountRow[] = [
+  { id: 'under-200', label: 'Under $200',  test: p => p.price < 200 },
+  { id: '200-400',   label: '$200 – $400', test: p => p.price >= 200 && p.price <= 400 },
+  { id: 'over-400',  label: 'Over $400',   test: p => p.price > 400 },
+]
+
+export const SHOP_SIDEBAR_AVAILABILITY: ShopSidebarCountRow[] = [
+  { id: 'on-sale',      label: 'On Sale',      test: p => p.is_sale },
+  { id: 'new-arrivals', label: 'New Arrivals', test: p => p.is_new },
+  { id: 'in-stock',     label: 'In Stock',     test: p => p.in_stock },
+]
+
+/**
+ * Stored as the rows to leave out rather than the rows to show, so a shop
+ * that has never saved this — or a row added above later — shows everything
+ * without anyone having to switch it on.
+ */
+export interface SiteShopSidebarConfig {
+  /** Ids from SHOP_SIDEBAR_CATEGORIES */
+  hiddenCategories: string[]
+  /** Ids from SHOP_SIDEBAR_PRICES */
+  hiddenPrices: string[]
+  /** Ids from SHOP_SIDEBAR_AVAILABILITY */
+  hiddenAvailability: string[]
+}
+
+export const DEFAULT_SHOP_SIDEBAR_CONFIG: SiteShopSidebarConfig = {
+  hiddenCategories:   [],
+  hiddenPrices:       [],
+  hiddenAvailability: [],
+}
+
 // ── Site identity & shop-wide values ──────────────────────────
 export interface SiteIdentityConfig {
   /** Brand name shown beside the logo in the header. Hidden when blank. */
@@ -212,7 +273,9 @@ export function normalizeNavConfig(value: unknown): SiteNavConfig {
       return { label: str(o.label), cat: str(o.cat) }
     })
     .filter(l => l.label !== '' && l.cat !== '')
-  return links.length ? { links } : DEFAULT_NAV_CONFIG
+  // Kept even when empty: that is the owner removing every tab, and falling
+  // back here is what used to make them all come back.
+  return { links }
 }
 
 export function normalizeFooterConfig(value: unknown): SiteFooterConfig {
@@ -251,7 +314,19 @@ export function normalizeCategoriesConfig(value: unknown): SiteCategoriesConfig 
       }
     })
     .filter(c => c.name !== '' && c.cat !== '')
-  return items.length ? { items } : DEFAULT_CATEGORIES_CONFIG
+  // Kept even when empty, for the same reason as the nav: removing every card
+  // is a choice the owner can make.
+  return { items }
+}
+
+export function normalizeShopSidebarConfig(value: unknown): SiteShopSidebarConfig {
+  const v = value && typeof value === 'object' ? (value as Record<string, unknown>) : {}
+  const ids = (x: unknown) => (Array.isArray(x) ? x.map(i => str(i)).filter(i => i !== '') : [])
+  return {
+    hiddenCategories:   ids(v.hiddenCategories),
+    hiddenPrices:       ids(v.hiddenPrices),
+    hiddenAvailability: ids(v.hiddenAvailability),
+  }
 }
 
 export function normalizeIdentityConfig(value: unknown): SiteIdentityConfig {

@@ -5,18 +5,33 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import ProductCard from './ProductCard'
 import { Product } from '@/lib/types'
+import { useSiteConfig } from '@/context/SiteConfigContext'
+import {
+  SHOP_SIDEBAR_CATEGORIES as CATS,
+  SHOP_SIDEBAR_PRICES, SHOP_SIDEBAR_AVAILABILITY,
+} from '@/lib/owner-config'
 
-const CATS = [
-  { value: 'all',          label: 'All Products' },
-  { value: 'medallions',   label: 'Medallions' },
-  { value: 'collectibles', label: 'Collectibles' },
-  { value: 'crypto',       label: 'Crypto' },
-]
+// Rule between sidebar groups. Left off whichever group ends up first, so
+// removing the Category group doesn't leave a line along the top of the card.
+const GROUP_DIVIDER: React.CSSProperties = { borderTop: '1px solid var(--gray)', marginTop: 20, paddingTop: 20 }
 
 type Sort = 'featured' | 'price_asc' | 'price_desc' | 'newest' | 'rating'
 
 export default function ShopClient({ products, initialCat }: { products: Product[]; initialCat: string }) {
-  const [cat, setCat]     = useState(CATS.find(c => c.value === initialCat) ? initialCat : 'all')
+  // Rows the owner removed in admin → Owner Console → Shop Page Sidebar.
+  // Removing a category only takes its button out of the panel: ?cat= still
+  // filters by it, so the homepage cards and footer links that point here
+  // keep working.
+  const { hiddenCategories, hiddenPrices, hiddenAvailability } = useSiteConfig().shop_sidebar_config
+  const sideCats   = CATS.filter(c => !hiddenCategories.includes(c.id))
+  const sidePrices = SHOP_SIDEBAR_PRICES.filter(r => !hiddenPrices.includes(r.id))
+  const sideAvail  = SHOP_SIDEBAR_AVAILABILITY.filter(r => !hiddenAvailability.includes(r.id))
+  const hasSidebar = sideCats.length + sidePrices.length + sideAvail.length > 0
+  // With "All Products" removed there's no button back to everything, so
+  // clicking the selected category a second time clears it instead.
+  const allHidden  = hiddenCategories.includes('all')
+
+  const [cat, setCat]     = useState(CATS.find(c => c.id === initialCat) ? initialCat : 'all')
   const [sort, setSort]   = useState<Sort>('featured')
   const [search, setSearch] = useState('')
   const [visible, setVisible] = useState(12)
@@ -40,7 +55,7 @@ export default function ShopClient({ products, initialCat }: { products: Product
 
   const shown = sorted.slice(0, visible)
   const catCounts = Object.fromEntries(
-    CATS.map(c => [c.value, c.value === 'all' ? products.length : products.filter(p => p.category === c.value).length])
+    CATS.map(c => [c.id, c.id === 'all' ? products.length : products.filter(p => p.category === c.id).length])
   )
   const catProducts = cat === 'all' ? products : products.filter(p => p.category === cat)
 
@@ -56,10 +71,10 @@ export default function ShopClient({ products, initialCat }: { products: Product
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.26em', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 6 }}>
-              {cat === 'all' ? 'Full Collection' : CATS.find(c => c.value === cat)?.label}
+              {cat === 'all' ? 'Full Collection' : CATS.find(c => c.id === cat)?.label}
             </p>
             <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,3.5vw,42px)', fontWeight: 900, color: 'var(--heading)' }}>
-              {cat === 'all' ? 'All Products' : CATS.find(c => c.value === cat)?.label}
+              {cat === 'all' ? 'All Products' : CATS.find(c => c.id === cat)?.label}
             </h1>
           </div>
           <p style={{ fontSize: 14, color: 'var(--text-light)' }}>
@@ -96,57 +111,58 @@ export default function ShopClient({ products, initialCat }: { products: Product
         </select>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 32, alignItems: 'start' }}>
+      {/* Every sidebar row removed: no empty panel, products take the full width */}
+      <div style={{ display: 'grid', gridTemplateColumns: hasSidebar ? '220px 1fr' : '1fr', gap: 32, alignItems: 'start' }}>
         {/* Sidebar filters */}
-        <aside style={{ position: 'sticky', top: 88 }}>
-          <div style={{ background: 'var(--white)', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-mid)', marginBottom: 16 }}>Category</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {CATS.map(c => (
-                <button key={c.value} onClick={() => setCat(c.value)}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: cat === c.value ? 700 : 500, fontSize: 14, background: cat === c.value ? 'rgba(88,148,143,0.1)' : 'transparent', color: cat === c.value ? 'var(--teal)' : 'var(--text-mid)', textAlign: 'left', transition: 'all 0.15s' }}>
-                  <span>{c.label}</span>
-                  <span style={{ fontSize: 11, fontWeight: 600, background: cat === c.value ? 'var(--teal)' : 'var(--gray)', color: cat === c.value ? 'white' : 'var(--text-light)', borderRadius: 50, padding: '1px 8px', minWidth: 24, textAlign: 'center' }}>
-                    {catCounts[c.value]}
-                  </span>
-                </button>
-              ))}
-            </div>
+        {hasSidebar && (
+          <aside style={{ position: 'sticky', top: 88 }}>
+            <div style={{ background: 'var(--white)', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(9,52,89,0.06)' }}>
+              {sideCats.length > 0 && (<>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-mid)', marginBottom: 16 }}>Category</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {sideCats.map(c => (
+                    <button key={c.id} onClick={() => setCat(allHidden && cat === c.id ? 'all' : c.id)}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: cat === c.id ? 700 : 500, fontSize: 14, background: cat === c.id ? 'rgba(88,148,143,0.1)' : 'transparent', color: cat === c.id ? 'var(--teal)' : 'var(--text-mid)', textAlign: 'left', transition: 'all 0.15s' }}>
+                      <span>{c.label}</span>
+                      <span style={{ fontSize: 11, fontWeight: 600, background: cat === c.id ? 'var(--teal)' : 'var(--gray)', color: cat === c.id ? 'white' : 'var(--text-light)', borderRadius: 50, padding: '1px 8px', minWidth: 24, textAlign: 'center' }}>
+                        {catCounts[c.id]}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </>)}
 
-            <div style={{ borderTop: '1px solid var(--gray)', marginTop: 20, paddingTop: 20 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-mid)', marginBottom: 16 }}>Price</p>
-              {[
-                { label: 'Under $200',      fn: (p: Product) => p.price < 200 },
-                { label: '$200 – $400',     fn: (p: Product) => p.price >= 200 && p.price <= 400 },
-                { label: 'Over $400',       fn: (p: Product) => p.price > 400 },
-              ].map(r => {
-                const count = products.filter(p => (cat === 'all' || p.category === cat) && r.fn(p)).length
-                return (
-                  <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-mid)', padding: '6px 0' }}>
-                    <span>{r.label}</span>
-                    <span style={{ fontSize: 11, color: 'var(--text-light)' }}>{count}</span>
-                  </div>
-                )
-              })}
-            </div>
+              {sidePrices.length > 0 && (
+                <div style={sideCats.length > 0 ? GROUP_DIVIDER : undefined}>
+                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-mid)', marginBottom: 16 }}>Price</p>
+                  {sidePrices.map(r => {
+                    const count = products.filter(p => (cat === 'all' || p.category === cat) && r.test(p)).length
+                    return (
+                      <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-mid)', padding: '6px 0' }}>
+                        <span>{r.label}</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-light)' }}>{count}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
 
-            <div style={{ borderTop: '1px solid var(--gray)', marginTop: 20, paddingTop: 20 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-mid)', marginBottom: 14 }}>Availability</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {[
-                  { label: 'On Sale',     count: catProducts.filter(p => p.is_sale).length },
-                  { label: 'New Arrivals',count: catProducts.filter(p => p.is_new).length },
-                  { label: 'In Stock',    count: catProducts.filter(p => p.in_stock).length },
-                ].map(r => (
-                  <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-mid)' }}>
-                    <span>{r.label}</span>
-                    <span style={{ fontSize: 11, color: 'var(--text-light)' }}>{r.count}</span>
+              {sideAvail.length > 0 && (
+                <div style={sideCats.length + sidePrices.length > 0 ? GROUP_DIVIDER : undefined}>
+                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-mid)', marginBottom: 14 }}>Availability</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {sideAvail.map(r => (
+                      <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-mid)' }}>
+                        <span>{r.label}</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-light)' }}>{catProducts.filter(r.test).length}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
-          </div>
-        </aside>
+          </aside>
+        )}
 
         {/* Product grid */}
         <div>

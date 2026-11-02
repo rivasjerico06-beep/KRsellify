@@ -7,15 +7,17 @@ import {
   SiteCategoriesConfig, DEFAULT_CATEGORIES_CONFIG, normalizeCategoriesConfig,
   SiteIdentityConfig, DEFAULT_IDENTITY_CONFIG, normalizeIdentityConfig,
   SitePaymentsConfig, DEFAULT_PAYMENTS_CONFIG, normalizePaymentsConfig,
-  SiteLink, SiteSocial, SiteNavItem, SiteCategory,
+  SiteShopSidebarConfig, DEFAULT_SHOP_SIDEBAR_CONFIG, normalizeShopSidebarConfig,
+  SHOP_SIDEBAR_CATEGORIES, SHOP_SIDEBAR_PRICES, SHOP_SIDEBAR_AVAILABILITY,
+  SiteLink, SiteSocial, SiteNavItem, SiteCategory, ShopSidebarRow,
 } from '@/lib/owner-config'
 
 /**
  * OWNER CONSOLE
  * -------------
  * Editors for the storefront content that used to be hardcoded: header nav,
- * footer columns, socials, category cards, browser title, the free-shipping
- * threshold and the payments switch.
+ * footer columns, socials, category cards, the shop page sidebar, browser
+ * title, the free-shipping threshold and the payments switch.
  *
  * Rendered only for the owner, and every key here is additionally owner-gated
  * in /api/admin/site-config — hiding a form stops nobody who posts to the
@@ -45,6 +47,13 @@ const SMALL_BTN: React.CSSProperties = {
   borderRadius: 8, padding: '8px 14px', fontSize: 12, fontWeight: 700,
   cursor: 'pointer', fontFamily: 'inherit',
 }
+
+/** The shop page sidebar's groups, in the order they appear there. */
+const SIDEBAR_GROUPS: { key: keyof SiteShopSidebarConfig; title: string; rows: ShopSidebarRow[] }[] = [
+  { key: 'hiddenCategories',   title: 'Category',     rows: SHOP_SIDEBAR_CATEGORIES },
+  { key: 'hiddenPrices',       title: 'Price',        rows: SHOP_SIDEBAR_PRICES },
+  { key: 'hiddenAvailability', title: 'Availability', rows: SHOP_SIDEBAR_AVAILABILITY },
+]
 
 function Section({
   icon, title, hint, children, onSave, saving,
@@ -138,6 +147,7 @@ export default function OwnerConsole({ authHeaders }: { authHeaders: () => Heade
   const [cats, setCats]         = useState<SiteCategoriesConfig>(DEFAULT_CATEGORIES_CONFIG)
   const [identity, setIdentity] = useState<SiteIdentityConfig>(DEFAULT_IDENTITY_CONFIG)
   const [payments, setPayments] = useState<SitePaymentsConfig>(DEFAULT_PAYMENTS_CONFIG)
+  const [sidebar, setSidebar]   = useState<SiteShopSidebarConfig>(DEFAULT_SHOP_SIDEBAR_CONFIG)
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving]   = useState<string | null>(null)
@@ -157,6 +167,7 @@ export default function OwnerConsole({ authHeaders }: { authHeaders: () => Heade
       setCats(normalizeCategoriesConfig(find('categories_config')))
       setIdentity(normalizeIdentityConfig(find('site_identity')))
       setPayments(normalizePaymentsConfig(find('payments_config')))
+      setSidebar(normalizeShopSidebarConfig(find('shop_sidebar_config')))
     } catch {
       flash('Could not load settings')
     }
@@ -251,7 +262,7 @@ export default function OwnerConsole({ authHeaders }: { authHeaders: () => Heade
 
       {/* ── Header nav ── */}
       <Section icon="fa-bars" title="Header Navigation" saving={saving === 'nav_config'}
-        hint="The category strip under the header on the homepage. Each item filters the products in place; “all” shows everything."
+        hint="The category strip under the header on the homepage (the search box’s category list uses it too). Each item filters the products in place; “all” shows everything. Remove them all to hide the strip."
         onSave={() => save('nav_config', nav, 'Header navigation')}>
         <ListEditor<SiteNavItem>
           rows={nav.links}
@@ -267,7 +278,7 @@ export default function OwnerConsole({ authHeaders }: { authHeaders: () => Heade
 
       {/* ── Category cards ── */}
       <Section icon="fa-shapes" title="Category Cards" saving={saving === 'categories_config'}
-        hint="The “Shop by Category” tiles on the homepage. Icons are Font Awesome names; tick Brand for logo glyphs like fa-bitcoin."
+        hint="The “Shop by Category” tiles on the homepage. Icons are Font Awesome names; tick Brand for logo glyphs like fa-bitcoin. Remove them all to hide the section."
         onSave={() => save('categories_config', cats, 'Category cards')}>
         <ListEditor<SiteCategory>
           rows={cats.items}
@@ -285,6 +296,37 @@ export default function OwnerConsole({ authHeaders }: { authHeaders: () => Heade
             </label>
           </>)}
         />
+      </Section>
+
+      {/* ── Shop page sidebar ── */}
+      <Section icon="fa-filter" title="Shop Page Sidebar" saving={saving === 'shop_sidebar_config'}
+        hint="The panel beside the products on the Shop page. Untick a row to remove it; tick it again to bring it back. A heading goes once every row under it is removed, and the whole panel once they all are."
+        onSave={() => save('shop_sidebar_config', sidebar, 'Shop sidebar')}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {SIDEBAR_GROUPS.map(({ key, title, rows }) => (
+            <div key={key}>
+              <label style={{ ...LABEL, marginBottom: 8 }}>{title}</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {rows.map(r => {
+                  const shown = !sidebar[key].includes(r.id)
+                  return (
+                    <label key={r.id}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--off-white)', border: '1px solid var(--gray)', borderRadius: 10, padding: '9px 14px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', color: shown ? 'var(--text-dark)' : 'var(--text-light)' }}>
+                      <input type="checkbox" checked={shown} style={{ cursor: 'pointer' }}
+                        onChange={e => setSidebar({
+                          ...sidebar,
+                          [key]: e.target.checked
+                            ? sidebar[key].filter(id => id !== r.id)
+                            : [...sidebar[key], r.id],
+                        })} />
+                      <span style={{ textDecoration: shown ? 'none' : 'line-through' }}>{r.label}</span>
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
       </Section>
 
       {/* ── Footer ── */}
