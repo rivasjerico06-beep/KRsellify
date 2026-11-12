@@ -30,7 +30,7 @@ export default async function Home() {
           <ProductGrid initialProducts={products} />
         </section>
         <Banner config={config.banner} />
-        <Testimonials />
+        <Testimonials reviews={config.reviews} />
         <Newsletter config={config.newsletter} />
       </main>
       <Footer />
