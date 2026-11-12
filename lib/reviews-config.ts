@@ -27,7 +27,7 @@ export function isReviewAvatar(value: string): boolean {
 }
 
 export function isSiteReviews(value: unknown): value is SiteReview[] {
-  return Array.isArray(value) && value.length > 0 && value.length <= 50 && value.every(review => (
+  return Array.isArray(value) && value.length <= 50 && value.every(review => (
     review !== null && typeof review === 'object'
     && typeof review.name === 'string' && review.name.trim().length > 0 && review.name.length <= 120
     && typeof review.role === 'string' && review.role.length <= 120

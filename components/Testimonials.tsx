@@ -60,6 +60,8 @@ export default function Testimonials({ reviews = DEFAULT_REVIEWS }: { reviews?: 
   const [paused, setPaused] = useState(false)
   const doubled = [...reviews, ...reviews]
 
+  if (reviews.length === 0) return null
+
   return (
     <div style={{ background: 'var(--off-white)', padding: '80px 0', overflow: 'hidden' }}>
       <div style={{ maxWidth: 1340, margin: '0 auto', padding: '0 28px', marginBottom: 44 }}>
