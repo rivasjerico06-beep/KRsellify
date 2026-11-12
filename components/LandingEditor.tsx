@@ -323,11 +323,24 @@ export default function LandingEditor({ initialConfig }: { initialConfig: SiteCo
       {/* ── Reviews ───────────────────────────────────── */}
       {section === 'reviews' && (
         <form onSubmit={e => { e.preventDefault(); void save('reviews', config.reviews) }}>
-          <p style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 16 }}>Edit the customer reviews shown on the homepage, then save your changes.</p>
+          <p style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 16 }}>Edit or remove the customer reviews shown on the homepage, then save your changes. Removals take effect when you save.</p>
           <fieldset disabled={saving !== null} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+            {config.reviews.length === 0 && (
+              <p style={cardStyle}>No reviews remain. Save Reviews to hide the reviews section on the homepage.</p>
+            )}
             {config.reviews.map((review, i) => (
               <div key={i} style={cardStyle}>
-                <h3 style={{ fontWeight: 700, color: 'var(--heading)', marginBottom: 16, fontSize: 15 }}>Review {i + 1}</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                  <h3 style={{ fontWeight: 700, color: 'var(--heading)', fontSize: 15 }}>Review {i + 1}</h3>
+                  <button type="button" aria-label={`Remove review ${i + 1}`}
+                    onClick={() => {
+                      setConfig(c => ({ ...c, reviews: c.reviews.filter((_, index) => index !== i) }))
+                      setSavedMsg('')
+                    }}
+                    style={{ background: '#fee2e2', border: 'none', color: '#991b1b', padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    <i className="fa-solid fa-trash" aria-hidden="true" /> Remove
+                  </button>
+                </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: 14 }}>
                   <div>
                     <label htmlFor={`review-name-${i}`} style={labelStyle}>Reviewer name</label>
