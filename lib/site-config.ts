@@ -1,4 +1,5 @@
 import { cache } from 'react'
+import { SiteReview, DEFAULT_REVIEWS, normalizeReviews } from './reviews-config'
 import { createClient } from '@supabase/supabase-js'
 import { SiteWireConfig, DEFAULT_WIRE_CONFIG } from './wire-config'
 import { SitePayLinkConfig, DEFAULT_PAY_LINK_CONFIG } from './pay-link'
@@ -51,6 +52,7 @@ export interface SiteNewsletter {
 }
 
 export interface SiteConfig {
+  reviews: SiteReview[]
   announce_bar: SiteAnnounceBar
   hero_slides: SiteHeroSlide[]
   banner: SiteBanner
@@ -69,6 +71,7 @@ export interface SiteConfig {
 }
 
 export const DEFAULT_CONFIG: SiteConfig = {
+  reviews: DEFAULT_REVIEWS,
   announce_bar: {
     visible: true,
     bg_color: 'navy',
@@ -148,6 +151,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
 function normalizeOwnerKeys(cfg: SiteConfig): SiteConfig {
   return {
     ...cfg,
+    reviews: normalizeReviews(cfg.reviews),
     nav_config:        normalizeNavConfig(cfg.nav_config),
     footer_config:     normalizeFooterConfig(cfg.footer_config),
     categories_config: normalizeCategoriesConfig(cfg.categories_config),

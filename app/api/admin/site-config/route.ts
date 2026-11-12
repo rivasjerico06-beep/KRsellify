@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { isSiteReviews } from '@/lib/reviews-config'
 import { revalidatePath } from 'next/cache'
 import { getAdminSupabase } from '@/lib/supabase-admin'
 import { requireAdmin, isNextResponse } from '@/lib/require-admin'
@@ -36,6 +37,10 @@ export async function PUT(request: Request) {
   const admin = getAdminSupabase()
   const { key, value } = await request.json()
   if (!key || value === undefined) return NextResponse.json({ error: 'key and value required' }, { status: 400 })
+
+  if (key === 'reviews' && !isSiteReviews(value)) {
+    return NextResponse.json({ error: 'Each review needs a name, review text, a valid HTTPS or local photo URL, and a star rating from 1 to 5.' }, { status: 400 })
+  }
 
   // Owner Console keys are reserved to the owner. Enforced here and not only
   // by hiding the controls, because this route takes an arbitrary key from any

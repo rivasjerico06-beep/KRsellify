@@ -3,15 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-
-const REVIEWS = [
-  { text: 'I ordered the Bitcoin Diamond and it exceeded all expectations. The packaging was gorgeous and the piece itself is stunning. Will definitely be ordering more collectibles!', name: 'Kristy R.', role: 'Collector', avatar: 'https://i.pravatar.cc/100?img=47', stars: 5 },
-  { text: "The gold bar arrived beautifully packaged. As a coin collector, this is one of the most beautiful commemorative pieces I've ever seen. Passing it down to my grandkids for sure.", name: 'William C.', role: 'Investor', avatar: 'https://i.pravatar.cc/100?img=33', stars: 5 },
-  { text: 'Shipping was fast and the D.O.G.E Coin is absolutely breathtaking. The detail work is incredible. Customer support was also super helpful when I had questions.', name: 'James P.', role: 'Crypto Enthusiast', avatar: 'https://i.pravatar.cc/100?img=12', stars: 5 },
-  { text: "Got the Trump gold bar as a gift for my father and he absolutely loves it. The quality is unmatched. Will be buying more as gifts for sure.", name: 'Sarah M.', role: 'Gift Buyer', avatar: 'https://i.pravatar.cc/100?img=25', stars: 5 },
-  { text: "The Bitcoin Crypto Passport is a masterpiece. Every detail is perfect. I've bought from many collectibles sites but PATRIOT’S ONLINE SHOP is by far the best quality.", name: 'Michael T.', role: 'Premium Buyer', avatar: 'https://i.pravatar.cc/100?img=68', stars: 5 },
-  { text: "Received the Nesara Gesara Gold Coin and couldn't be happier. The craftsmanship is exceptional — it's the centerpiece of my whole collection now.", name: 'Amanda L.', role: 'Collector', avatar: 'https://i.pravatar.cc/100?img=44', stars: 5 },
-]
+import { SiteReview, DEFAULT_REVIEWS } from '@/lib/reviews-config'
 
 function StarRow({ n }: { n: number }) {
   return (
@@ -29,7 +21,7 @@ function StarRow({ n }: { n: number }) {
   )
 }
 
-function ReviewCard({ r }: { r: typeof REVIEWS[0] }) {
+function ReviewCard({ r }: { r: SiteReview }) {
   return (
     <motion.div
       whileHover={{ y: -5, boxShadow: '0 24px 60px rgba(9,52,89,0.15)', borderColor: 'rgba(202,138,4,0.3)' }}
@@ -47,7 +39,7 @@ function ReviewCard({ r }: { r: typeof REVIEWS[0] }) {
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, borderTop: '1px solid var(--gray)', paddingTop: 16 }}>
         <div style={{ position: 'relative', width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', border: '2.5px solid var(--teal)', flexShrink: 0 }}>
-          <Image src={r.avatar} alt={r.name} fill style={{ objectFit: 'cover' }} />
+          <Image src={r.avatar} alt={r.name} fill unoptimized style={{ objectFit: 'cover' }} />
         </div>
         <div>
           <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--heading)' }}>{r.name}</p>
@@ -64,9 +56,9 @@ function ReviewCard({ r }: { r: typeof REVIEWS[0] }) {
   )
 }
 
-export default function Testimonials() {
+export default function Testimonials({ reviews = DEFAULT_REVIEWS }: { reviews?: SiteReview[] }) {
   const [paused, setPaused] = useState(false)
-  const doubled = [...REVIEWS, ...REVIEWS]
+  const doubled = [...reviews, ...reviews]
 
   return (
     <div style={{ background: 'var(--off-white)', padding: '80px 0', overflow: 'hidden' }}>

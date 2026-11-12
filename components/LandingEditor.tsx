@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { SiteConfig, SiteHeroSlide, DEFAULT_CONFIG } from '@/lib/site-config'
 import { getBrowserSupabase } from '@/lib/supabase-browser'
+import { SiteReview, normalizeReviews } from '@/lib/reviews-config'
 
-type Section = 'announce' | 'hero' | 'banner' | 'trust' | 'newsletter'
+type Section = 'announce' | 'hero' | 'banner' | 'trust' | 'reviews' | 'newsletter'
 
 const inputStyle: React.CSSProperties = {
   width: '100%', border: '1.5px solid var(--gray)', borderRadius: 10, padding: '10px 14px',
@@ -21,24 +22,38 @@ const cardStyle: React.CSSProperties = {
 }
 
 export default function LandingEditor({ initialConfig }: { initialConfig: SiteConfig }) {
-  const [config, setConfig] = useState<SiteConfig>(initialConfig)
+  const [config, setConfig] = useState<SiteConfig>(() => ({ ...initialConfig, reviews: normalizeReviews(initialConfig.reviews) }))
   const [section, setSection] = useState<Section>('announce')
   const [saving, setSaving] = useState<string | null>(null)
   const [savedMsg, setSavedMsg] = useState('')
+  const [saveError, setSaveError] = useState('')
 
   async function save(key: string, value: unknown) {
     setSaving(key)
-    const { data: { session } } = await getBrowserSupabase().auth.getSession()
-    const res = await fetch('/api/admin/site-config', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token ?? ''}` },
-      body: JSON.stringify({ key, value }),
-    })
-    if (res.ok) {
+    setSavedMsg('')
+    setSaveError('')
+    try {
+      const { data: { session } } = await getBrowserSupabase().auth.getSession()
+      const res = await fetch('/api/admin/site-config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token ?? ''}` },
+        body: JSON.stringify({ key, value }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Could not save changes. Please try again.')
+      }
       setSavedMsg(`✓ ${key.replace('_', ' ')} saved!`)
       setTimeout(() => setSavedMsg(''), 3000)
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Could not save changes. Please try again.')
+    } finally {
+      setSaving(null)
     }
-    setSaving(null)
+  }
+
+  function updateReview<K extends keyof SiteReview>(i: number, field: K, value: SiteReview[K]) {
+    setConfig(c => ({ ...c, reviews: c.reviews.map((review, index) => index === i ? { ...review, [field]: value } : review) }))
   }
 
   function updateAnnounce(field: string, val: unknown) {
@@ -98,6 +113,7 @@ export default function LandingEditor({ initialConfig }: { initialConfig: SiteCo
     { id: 'hero',     label: 'Hero Slides',  icon: 'fa-images' },
     { id: 'banner',   label: 'Banner',       icon: 'fa-rectangle-ad' },
     { id: 'trust',    label: 'Trust Bar',    icon: 'fa-shield' },
+    { id: 'reviews',  label: 'Reviews',      icon: 'fa-star' },
     { id: 'newsletter', label: 'Newsletter', icon: 'fa-envelope' },
   ]
 
@@ -123,10 +139,16 @@ export default function LandingEditor({ initialConfig }: { initialConfig: SiteCo
       </div>
 
       {savedMsg && (
-        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+        <motion.div role="status" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
           style={{ background: '#d1fae5', color: '#065f46', padding: '12px 20px', borderRadius: 12, marginBottom: 20, fontWeight: 600, fontSize: 14 }}>
           {savedMsg}
         </motion.div>
+      )}
+
+      {saveError && (
+        <div role="alert" style={{ background: '#fee2e2', color: '#991b1b', padding: '12px 20px', borderRadius: 12, marginBottom: 20, fontSize: 14 }}>
+          {saveError}
+        </div>
       )}
 
       {/* section tabs */}
@@ -296,6 +318,47 @@ export default function LandingEditor({ initialConfig }: { initialConfig: SiteCo
           <p style={{ fontSize: 12, color: 'var(--text-light)', marginBottom: 8 }}>Find icon classes at <a href="https://fontawesome.com/icons" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--teal)' }}>fontawesome.com/icons</a></p>
           <SaveBtn k="trust_bar" value={config.trust_bar} />
         </div>
+      )}
+
+      {/* ── Reviews ───────────────────────────────────── */}
+      {section === 'reviews' && (
+        <form onSubmit={e => { e.preventDefault(); void save('reviews', config.reviews) }}>
+          <p style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 16 }}>Edit the customer reviews shown on the homepage, then save your changes.</p>
+          <fieldset disabled={saving !== null} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+            {config.reviews.map((review, i) => (
+              <div key={i} style={cardStyle}>
+                <h3 style={{ fontWeight: 700, color: 'var(--heading)', marginBottom: 16, fontSize: 15 }}>Review {i + 1}</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: 14 }}>
+                  <div>
+                    <label htmlFor={`review-name-${i}`} style={labelStyle}>Reviewer name</label>
+                    <input id={`review-name-${i}`} style={inputStyle} required maxLength={120} value={review.name} onChange={e => updateReview(i, 'name', e.target.value)} />
+                  </div>
+                  <div>
+                    <label htmlFor={`review-role-${i}`} style={labelStyle}>Role / subtitle</label>
+                    <input id={`review-role-${i}`} style={inputStyle} maxLength={120} value={review.role} onChange={e => updateReview(i, 'role', e.target.value)} />
+                  </div>
+                  <div>
+                    <label htmlFor={`review-stars-${i}`} style={labelStyle}>Star rating</label>
+                    <select id={`review-stars-${i}`} style={inputStyle} value={review.stars} onChange={e => updateReview(i, 'stars', Number(e.target.value))}>
+                      {[1, 2, 3, 4, 5].map(stars => <option key={stars} value={stars}>{stars} {stars === 1 ? 'star' : 'stars'}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor={`review-avatar-${i}`} style={labelStyle}>Photo URL (HTTPS or local path)</label>
+                    <input id={`review-avatar-${i}`} style={inputStyle} required maxLength={2048} value={review.avatar} onChange={e => updateReview(i, 'avatar', e.target.value)} placeholder="https://..." />
+                  </div>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <label htmlFor={`review-text-${i}`} style={labelStyle}>Review text</label>
+                    <textarea id={`review-text-${i}`} style={{ ...inputStyle, minHeight: 100, resize: 'vertical' }} required maxLength={2000} value={review.text} onChange={e => updateReview(i, 'text', e.target.value)} />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <button type="submit" style={{ background: 'var(--teal)', color: 'white', border: 'none', padding: '10px 24px', borderRadius: 50, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              {saving === 'reviews' ? 'Saving…' : 'Save Reviews'}
+            </button>
+          </fieldset>
+        </form>
       )}
 
       {/* ── Newsletter ────────────────────────────────── */}
